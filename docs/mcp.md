@@ -12,7 +12,7 @@ Add a server with `claude mcp add` or a project `.mcp.json`. Keep tokens in envi
 | Datadog | Datadog MCP server (remote) — endpoint `https://mcp.<site>/api/unstable/mcp-server/mcp`; also Claude Code plugin `datadog@claude-plugins-official`. GovCloud unsupported. | https://docs.datadoghq.com/bits_ai/mcp_server/setup/ | **Writes are on by default** (Standard role has `mcp_write`). Enforce read-only: custom role with only `mcp_read`, org-level MCP Write Access off, or `?omit_tools=` for write tools (e.g. `create_datadog_monitor`, `create/edit_datadog_notebook`; names unverified). Default toolset `core`; narrow with `?toolsets=`, avoid `all`. Auth: OAuth > PAT/SAT bearer > API+app keys (app-key scopes `metrics_read`, `monitors_read`, `logs_read_data`, `apm_read`). Never echo keys; use env substitution. |
 | PagerDuty | PagerDuty remote MCP (`https://mcp.pagerduty.com/mcp`) | https://support.pagerduty.com/main/docs/pagerduty-mcp-server · archived local: https://github.com/PagerDuty/pagerduty-mcp-server | Local server is read-only unless started with `--enable-write-tools` (do not add it). Remote: use a read-only user/OAuth scope. |
 | Opsgenie | No official MCP server found | — | Use the REST API with a read-only API key (`pagerduty-opsgenie` skill). Opsgenie support ends 2027-04-05. |
-| Terraform | HashiCorp Terraform MCP server | https://github.com/hashicorp/terraform-mcp-server | Registry lookups are read-only. Leave HCP Terraform token unset, or use a read-only team token; run/workspace actions are writes. (awslabs and Azure Terraform MCP servers are deprecated.) |
+| Terraform | HashiCorp Terraform MCP server | https://github.com/hashicorp/terraform-mcp-server | Pin the image version and set `--toolsets=registry` (docs say the default is all toolsets; tool names change between versions). Registry lookups are read-only. With `TFE_TOKEN` set, `create_run` (defaults to plan_and_apply) and the workspace, variable, varset, team and tag tools **write**, even with `ENABLE_TF_OPERATIONS` off; plan/state read tools can expose secrets. **Never set `ENABLE_TF_OPERATIONS=true`** (enables apply, destroy, force-unlock, auto_approve). The server may send Terraform data to the LLM. (awslabs and Azure Terraform MCP servers are deprecated.) |
 | AWS | AWS API MCP server (awslabs) | https://github.com/awslabs/mcp (`src/aws-api-mcp-server`) | `READ_OPERATIONS_ONLY=true`; optionally `REQUIRE_MUTATION_CONSENT=true`. IAM `ReadOnlyAccess`-style role is the real control. |
 | Azure | Azure MCP Server (`@azure/mcp`) | https://github.com/microsoft/mcp (`servers/Azure.Mcp.Server`) | Pin the version (`@azure/mcp@3.0.0`; new majors add write tools), start with `server start --read-only`, and limit tools with repeatable `--namespace` (e.g. `monitor`, `aks`, resource health — check names with `npx -y @azure/mcp@3.0.0 tools list`). Optionally `AZURE_MCP_COLLECT_TELEMETRY=false`. Roles: Reader, Log Analytics Reader, Cost Management Reader, AKS Cluster User Role (cluster scope); never Contributor/Owner. `--read-only` is defense in depth, not a guarantee. |
 | Google Cloud | gcloud MCP, observability MCP (local); Google remote MCP servers | https://github.com/googleapis/gcloud-mcp · https://github.com/google/mcp · https://docs.cloud.google.com/mcp | `run_gcloud_command` runs **any** gcloud command the caller is allowed to (minus a fixed default denylist): pass `-c /abs/config.json` with a read-only **allowlist** (example below). The **storage** and **backupdr** servers include delete/restore tools — disable or gate them; the observability server is list/get only. Remote servers use IAM (`roles/mcp.toolUser`). Credentials: ADC or `--impersonate-service-account` to a viewer SA; never create/download keys. Roles: `roles/logging.viewer`, `roles/monitoring.viewer`, `roles/recommender.computeViewer`, plus one viewer role per service used (e.g. `roles/container.viewer`, `roles/run.viewer`, `roles/cloudsql.viewer`, `roles/compute.viewer`). Add `roles/logging.privateLogViewer` only when Data Access logs are needed. |
@@ -57,7 +57,7 @@ version = "v1"
 kind = "Secret"
 ```
 
-Claude Code deny rules (in `.claude/settings.json` `permissions.deny`; verify exact tool names with `/mcp`):
+Claude Code deny rules for Kubernetes and Terraform (in `.claude/settings.json` `permissions.deny`; the `mcp__<server-name>__` prefix depends on your server name; verify exact tool names with `/mcp`):
 
 ```json
 {
@@ -70,7 +70,12 @@ Claude Code deny rules (in `.claude/settings.json` `permissions.deny`; verify ex
       "mcp__kubernetes__pods_delete",
       "mcp__kubernetes__pods_run",
       "mcp__kubernetes__helm_install",
-      "mcp__kubernetes__helm_uninstall"
+      "mcp__kubernetes__helm_uninstall",
+      "mcp__terraform__create_run",
+      "mcp__terraform__action_run",
+      "mcp__terraform__create_workspace",
+      "mcp__terraform__update_workspace",
+      "mcp__terraform__force_unlock_workspace"
     ]
   }
 }
@@ -126,7 +131,7 @@ Genuine config example. Replace placeholders; keep secrets in env vars.
       "env": { "AWS_REGION": "us-east-1", "READ_OPERATIONS_ONLY": "true", "REQUIRE_MUTATION_CONSENT": "true" }
     },
     "azure": { "command": "npx", "args": ["-y", "@azure/mcp@3.0.0", "server", "start", "--read-only", "--namespace", "monitor", "--namespace", "aks"], "env": { "AZURE_MCP_COLLECT_TELEMETRY": "false" } },
-    "terraform": { "command": "docker", "args": ["run", "-i", "--rm", "hashicorp/terraform-mcp-server"] }
+    "terraform": { "command": "docker", "args": ["run", "-i", "--rm", "hashicorp/terraform-mcp-server:<pinned-version>", "--toolsets=registry"] }
   }
 }
 ```

@@ -61,7 +61,7 @@ journalctl -u <service> --since '-1h' > <service>.log
 
 ```bash
 kubectl diff -f <file>; kubectl apply --dry-run=server -f <file>   # diff exits 1 when there are differences, so do not chain with &&; server dry-run still calls admission webhooks
-terraform plan  # review diff before any apply
+terraform plan -input=false -out=<plan-file> && terraform show -no-color <plan-file>   # an unsaved plan is speculative
 helm diff upgrade <release> <chart> (helm-diff plugin) / helm upgrade --dry-run=server (Helm >= 3.13)
 helm history <release> -n <namespace>
 ```
@@ -112,7 +112,7 @@ helm history <release> -n <namespace>
 
 | Action | Risk | Reversible | Note |
 |---|---|---|---|
-| `git revert <commit> -> terraform plan -> review diff -> terraform apply (after approval)` | high | partial | There is no 'terraform rollback'. Destroy/replace actions in the plan may be irreversible. |
+| `git revert <commit>` -> `terraform plan -input=false -out=<plan-file>` -> `terraform show -no-color <plan-file>` -> explicit approval -> `terraform apply <plan-file>` (plain `apply` re-plans instead of applying the reviewed plan; see `terraform`) | high | partial | There is no 'terraform rollback'. Destroy/replace actions in the plan may be irreversible. |
 
 #### Database
 

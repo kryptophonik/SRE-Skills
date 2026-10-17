@@ -36,7 +36,7 @@ Total 5–7 low, 8–11 med (peer review + canary), 12–15 high (approval from 
 3. **Pre-checks (read-only):** CI green, `terraform plan` reviewed (`terraform`), dashboards and SLOs healthy, dependencies healthy.
 4. **Plan rollout:** canary (1–5%) -> 25% -> 50% -> 100%, with bake time and gate metrics (error ratio, p95 latency, saturation).
 5. **Get approval** for the plan.
-6. **Roll out** step by step; check gates at each step.
+6. **Roll out** step by step; check gates at each step. For Terraform, apply only the exact saved plan that was reviewed and approved.
 7. **Roll back** immediately if a gate fails (follow `sre-remediation-actions`).
 8. **Verify** 15–30 min after 100%; record result.
 
@@ -46,7 +46,7 @@ Total 5–7 low, 8–11 med (peer review + canary), 12–15 high (approval from 
 kubectl --context <ctx> -n <ns> rollout status deployment/<name> --timeout=60s
 kubectl --context <ctx> -n <ns> rollout history deployment/<name>
 kubectl argo rollouts --context <ctx> -n <ns> get rollout <name>   # Argo Rollouts plugin
-terraform plan -out=tfplan && terraform show tfplan
+terraform plan -input=false -out=<plan-file> && terraform show -no-color <plan-file>   # apply only this exact reviewed plan
 ```
 
 ## Change record template
