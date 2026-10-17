@@ -44,6 +44,8 @@ Scopes to omit in read-only config: `storage:events:write`, `email:emails:send`,
 - Writes needing approval: `POST /api/v1/monitor`, downtimes, mute/unmute, SLO create/update, incidents, events. Logs/spans search POSTs are read-only.
 - Rate limits: watch `X-RateLimit-*` headers; back off on `429`. Cost: short windows, small `page.limit`.
 
+Remote Google MCP servers (listed at https://github.com/google/mcp and https://docs.cloud.google.com/mcp/overview) are controlled by IAM: the caller needs `roles/mcp.toolUser` **plus** the underlying service roles (e.g. viewer roles). Grant `roles/mcp.toolUser` only alongside viewer roles for read-only use.
+
 ## Kubernetes setup details
 
 `k8s-mcp.toml` (genuine config example):
@@ -84,7 +86,7 @@ Claude Code deny rules for PagerDuty, Kubernetes and Terraform (in `.claude/sett
 
 ## Google Cloud setup details
 
-gcloud MCP read-only allowlist (`config.json`, passed with `-c`; use `allow` or `deny`, not both; the default denylist always applies):
+gcloud MCP read-only allowlist (`config.json`, passed with `-c /abs/path/config.json`). The file takes **either** `{"allow":[...]}` **or** `{"deny":[...]}`, never both; the built-in default denylist (only ssh, tunnel and interactive commands) is always enforced and cannot be overridden, so it is not a write guard on its own:
 
 ```json
 {

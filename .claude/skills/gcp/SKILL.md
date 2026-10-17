@@ -28,6 +28,8 @@ gcloud config list --format="value(core.account,core.project)"
 
 ```bash
 gcloud container clusters list --project=<PROJECT_ID>
+# kubectl needs gke-gcloud-auth-plugin for GKE (https://cloud.google.com/kubernetes-engine/docs/how-to/cluster-access-for-kubectl)
+gcloud components install gke-gcloud-auth-plugin   # or your OS package (e.g. google-cloud-cli-gke-gcloud-auth-plugin); local install
 gcloud container clusters get-credentials <cluster> --region=<REGION> --project=<PROJECT_ID>   # updates local kubeconfig
 kubectl config current-context                                                              # confirm the context it set
 gcloud compute instances list --project=<PROJECT_ID> --filter="status!=RUNNING"
@@ -38,7 +40,7 @@ gcloud compute instance-groups managed list-instances <mig> --region=<REGION> --
 
 ## Logging and monitoring (read-only)
 
-`--freshness` defaults to `1d` and applies only when the filter has no timestamp.
+Keep `--freshness` and `--limit` on every `logging read`. `--freshness` defaults to `1d`, works only with descending order, and is ignored if the filter contains a timestamp.
 
 ```bash
 gcloud logging read 'severity>=ERROR AND resource.type="k8s_container" AND resource.labels.namespace_name="<ns>"' --project=<PROJECT_ID> --freshness=30m --limit=50

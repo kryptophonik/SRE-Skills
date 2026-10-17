@@ -61,7 +61,7 @@ aws rds restore-db-cluster-from-snapshot --profile <profile> --region <region> -
 # Cleanup (WRITE, approval required): only if the identifier starts with drtest-
 aws rds delete-db-instance --profile <profile> --region <region> --db-instance-identifier drtest-<db>-<date> --skip-final-snapshot
 velero restore create --from-backup <backup> --namespace-mappings <ns>:<ns>-drtest
-# GCP Cloud SQL: restore to a NEW isolated instance, never the source instance (restoring onto an existing instance replaces its data)
+# GCP Cloud SQL: restore to a NEW isolated instance, never the source instance (Google: "The restore process overwrites all of the current data on the instance, including previous point-in-time recovery (PITR) logs." — https://cloud.google.com/sql/docs/mysql/backup-recovery/restoring)
 gcloud sql backups restore <BACKUP_ID> --restore-instance=<NEW_ISOLATED_INSTANCE> --backup-instance=<SOURCE_INSTANCE> --project=<PROJECT_ID>
 # Azure VM: restore disks to a NEW resource group / storage account, never the original location
 az backup restore restore-disks --resource-group <vault-rg> --vault-name <vault> --container-name <container> --item-name <vm> --rp-name <recovery-point> --storage-account <new-staging-sa> --target-resource-group <new-drtest-rg> --subscription <subscription-id>
