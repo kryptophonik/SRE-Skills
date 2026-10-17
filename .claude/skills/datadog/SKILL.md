@@ -16,7 +16,7 @@ Process skills: `sre-engineer`, `sre-diagnostics`, `sre-slo-alerting`, `incident
 ## Access
 
 - **Site:** set `DD_SITE` (e.g. `datadoghq.com`, `datadoghq.eu`, `us3.datadoghq.com`) to avoid querying the wrong region. API base: `https://api.${DD_SITE:-datadoghq.com}`.
-- **MCP:** `https://mcp.<site>/api/unstable/mcp-server/mcp` (e.g. `https://mcp.datadoghq.com/api/unstable/mcp-server/mcp`). GovCloud is not supported. Default toolset is `core`; narrow with `?toolsets=` and `?omit_tools=`; avoid `toolsets=all`.
+- **MCP:** `https://mcp.<site>/v1/mcp` (e.g. `https://mcp.datadoghq.com/v1/mcp`). Not available on FED sites (US1-FED, US2-FED). Default toolset is `core`; narrow with `?toolsets=` and `?omit_tools=`; avoid `toolsets=all`.
 - **Auth preference:** OAuth > personal/service access token (bearer) > API key + application key.
 - **Never echo keys.** Use env vars (`$DD_API_KEY`, `$DD_APP_KEY`) and env substitution in `.mcp.json`.
 
