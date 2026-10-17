@@ -75,6 +75,21 @@ aws logs stop-query --profile <profile> --region <region> --query-id <query-id> 
 | Reboot RDS with failover (Multi-AZ only; causes a brief outage) | `aws rds reboot-db-instance --profile <profile> --region <region> --db-instance-identifier <db> --force-failover` | high | no |
 | Roll back ECS service | `aws ecs update-service --profile <profile> --region <region> --cluster <c> --service <s> --task-definition <family:prev-rev>` | med | yes |
 
+## Bundled scripts and references
+
+```bash
+S=${CLAUDE_SKILL_DIR}/scripts
+AWS_PROFILE=<profile> AWS_REGION=<region> $S/preflight.sh                       # identity, account, region; stop if wrong
+AWS_PROFILE=<profile> AWS_REGION=<region> $S/logs-insights-bounded.sh <log-group> 30 'fields @timestamp, @message | filter @message like /ERROR/'   # <= 60 min, auto "| limit 100"
+AWS_PROFILE=<profile> $S/scan-unattached-ebs-eip.sh <region>                    # cost review input
+```
+
+- [references/readonly-iam-policy.json](references/readonly-iam-policy.json) + [references/readonly-iam-policy.md](references/readonly-iam-policy.md) (ViewOnlyAccess baseline, explicit denies)
+- [references/cost-and-limits.md](references/cost-and-limits.md) (per-request charges for Logs Insights, Cost Explorer, Live Tail)
+- RDS restore drills: [sre-dr-backup-test/references/aws-rds.md](../sre-dr-backup-test/references/aws-rds.md)
+
+If neither the AWS MCP server nor the AWS CLI is available, output the commands for the human and stop.
+
 ## Output
 
 - Profile, account and region confirmed; findings with commands used; proposed actions with risk/reversibility

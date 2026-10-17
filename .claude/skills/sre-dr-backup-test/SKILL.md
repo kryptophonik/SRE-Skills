@@ -51,6 +51,8 @@ velero backup describe <backup> --details
 
 ## Restore commands (WRITE — approval required, new target only)
 
+Full AWS RDS drill (inventory, isolated restore, validation, RTO/RPO, tag-checked cleanup): [references/aws-rds.md](references/aws-rds.md).
+
 ```bash
 # RDS restores are billable and NOT isolated by default (default SG, default subnet group). Always override:
 aws rds restore-db-instance-from-db-snapshot --profile <profile> --region <region> --db-instance-identifier drtest-<db>-<date> --db-snapshot-identifier <snap> \
