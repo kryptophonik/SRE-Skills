@@ -96,6 +96,22 @@ Message must include: impact, runbook link, @pagerduty-<service> or @opsgenie-<t
 
 Prefer SLO burn-rate alerts on a Datadog SLO over raw threshold monitors (`sre-slo-alerting`, `sre-observability-query-cookbook`).
 
+## Bundled scripts and references
+
+Env: `DD_API_KEY`, `DD_APP_KEY` (read-scoped), `DD_SITE` (default `datadoghq.com`). Keys go to curl on stdin; 429s retry; result sizes are capped.
+
+```bash
+S=${CLAUDE_SKILL_DIR}/scripts
+$S/dd_query.sh 'avg:system.cpu.user{env:<env>} by {host}' 60
+$S/dd_logs_search.sh 'service:<svc> env:<env> status:error' 15 50
+$S/dd_spans_search.sh 'service:<svc> env:<env> status:error' 15 50
+$S/dd_monitors_alerting.sh 'tag:"service:<svc>"' 30
+```
+
+- [references/query-cheatsheet.md](references/query-cheatsheet.md) · [references/api-endpoints.md](references/api-endpoints.md) · [references/app-key-scopes.md](references/app-key-scopes.md) · [references/mcp-read-only.md](references/mcp-read-only.md)
+
+If neither the Datadog MCP server nor API keys are available, output the queries for the human and stop.
+
 ## Output
 
 - Queries used (with site and time window), results, and any proposed monitor/downtime/SLO change with risk and approval status

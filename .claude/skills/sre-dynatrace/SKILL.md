@@ -18,9 +18,24 @@ Process skills: `sre-incident-command`, `sre-engineer`, `sre-diagnostics`, `sre-
 
 ## Access
 
-- **MCP (preferred):** Dynatrace MCP server — tools such as `list_problems`, `execute_dql`, `verify_dql`, `find_entity_by_name`, `get_kubernetes_events`. Run `verify_dql` before `execute_dql` on new queries. The local `dynatrace-oss` server is deprecated (final 2.1.2); prefer Dynatrace for AI + `dtctl` or the Dynatrace Remote MCP Server (see `sre-safety-gates/references/mcp.md`).
+- **MCP (preferred):** Dynatrace MCP server — tools such as `<server>:list_problems`, `<server>:execute_dql`, `<server>:verify_dql`, `<server>:find_entity_by_name`, `<server>:get_kubernetes_events` (fully qualified; check names with `/mcp`). Run `verify_dql` before `execute_dql` on new queries. The local `dynatrace-oss` server is deprecated (final 2.1.2); prefer Dynatrace for AI + `dtctl` or the Dynatrace Remote MCP Server (see `sre-safety-gates/references/mcp.md`).
 - **Fallback:** paste DQL into a Notebook; give the user the query.
 - Always bound the timeframe (`from: now()-2h`) to limit Grail scan cost.
+
+
+## Scripts and references
+
+These live in this skill's folder. Paths are relative to it.
+
+- `${CLAUDE_SKILL_DIR}/scripts/dql.sh '<query>'` runs one read-only DQL query. It uses `dtctl` if it's installed and signed in. Otherwise it uses the Grail query API with `DT_ENVIRONMENT` and `DT_PLATFORM_TOKEN` from the environment. It refuses anything that isn't a read query (fetch, timeseries, smartscapeNodes, smartscapeEdges, data, describe, fieldsSnapshot). Use it when no Dynatrace MCP server is connected and the user has set up access.
+- `${CLAUDE_SKILL_DIR}/scripts/check-fields.sh <data object> [window]` prints the field names of one sample record, for example `check-fields.sh logs 2h`. Run it before writing a query against fields you haven't seen in this tenant.
+- [references/dql-cheatsheet.md](references/dql-cheatsheet.md) has the start commands, time ranges and the common-mistakes table. Read it before writing DQL.
+- [references/metrics-and-fields.md](references/metrics-and-fields.md) lists metric keys, units and key fields. Anything marked "verify" has to be checked in the tenant.
+- [references/problems.md](references/problems.md) has the problem triage queries.
+
+To check a query before running it, or when it returns nothing, follow [references/dql-review.md](references/dql-review.md).
+
+If neither MCP nor the scripts can reach the tenant, give the user the query to paste into a Notebook.
 
 ## Triage flow
 
