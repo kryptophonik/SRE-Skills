@@ -1,0 +1,23 @@
+{
+  "allow": [
+    "config list",
+    "config get",
+    "version",
+    "container clusters list",
+    "container clusters describe",
+    "compute instances list",
+    "compute instance-groups managed list-instances",
+    "compute disks list",
+    "compute regions describe",
+    "run services list",
+    "run services describe",
+    "sql instances list",
+    "sql instances describe",
+    "sql backups list",
+    "logging read",
+    "monitoring policies list",
+    "monitoring policies describe",
+    "recommender recommendations list",
+    "projects describe"
+  ]
+}

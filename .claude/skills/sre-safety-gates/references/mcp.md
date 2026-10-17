@@ -86,30 +86,7 @@ Claude Code deny rules for PagerDuty, Kubernetes and Terraform (in `.claude/sett
 
 ## Google Cloud setup details
 
-gcloud MCP read-only allowlist (`config.json`, passed with `-c /abs/path/config.json`). The file takes **either** `{"allow":[...]}` **or** `{"deny":[...]}`, never both; the built-in default denylist (only ssh, tunnel and interactive commands) is always enforced and cannot be overridden, so it is not a write guard on its own:
-
-```json
-{
-  "allow": [
-    "config list",
-    "projects describe",
-    "logging read",
-    "monitoring policies list",
-    "container clusters list",
-    "container clusters describe",
-    "compute instances list",
-    "compute instance-groups managed list-instances",
-    "compute regions describe",
-    "compute disks list",
-    "run services list",
-    "run services describe",
-    "sql instances list",
-    "sql instances describe",
-    "sql backups list",
-    "recommender recommendations list"
-  ]
-}
-```
+gcloud MCP read-only allowlist (`config.json`, passed with `-c /abs/path/config.json`). The file takes **either** `{"allow":[...]}` **or** `{"deny":[...]}`, never both; the built-in default denylist (only ssh, tunnel and interactive commands) is always enforced and cannot be overridden, so it is not a write guard on its own. The single maintained allowlist is [sre-gcp/references/gcloud-mcp-readonly-allowlist.json](../../sre-gcp/references/gcloud-mcp-readonly-allowlist.json); pass its absolute path with `-c`. Pin the package (`@google-cloud/gcloud-mcp@<pinned-version>`).
 
 ## PagerDuty setup details
 

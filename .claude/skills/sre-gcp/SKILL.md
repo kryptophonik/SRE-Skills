@@ -61,6 +61,17 @@ gcloud monitoring policies list --project=<PROJECT_ID> --format="table(displayNa
 | Resize MIG | `gcloud compute instance-groups managed resize <mig> --size=<n> --region=<REGION> --project=<PROJECT_ID>` | low | yes |
 | Resize GKE node pool | `gcloud container clusters resize <cluster> --node-pool=<pool> --num-nodes=<n> --region=<REGION> --project=<PROJECT_ID>` | med | yes |
 
+## Bundled scripts and references
+
+```bash
+PROJECT_ID=<PROJECT_ID> ${CLAUDE_SKILL_DIR}/scripts/preflight.sh            # always first; stop if it fails
+${CLAUDE_SKILL_DIR}/scripts/triage-snapshot.sh <PROJECT_ID> <REGION> 1h 50  # read-only bundle; refuses non-read verbs
+```
+
+- [references/iam-readonly-roles.md](references/iam-readonly-roles.md) · [references/logging-queries.md](references/logging-queries.md) · [references/gcloud-mcp.md](references/gcloud-mcp.md) · [references/gcloud-mcp-readonly-allowlist.json](references/gcloud-mcp-readonly-allowlist.json) (the single maintained allowlist)
+
+If neither the gcloud MCP server nor gcloud is available, output the commands for the human and stop.
+
 ## Output
 
 - Project confirmed, findings with commands used, proposed actions with risk/reversibility
