@@ -11,7 +11,7 @@ if [[ $# -gt 0 ]]; then regions=("$@"); else
     --filters Name=opt-in-status,Values=opt-in-not-required,opted-in --query 'Regions[].RegionName' --output text)"
 fi
 printf 'region\ttype\tid\tdetail\n'
-for r in "${regions[@]}"; do
+for r in ${regions[@]+"${regions[@]}"}; do
   aws_ro ec2 describe-volumes --region "$r" --filters Name=status,Values=available \
     --query 'Volumes[].[VolumeId,Size,VolumeType]' --output text \
     | while read -r id sz vt; do [[ -n "$id" ]] && printf "%s\tebs\t%s\t%sGiB %s\n" "$r" "$id" "$sz" "$vt"; done
