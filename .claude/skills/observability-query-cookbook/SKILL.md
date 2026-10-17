@@ -9,7 +9,7 @@ description: "Tested query cookbook for golden signals, RED/USE, saturation, err
 
 Follow [sre-safety-gates](../sre-safety-gates/SKILL.md): read-only first; explicit approval before any prod change, MCP write, or external post. Queries are read-only, but heavy queries can load the backend: bound the time range.
 
-Adjust metric and label names to your environment. For tool-specific depth see `prometheus-grafana`, `dynatrace-sre`, `datadog`.
+Adjust metric and label names to your environment. Dynatrace queries use Smartscape forms (`dt.smartscape.*`, `getNodeName()`); classic fallback is `dt.entity.*` with `entityName()`. Reviewed against Dynatrace dynatrace-for-ai skills. For tool-specific depth see `prometheus-grafana`, `dynatrace-sre`, `datadog`.
 
 ## Error ratio (5xx / total)
 
@@ -25,8 +25,8 @@ sum:trace.http.request.errors{service:<svc>}.as_count() / sum:trace.http.request
 ```
 
 ```dql
-timeseries { total = sum(dt.service.request.count), failed = sum(dt.service.request.failure_count) }, by: { dt.entity.service }
-| fieldsAdd error_ratio = failed[] / total[]
+timeseries { total = sum(dt.service.request.count), failed = sum(dt.service.request.failure_count) }, by: { dt.smartscape.service }
+| fieldsAdd error_pct = if(total[] > 0, failed[] * 100.0 / total[])
 ```
 
 ## Latency p95
@@ -41,7 +41,8 @@ p95:trace.http.request{service:<svc>}
 ```
 
 ```dql
-timeseries p95 = percentile(dt.service.request.response_time, 95), by: { dt.entity.service }
+timeseries p95_us = percentile(dt.service.request.response_time, 95), rollup: avg, by: { dt.smartscape.service }
+// response_time is in microseconds
 ```
 
 ## Saturation
@@ -59,8 +60,10 @@ avg:kubernetes.cpu.usage.total{kube_namespace:<ns>} by {pod_name}
 ```
 
 ```dql
-timeseries cpu = avg(dt.host.cpu.usage), by: { dt.entity.host }
-| sort arrayAvg(cpu) desc
+// unverified on tenant: check Kubernetes metric keys with verify_dql
+timeseries { used = sum(dt.kubernetes.container.cpu_usage), lim = sum(dt.kubernetes.container.limits_cpu) }, by: { k8s.pod.name }, filter: k8s.namespace.name == "<ns>"
+| fieldsAdd cpu_pct = if(lim[] > 0, used[] * 100.0 / lim[])
+| sort arrayMax(cpu_pct) desc
 | limit 10
 ```
 
@@ -74,6 +77,11 @@ timeseries cpu = avg(dt.host.cpu.usage), by: { dt.entity.host }
 ) / (1 - 0.999)
 ```
 
+```dql
+timeseries { total = sum(dt.service.request.count, scalar: true), failed = sum(dt.service.request.failure_count, scalar: true) }, by: { dt.smartscape.service }, from: now()-1h
+| fieldsAdd burn = (failed / total) / (1 - 0.999)
+```
+
 Page when burn > 14.4 over 1h AND > 14.4 over 5m (see `sre-slo-alerting`).
 
 ## Logs
@@ -85,8 +93,8 @@ sum by (level) (count_over_time({app="<svc>"} |= "error" [5m]))
 ```dql
 fetch logs, from: now()-1h
 | filter loglevel == "ERROR" and k8s.namespace.name == "<ns>"
-| summarize count = count(), by: { k8s.workload.name }
-| sort count desc
+| summarize errors = count(), by: { k8s.workload.name }
+| sort errors desc
 ```
 
 ```text
@@ -98,6 +106,11 @@ service:<svc> status:error
 
 ```promql
 increase(kube_pod_container_status_restarts_total{namespace="<ns>"}[1h]) > 0
+```
+
+```dql
+timeseries restarts = sum(dt.kubernetes.container.restarts), by: { k8s.pod.name }, filter: k8s.namespace.name == "<ns>", from: now()-1h
+| filter arraySum(restarts) > 0
 ```
 
 ## Output
