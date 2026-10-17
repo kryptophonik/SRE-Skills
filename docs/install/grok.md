@@ -6,7 +6,7 @@ Grok discovers skills in `./.grok/skills/` (walked up to the repo root), `~/.gro
 
 ## Whole pack
 
-- **As a plugin:** add this repo as a marketplace source (`[[marketplace.sources]]` in `~/.grok/config.toml`), then install `sre` from the TUI Marketplace tab. If you already added it in Claude Code, Grok reads that marketplace automatically. To try it without installing, run `grok --plugin-dir <path-to-clone>`.
+- **As a plugin:** run `grok plugin marketplace add kryptophonik/claude-sre`, then install `sre` from the TUI Marketplace tab or with `grok plugin install`. If you already added the marketplace in Claude Code, Grok reads it automatically. To try it without installing, run `grok --plugin-dir <path-to-clone>`. **A plugin install ships no `AGENTS.md`,** so the always-on gate text exists only in project installs. With a plugin alone, the inline gate block in each skill is what applies.
 - **As project skills:** commit `.claude/skills/sre-*` (Grok reads `.claude/skills` through Claude compatibility) or copy them to `.grok/skills/`.
 
 ## Personal
@@ -19,6 +19,7 @@ Copy `sre-safety-gates` plus the skill (and anything it requires).
 
 ## How the gates stay attached
 
+- **`user-invocable: false` hides a skill from you and from the model in Grok.** That affects `sre-safety-gates`, `sre-remediation-actions` and `sre-tools-catalog`, which never appear in Grok's skill list. Skills that need them still reach them through relative links, and each skill keeps its own inline gate block, so the gates still apply. For the full rules always in context, use a project install with `AGENTS.md`.
 - `AGENTS.md` (and `.claude/rules`/`CLAUDE.md` if you add them) loads into every session in the repo. Run `grok inspect` to confirm it's listed.
 - Every skill carries its own inline gate block.
 - Manual-only skills stay manual (`disable-model-invocation`).

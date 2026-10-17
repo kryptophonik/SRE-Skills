@@ -34,3 +34,38 @@ jobs:
         run: |
           PATH=/tmp/prometheus-3.5.0.linux-amd64:$PATH python3 .claude/skills/sre-prometheus-grafana/scripts/validate-promql-snippets.py \
             $(grep -rl --include='*.md' '```promql' .claude)
+
+  terraform-guardrails:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.16.6"
+          terraform_wrapper: false
+      - name: Terraform scripts and guard hook tests (terraform 1.16+)
+        working-directory: .claude/skills/sre-terraform
+        run: bash tests/run-tests.sh
+
+  bash32:
+    # macOS ships bash 3.2 as /bin/bash; keeps every script 3.2-compatible.
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.16.6"
+          terraform_wrapper: false
+      - name: Put /bin/bash (3.2) first on PATH
+        run: |
+          mkdir -p "$RUNNER_TEMP/b32" && ln -s /bin/bash "$RUNNER_TEMP/b32/bash"
+          echo "$RUNNER_TEMP/b32" >> "$GITHUB_PATH"
+      - name: Confirm bash 3.2
+        run: bash -c 'echo "$BASH_VERSION"; [[ $BASH_VERSION == 3.2* ]]'
+      - name: Syntax check with bash 3.2
+        run: find .claude -name '*.sh' -print0 | xargs -0 -n1 /bin/bash -n
+      - name: PagerDuty/Opsgenie tests on bash 3.2
+        run: bash .claude/skills/sre-pagerduty-opsgenie/scripts/tests/run_tests.sh
+      - name: Terraform tests on bash 3.2
+        working-directory: .claude/skills/sre-terraform
+        run: bash tests/run-tests.sh

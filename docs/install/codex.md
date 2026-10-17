@@ -24,5 +24,5 @@ Copy `sre-safety-gates` plus the skill (and anything it requires), or run `gh sk
 
 - `AGENTS.md` carries the gate rules and loads before any work.
 - Every skill carries its own inline gate block.
-- Codex doesn't document `disable-model-invocation`, so the manual-only skills (`sre-chaos-engineering`, `sre-k8s-safe-remediation`) may be picked implicitly. Their text still requires explicit approval. To keep them manual, leave them out of `.agents/skills`, or invoke them only with `$skill-name`.
+- Manual-only skills stay manual. `sre-chaos-engineering` and `sre-k8s-safe-remediation` ship `agents/openai.yaml` with `policy.allow_implicit_invocation: false`, generated from `disable-model-invocation: true`, so Codex runs them only when you name them (`$sre-chaos-engineering`). Copy the whole skill folder, including `agents/`.
 - Use Codex's sandbox and approval modes (keep approvals on) as the hard control.
