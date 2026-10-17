@@ -1,0 +1,41 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "SreReadExtrasNotInViewOnly",
+      "Effect": "Allow",
+      "Action": [
+        "ce:GetCostAndUsage",
+        "ce:GetCostForecast",
+        "ce:GetDimensionValues",
+        "ce:GetTags",
+        "health:DescribeEvents",
+        "health:DescribeEventDetails",
+        "health:DescribeAffectedEntities",
+        "health:DescribeEventAggregates",
+        "health:DescribeEventTypes",
+        "logs:StartQuery",
+        "logs:GetQueryResults",
+        "logs:StopQuery",
+        "logs:FilterLogEvents",
+        "logs:GetLogEvents",
+        "sts:GetCallerIdentity"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Sid": "DenyDataAndSecretReads",
+      "Effect": "Deny",
+      "Action": [
+        "secretsmanager:GetSecretValue",
+        "ssm:GetParameter",
+        "ssm:GetParameters",
+        "ssm:GetParametersByPath",
+        "s3:GetObject",
+        "s3:GetObjectVersion",
+        "kms:Decrypt"
+      ],
+      "Resource": "*"
+    }
+  ]
+}

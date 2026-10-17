@@ -1,187 +1,79 @@
-# SKILL: SRE Architect Skill Pack
+# SRE Skill Pack — Index and Routing (single source of truth)
 
-This skill provides a complete, modular SRE capability set for Claude.
-It includes two primary personas—SRE Architect (strategic) and SRE Engineer (tactical)—and multiple sub‑skills for tools, SLOs, alerting, runbooks, debugging, performance, and remediation.
+Each skill lives at `.claude/skills/<name>/SKILL.md`. Claude Code picks skills from each frontmatter `description`. **This table is guidance for humans and for keeping descriptions consistent — it is not executed.** Change a skill's scope and this table together.
 
----
+## Shared rules
 
-## Skill Name
-`sre_architect_pack`
+- [sre-safety-gates](.claude/skills/sre-safety-gates/SKILL.md) applies to every skill: read-only first -> propose with risk/reversibility -> explicit approval before prod changes, MCP writes, or external posts -> act -> verify -> stop and escalate if worse.
+- State assumptions; mark unknowns `[TBD]`. Tie advice to SLIs/SLOs. Every skill ends with its `Output` deliverable.
+- MCP servers and read-only setup: [.claude/skills/sre-safety-gates/references/mcp.md](.claude/skills/sre-safety-gates/references/mcp.md).
 
-## Purpose
-A unified SRE skill pack that equips Claude with principal‑level Site Reliability Engineering capabilities, including observability design, SLO creation, alerting strategy, incident response, operational tooling guidance, and hands-on execution.
+## Placeholder vocabulary
 
-This skill pack has two primary personas:
+Use these exact placeholders in every skill: `<ctx>` (kube context), `<ns>` (namespace), `<svc>` (service), `<env>`, `<cluster>`, `<profile>` and `<region>` (AWS), `<subscription-id>` and `<rg>` (Azure), `<PROJECT_ID>`, `<REGION>`, `<ZONE>` (GCP, upper-case to match Google docs), `<env-id>` (Dynatrace), `$DD_SITE` (Datadog). HTTP status label in PromQL examples is `code`; rename to `status` where your metrics use that.
 
-**SRE Architect** — Strategic role for:
-- Observability architecture design
-- SLO/SLI definition and error budgets
-- Alerting strategy and taxonomy
-- Reliability reviews
-- Postmortem facilitation
+## Naming
 
-**SRE Engineer** — Tactical role for:
-- Incident debugging and triage
-- Performance tuning and optimization
-- Hands-on remediation actions
-- Runbook execution and updates
+Every skill is prefixed `sre-` so it does not collide with or shadow other packs' skills (personal skills override project skills with the same name). Check for collisions with `/skills`.
 
-This skill delegates specialized tasks to modular sub‑skills:
-- `sre_architect` (primary strategic reasoning engine)
-- `sre_engineer` (primary tactical execution engine)
-- `sre_tools_catalog`
-- `sre_slo_templates`
-- `sre_alerting_templates`
-- `sre_runbook_templates`
-- `sre_postmortem_templates`
-- `sre_chaos_engineering`
-- `sre_debugging_tools`
-- `sre_performance_tools`
-- `sre_remediation_actions`
-- `sre_production_readiness`
-- `sre_incident_communication`
+## Routing (most specific first)
 
----
+| Intent | Skill | Invocation |
+|---|---|---|
+| Incident declared/suspected, roles, severity, IC handoff | `sre-incident-command` | auto |
+| Suspected compromise, leaked key, suspicious access | `sre-security-incident-triage` | auto |
+| Debug a live issue, high 5xx/latency, remediate, run a runbook | `sre-engineer` | auto |
+| Kubernetes workload unhealthy | `sre-k8s-triage` | auto |
+| Kubernetes write (rollback, restart, scale, delete pod, Helm rollback) | `sre-k8s-safe-remediation` | **manual only** (`/sre-k8s-safe-remediation`) |
+| Investigation and profiling detail | `sre-diagnostics` | auto |
+| Incident update / status page / exec summary drafts | `sre-incident-communication` | auto |
+| Postmortem / RCA | `sre-postmortem-templates` | auto |
+| Shift change summary | `sre-oncall-handoff` | auto |
+| Schedule / escalation policy audit | `sre-oncall-audit` | auto |
+| Deploy, migration, infra change safety | `sre-change-safety` | auto |
+| SLOs, error budgets, alert rules, alert fatigue | `sre-slo-alerting` | auto |
+| Generate and test Prometheus burn-rate rules | `sre-slo-burn-rate-rules` | auto |
+| Write/update a runbook | `sre-runbook-templates` | auto |
+| Production readiness / launch | `sre-production-readiness` | auto |
+| Capacity, headroom, load tests | `sre-capacity-planning` | auto |
+| Backup restore / DR drill | `sre-dr-backup-test` | auto |
+| Dependencies, blast radius | `sre-dependency-mapping` | auto |
+| Toil review | `sre-toil-review` | auto |
+| Cloud or observability cost | `sre-cloud-cost-review` | auto |
+| A correct query in any monitoring tool | `sre-observability-query-cookbook` | auto |
+| Chaos experiment / game day | `sre-chaos-engineering` | **manual only** (`/sre-chaos-engineering`) |
+| Design, reliability review, on-call program | `sre-architect` | auto |
 
-## Components
-This skill pack includes:
+### Tool adapters (load with the process skill)
 
-- **manifest.md** — Declares all SRE skills and dependencies
-- **router.md** — Determines which skill handles which user intent
-- **sre_architect.md** — Core SRE architect persona and workflows (strategic)
-- **sre_engineer.md** — SRE engineer persona and workflows (tactical)
-- **sre_tools_catalog.md** — Tooling recommendations with pros/cons
-- **sre_slo_templates.md** — SLO templates and SLI selection guide
-- **sre_alerting_templates.md** — Alerting templates and multi-burn strategies
-- **sre_runbook_templates.md** — Runbook skeletons
-- **sre_postmortem_templates.md** — Blameless postmortem guidance
-- **sre_chaos_engineering.md** — Chaos experiments and resilience workflows
-- **sre_debugging_tools.md** — Debugging workflows and commands
-- **sre_performance_tools.md** — Profiling and tuning guidance
-- **sre_remediation_actions.md** — Recovery procedures and actions
-- **sre_production_readiness.md** — PRR checklists and templates
-- **sre_incident_communication.md** — Stakeholder comms templates
+| Tool | Skill |
+|---|---|
+| Dynatrace | `sre-dynatrace` |
+| Prometheus, Alertmanager, Loki, Grafana | `sre-prometheus-grafana` |
+| Datadog | `sre-datadog` |
+| PagerDuty, Opsgenie | `sre-pagerduty-opsgenie` |
+| Terraform | `sre-terraform` |
+| AWS / Azure / GCP | `sre-aws` / `sre-azure` / `sre-gcp` |
+| Kubernetes | `sre-k8s-triage` (also a process skill: the triage decision tree) |
 
----
+### Install profiles
 
-## Behavior
-The SRE Architect Pack:
+Every profile needs `sre-safety-gates` (each skill also carries an inline gate block, so a partial install is still gated).
 
-1. Routes user intent through `router.md`
-2. Loads the appropriate primary skill (`sre_architect` or `sre_engineer`)
-3. Ensures all responses follow SRE best practices:
-   - SLO‑driven
-   - Actionable
-   - Validated
-   - Human‑centered (on‑call friendly)
-   - Blameless (for postmortems)
-   - Safety-first (for chaos engineering)
-4. Uses templates and catalogs to produce structured, repeatable outputs
-5. Architect delegates tactical work to Engineer when appropriate
+| Profile | Skills | Requires |
+|---|---|---|
+| Core incident response | `sre-safety-gates`, `sre-incident-command`, `sre-engineer`, `sre-diagnostics`, `sre-remediation-actions`, `sre-incident-communication`, `sre-postmortem-templates`, `sre-oncall-handoff`, `sre-change-safety` | — |
+| Reliability program | `sre-slo-alerting`, `sre-production-readiness`, `sre-capacity-planning`, `sre-dr-backup-test`, `sre-dependency-mapping`, `sre-toil-review`, `sre-cloud-cost-review`, `sre-chaos-engineering`, `sre-architect`, `sre-runbook-templates`, `sre-tools-catalog`, `sre-observability-query-cookbook` | core |
+| Kubernetes | `sre-k8s-triage`, `sre-k8s-safe-remediation` | core |
+| Per cloud | `sre-aws` / `sre-azure` / `sre-gcp` | core |
+| Per observability vendor | `sre-dynatrace` / `sre-prometheus-grafana` (+ `sre-slo-burn-rate-rules`) / `sre-datadog` | core; `sre-slo-burn-rate-rules` needs `sre-prometheus-grafana` |
+| Paging | `sre-pagerduty-opsgenie` (+ `sre-oncall-audit`) | core; `sre-oncall-audit` needs `sre-pagerduty-opsgenie` |
+| IaC | `sre-terraform` | core |
 
----
+### Reference skills (Claude-only, `user-invocable: false`)
 
-## Cross‑Skill Delegation
+`sre-safety-gates`, `sre-remediation-actions`, `sre-tools-catalog`.
 
-**sre_architect** automatically delegates to:
-- **Tools** → `sre_tools_catalog`
-- **SLOs** → `sre_slo_templates`
-- **Alerting** → `sre_alerting_templates`
-- **Runbooks** → `sre_runbook_templates`
-- **Postmortems** → `sre_postmortem_templates`
-- **Chaos** → `sre_chaos_engineering`
-- **Production Readiness** → `sre_production_readiness`
-- **Tactical execution** → `sre_engineer`
+Not used as triggers (too broad): bare "fix", "scale", "restart", "tools", "logs", "metrics", "experiment", "performance".
 
-**sre_engineer** automatically delegates to:
-- **Debugging** → `sre_debugging_tools`
-- **Performance** → `sre_performance_tools`
-- **Remediation** → `sre_remediation_actions`
-- **Runbooks** → `sre_runbook_templates`
-- **Chaos** → `sre_chaos_engineering` (execution)
-- **Postmortems** → `sre_postmortem_templates` (drafting)
-- **Communication** → `sre_incident_communication`
-
----
-
-## Example User Prompts
-
-### Observability Design
-> “Design observability for our API gateway.”
-
-→ Routed to `sre_architect`
-→ Delegates to `sre_tools_catalog` + `sre_slo_templates`
-
----
-
-### SLO Creation
-> “Help me define SLOs for our checkout service.”
-
-→ Routed to `sre_slo_templates`
-
----
-
-### Alerting Strategy
-> “We need to fix alert fatigue.”
-
-→ Routed to `sre_alerting_templates`
-
----
-
-### Runbook Creation
-> “Create a runbook for high 5xx rate.”
-
-→ Routed to `sre_runbook_templates`
-
----
-
-### Incident Debugging
-> “Help debug this incident. We're seeing high 5xx rates.”
-
-→ Routed to `sre_engineer`
-→ Delegates to `sre_debugging_tools` + `sre_remediation_actions`
-
----
-
-### Performance Issues
-> “Our API is slow. Help me tune it.”
-
-→ Routed to `sre_engineer`
-→ Delegates to `sre_performance_tools`
-
----
-
-### Reliability Review
-> “Review the reliability of our microservices architecture.”
-
-→ Routed to `sre_architect`
-
----
-
-### Production Readiness
-> “Run a production readiness review for our new payment gateway.”
-
-→ Routed to `sre_production_readiness`
-
----
-
-### Incident Communication
-> “Draft an initial announcement for the current outage.”
-
-→ Routed to `sre_incident_communication`
-
----
-
-## Validation Rules
-All outputs must:
-- State assumptions when context is missing
-- Tie recommendations to SLIs/SLOs
-- Provide concrete, actionable steps
-- Include validation (synthetic, chaos, load)
-- Avoid vendor bias
-- Optimize for on‑call humans
-
----
-
-## Version
-`1.2.0`
+Release history: [CHANGELOG.md](CHANGELOG.md).
