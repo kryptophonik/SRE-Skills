@@ -14,7 +14,7 @@ Add a server with `claude mcp add` or a project `.mcp.json`. Keep tokens in envi
 | Opsgenie | No official MCP server found | — | Use the REST API with a read-only API key (`pagerduty-opsgenie` skill). Opsgenie support ends 2027-04-05. |
 | Terraform | HashiCorp Terraform MCP server | https://github.com/hashicorp/terraform-mcp-server | Registry lookups are read-only. Leave HCP Terraform token unset, or use a read-only team token; run/workspace actions are writes. (awslabs and Azure Terraform MCP servers are deprecated.) |
 | AWS | AWS API MCP server (awslabs) | https://github.com/awslabs/mcp (`src/aws-api-mcp-server`) | `READ_OPERATIONS_ONLY=true`; optionally `REQUIRE_MUTATION_CONSENT=true`. IAM `ReadOnlyAccess`-style role is the real control. |
-| Azure | Azure MCP Server | https://github.com/microsoft/mcp (`servers/Azure.Mcp.Server`) | `azmcp server start --read-only`; Reader role on the subscription. |
+| Azure | Azure MCP Server (`@azure/mcp`) | https://github.com/microsoft/mcp (`servers/Azure.Mcp.Server`) | Pin the version (`@azure/mcp@3.0.0`; new majors add write tools), start with `server start --read-only`, and limit tools with repeatable `--namespace` (e.g. `monitor`, `aks`, resource health — check names with `npx -y @azure/mcp@3.0.0 tools list`). Optionally `AZURE_MCP_COLLECT_TELEMETRY=false`. Roles: Reader, Log Analytics Reader, Cost Management Reader, AKS Cluster User Role (cluster scope); never Contributor/Owner. `--read-only` is defense in depth, not a guarantee. |
 | Google Cloud | gcloud MCP and observability MCP (local); Google remote MCP servers | https://github.com/googleapis/gcloud-mcp · https://github.com/google/mcp · https://docs.cloud.google.com/mcp | Use an account/service account with Viewer roles (`roles/viewer`, `roles/logging.viewer`, `roles/monitoring.viewer`). |
 | GitHub | GitHub MCP server | https://github.com/github/github-mcp-server | Use `--read-only` and a fine-grained read-only token; link deploys/PRs to incidents. |
 
@@ -66,7 +66,7 @@ Genuine config example. Replace placeholders; keep secrets in env vars.
       "command": "uvx", "args": ["awslabs.aws-api-mcp-server@latest"],
       "env": { "AWS_REGION": "us-east-1", "READ_OPERATIONS_ONLY": "true", "REQUIRE_MUTATION_CONSENT": "true" }
     },
-    "azure": { "command": "npx", "args": ["-y", "@azure/mcp@latest", "server", "start", "--read-only"] },
+    "azure": { "command": "npx", "args": ["-y", "@azure/mcp@3.0.0", "server", "start", "--read-only", "--namespace", "monitor", "--namespace", "aks"], "env": { "AZURE_MCP_COLLECT_TELEMETRY": "false" } },
     "terraform": { "command": "docker", "args": ["run", "-i", "--rm", "hashicorp/terraform-mcp-server"] }
   }
 }

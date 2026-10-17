@@ -9,7 +9,7 @@ description: "Plans and runs backup-restore and disaster-recovery drills against
 
 Follow [sre-safety-gates](../sre-safety-gates/SKILL.md): read-only first; explicit approval before any prod change, MCP write, or external post.
 
-Never restore over a live resource. Always restore to a **new, isolated** target.
+Never restore over a live resource. Always restore to a **new, isolated** target (new resource group / account / project, isolated network). On Azure, restore `--target-resource-group` must be a new drill RG; ASR uses **test failover** into an isolated VNet only.
 
 ## No-go rules
 
@@ -36,7 +36,7 @@ Never restore over a live resource. Always restore to a **new, isolated** target
 aws backup list-backup-jobs --by-state COMPLETED --max-results 20
 aws rds describe-db-snapshots --db-instance-identifier <db>
 # Azure
-az backup job list --resource-group <rg> --vault-name <vault> -o table
+az backup job list --resource-group <rg> --vault-name <vault> --subscription <subscription-id> --status Completed --start-date <dd-mm-yyyy> -o table
 # GCP
 gcloud sql backups list --instance=<instance>
 # Kubernetes (Velero)
@@ -50,6 +50,12 @@ velero backup describe <backup> --details
 aws rds restore-db-instance-from-db-snapshot --db-instance-identifier <new-db> --db-snapshot-identifier <snap>
 aws rds restore-db-instance-to-point-in-time --source-db-instance-identifier <db> --target-db-instance-identifier <new-db> --restore-time <ISO8601>
 velero restore create --from-backup <backup> --namespace-mappings <ns>:<ns>-drtest
+# Azure VM: restore disks to a NEW resource group / storage account, never the original location
+az backup restore restore-disks --resource-group <vault-rg> --vault-name <vault> --container-name <container> --item-name <vm> --rp-name <recovery-point> --storage-account <new-staging-sa> --target-resource-group <new-drtest-rg> --subscription <subscription-id>
+# Azure SQL / SAP HANA workloads in VMs: restore as a new database to an alternate target
+az backup restore restore-azurewl --resource-group <vault-rg> --vault-name <vault> --recovery-config <recovery-config.json> --subscription <subscription-id>
+# Azure Site Recovery: run a TEST failover into an isolated network (not a planned/unplanned failover)
+az site-recovery protected-item test-failover --resource-group <rg> --vault-name <asr-vault> --fabric-name <fabric> --protection-container <container> --name <protected-item> --subscription <subscription-id> # params vary by version; check `az site-recovery protected-item test-failover -h`
 ```
 
 ## Drill record template

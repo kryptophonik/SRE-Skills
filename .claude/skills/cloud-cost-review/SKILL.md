@@ -30,8 +30,9 @@ aws ce get-cost-and-usage --time-period Start=<YYYY-MM-01>,End=<YYYY-MM-01> --gr
 aws ec2 describe-volumes --filters Name=status,Values=available
 aws ec2 describe-addresses --query 'Addresses[?AssociationId==null]'
 # Azure
-az consumption usage list --start-date <YYYY-MM-DD> --end-date <YYYY-MM-DD> -o table
-az disk list --query "[?diskState=='Unattached']" -o table
+# needs the costmanagement extension and Cost Management Reader
+az costmanagement query --type ActualCost --timeframe Custom --time-period from=<YYYY-MM-DD> to=<YYYY-MM-DD> --scope /subscriptions/<subscription-id>
+az disk list --subscription <subscription-id> --query "[?diskState=='Unattached']" -o table
 # GCP
 gcloud compute disks list --filter="-users:*"
 gcloud recommender recommendations list --project=<project> --location=<zone> --recommender=google.compute.instance.MachineTypeRecommender

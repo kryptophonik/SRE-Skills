@@ -34,7 +34,7 @@ Follow [sre-safety-gates](../sre-safety-gates/SKILL.md): read-only first; explic
 # AWS: recent activity for an access key
 aws cloudtrail lookup-events --lookup-attributes AttributeKey=AccessKeyId,AttributeValue=<AKIA...> --max-results 50
 # Azure: activity log for a resource group, last 24h
-az monitor activity-log list --resource-group <rg> --offset 24h -o table
+az monitor activity-log list --resource-group <rg> --subscription <subscription-id> --offset 24h -o table
 # GCP: admin activity audit log
 gcloud logging read 'logName:"cloudaudit.googleapis.com%2Factivity"' --freshness=1d --limit=50
 # Kubernetes: who can do what
