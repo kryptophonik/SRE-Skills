@@ -36,9 +36,8 @@ Never use Contributor/Owner for this pack.
 ## Always first
 
 ```bash
-az account show --query "{name:name, id:id, tenantId:tenantId}" -o table
-# After the user confirms the target:
-az account set --subscription <subscription-id>
+az account show --subscription <subscription-id> --query "{name:name, id:id, tenantId:tenantId}" -o table   # confirm with the user
+# Do not run `az account set`: it changes the global CLI default for every shell.
 ```
 
 Every command below also passes `--subscription <subscription-id>` so it cannot hit the wrong default.
@@ -91,6 +90,22 @@ ContainerLogV2
 | Roll back slot swap | `az webapp deployment slot swap -g <rg> -n <app> --slot staging --target-slot production --subscription <subscription-id>` (swap again) | high | yes | Use if post-swap checks fail. Wait for "yes". |
 | Cancel previewed swap | `az webapp deployment slot swap -g <rg> -n <app> --slot staging --target-slot production --action reset --subscription <subscription-id>` | low | yes | Wait for "yes". |
 | Restart VM | `az vm restart -g <rg> -n <vm> --subscription <subscription-id>` | med | no | Wait for "yes". |
+
+## Bundled scripts and references
+
+Every script requires `--subscription <subscription-id>` and calls through the read-only guard `scripts/az-ro.sh` (refuses non-read verbs; never runs `az account set`).
+
+```bash
+S=${CLAUDE_SKILL_DIR}/scripts
+$S/az-ro.sh --subscription <subscription-id> account show -o table
+$S/health-snapshot.sh --subscription <subscription-id> --resource-group <rg> --offset 6h
+$S/aks-triage.sh --subscription <subscription-id> --resource-group <rg> --cluster <cluster>
+```
+
+- Workflows: [references/health-triage.md](references/health-triage.md) (first step in any Azure incident), [references/aks-triage.md](references/aks-triage.md)
+- [references/kql-cheatsheet.md](references/kql-cheatsheet.md) · [references/resource-health-activity-log-triage.md](references/resource-health-activity-log-triage.md) · [references/least-privilege-roles.md](references/least-privilege-roles.md) · [references/write-command-risk.md](references/write-command-risk.md)
+
+If neither the Azure MCP server nor the az CLI is available, output the commands for the human and stop.
 
 ## Output
 
