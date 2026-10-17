@@ -1,3 +1,8 @@
+---
+name: sre-remediation-actions
+description: "Gated recovery procedures (rollback, scale, restart, failover) labeled with risk and reversibility, with evidence capture and dry-run first. Use when choosing or executing an incident remediation; every prod change needs explicit human approval."
+---
+
 # SRE Remediation Actions
 
 ## Safety gates (REQUIRED — read before anything else)
@@ -13,7 +18,7 @@ These gates apply to every step in this skill. Never skip or reorder them.
 **Legend:** `risk` = low / med / high blast radius. `reversible` = yes / no (can be cleanly undone without data loss).
 
 ```yaml
-name: sre_remediation_actions
+name: sre-remediation-actions
 label: "Remediation Actions"
 description: >
   Recovery procedures, rollback commands, scaling actions, and common
@@ -129,7 +134,7 @@ incident_specific_actions:   # each step still passes the safety gates
     - "Failover to replica only as last resort (high risk)"
     - "Scale database resources"
 
-communication:   # drafts only; see sre_incident_communication gates
+communication:   # drafts only; see sre-incident-communication gates
   during_incident:
     - "Draft status page update for approval"
     - "Draft stakeholder notification for approval"

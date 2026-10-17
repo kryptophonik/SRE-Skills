@@ -1,7 +1,12 @@
+---
+name: sre-debugging-tools
+description: "Reference of read-only debugging workflows, log/metric/trace queries (PromQL, Loki, TraceQL), and system commands for incident investigation. Use while diagnosing a live issue alongside sre-engineer."
+---
+
 # SRE Debugging Tools
 
 ```yaml
-name: sre_debugging_tools
+name: sre-debugging-tools
 label: "Debugging Tools"
 description: >
   Structured debugging workflows, log analysis patterns, metric inspection
@@ -34,8 +39,8 @@ log_analysis:
 
 metric_queries:
   prometheus:
-    - "Error rate: rate(http_requests_total{status=~\"5..\"}[5m])"
-    - "Latency: histogram_quantile(0.95, http_request_duration_seconds)"
+    - "Error ratio: sum(rate(http_requests_total{status=~\"5..\"}[5m])) / sum(rate(http_requests_total[5m]))"
+    - "Latency p95: histogram_quantile(0.95, sum by (le) (rate(http_request_duration_seconds_bucket[5m])))"
     - "Saturation: node_memory_MemAvailable_bytes"
 
   datadog:
@@ -76,6 +81,15 @@ quick_commands:
   system:
     - "top/htop for CPU/memory"
     - "iotop for I/O"
-    - "netstat/tcpdump for network"
+    - "ss -s / ss -tan for connection stats (replaces deprecated netstat)"
     - "ss -tulpn for listening ports"
+    - "tcpdump -i <if> -c 1000 -w /tmp/cap.pcap '<narrow filter>' (see capture_warnings)"
+
+capture_warnings:
+  - "tcpdump/strace/perf add CPU and latency overhead on prod hosts; keep captures short (-c count or timeout 30s) and narrowly filtered."
+  - "Packet captures and syscall traces can contain secrets, tokens, and customer PII: get approval in prod, store securely, delete after analysis, never paste raw into tickets/chat."
+  - "Prefer metrics/logs/traces first; use captures only when they cannot answer the question."
+
+output:
+  - "Investigation log: queries run, findings, hypotheses confirmed/ruled out, evidence paths"
 ```

@@ -1,7 +1,12 @@
+---
+name: sre-production-readiness
+description: "Runs a production readiness review (PRR) / launch checklist and produces a pass/fail verdict. Use before a new service or major change goes live."
+---
+
 # SRE Production Readiness Review (PRR)
 
 ```yaml
-name: sre_production_readiness
+name: sre-production-readiness
 label: "Production Readiness"
 description: >
   Comprehensive checklist and template for ensuring services are ready
@@ -42,7 +47,7 @@ prr_document_template: |
   - **Criticality:** [What happens if this service fails?]
 
   ## 3. Observability & SLOs
-  - **SLO Link:** [Link to sre_slo_templates output]
+  - **SLO Link:** [Link to sre-slo-templates output]
   - **Dashboard Link:** [URL]
 
   ## 4. Scaling & Capacity
@@ -57,4 +62,7 @@ prr_document_template: |
   ## 6. Approval Sign-off
   - **SRE Lead:** ___________
   - **Engineering Manager:** ___________
+
+output:
+  - "PRR report: each checklist item marked pass / fail / n.a. with evidence; overall verdict ready / ready-with-risks / not-ready; blocking items with owners"
 ```

@@ -1,3 +1,8 @@
+---
+name: sre-incident-communication
+description: "Drafts incident announcements, status updates, resolution notices, and executive summaries with severity-based cadence. Drafts only; never posts without explicit approval. Use when an incident update or stakeholder message is needed."
+---
+
 # SRE Incident Communication Templates
 
 ## Safety gates (REQUIRED — read before anything else)
@@ -13,7 +18,7 @@ These gates apply to every step in this skill. Never skip or reorder them.
 **Draft-only rule:** This skill produces drafts. Never post to Slack, status pages, email, or any external channel until a human explicitly approves the exact text and destination. Present each draft with: channel, audience, and text.
 
 ```yaml
-name: sre_incident_communication
+name: sre-incident-communication
 label: "Incident Communication"
 description: >
   Drafts standardized internal and external incident communications

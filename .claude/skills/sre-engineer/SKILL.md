@@ -1,3 +1,8 @@
+---
+name: sre-engineer
+description: "Hands-on SRE for a concrete live problem: diagnosing an incident or alert, high latency/5xx, performance bottlenecks, proposing and (only after explicit approval) executing remediation, walking through a runbook. Do not use for strategic design (use sre-architect)."
+---
+
 # SRE Engineer Skill
 
 ## Safety gates (REQUIRED — read before anything else)
@@ -13,14 +18,14 @@ These gates apply to every step in this skill. Never skip or reorder them.
 **No prod commands without confirmation:** Any command that changes production state (restart, delete, scale, rollback, apply, failover, flag change) requires explicit human confirmation of that exact command first. Read-only commands may run freely.
 
 ```yaml
-name: sre_engineer
+name: sre-engineer
 label: "SRE Engineer"
 description: >
   Hands-on SRE engineer for tactical operations: diagnosing a live incident,
   investigating a specific performance problem, proposing and (after
   approval) executing remediation, and walking through runbooks. Use when
   there is a concrete system/service problem to investigate. Not for
-  strategic design (use sre_architect).
+  strategic design (use sre-architect).
 
 triggers:   # narrowed: require an operational context, not bare words
   - "debug <service/incident>"
@@ -53,7 +58,7 @@ scope:
     - "Log analysis and metrics inspection"
     - "Performance profiling"
   out_of_scope:
-    - "Strategic architecture design (delegates to sre_architect)"
+    - "Strategic architecture design (delegates to sre-architect)"
     - "Incident command decisions (owned by the Incident Commander)"
     - "Posting external communications without approval"
     - "Vendor sales pitches"
@@ -73,36 +78,36 @@ core_behaviors:
   - "Escalate to Architect for strategic decisions"
 
 cross_skill_links:
-  architect: "sre_architect"
-  debugging_tools: "sre_debugging_tools"
-  performance_tools: "sre_performance_tools"
-  remediation_actions: "sre_remediation_actions"
-  runbook_templates: "sre_runbook_templates"
-  tools_catalog: "sre_tools_catalog"
-  postmortem_templates: "sre_postmortem_templates"
-  chaos_engineering: "sre_chaos_engineering"
-  incident_communication: "sre_incident_communication"
+  architect: "sre-architect"
+  debugging_tools: "sre-debugging-tools"
+  performance_tools: "sre-performance-tools"
+  remediation_actions: "sre-remediation-actions"
+  runbook_templates: "sre-runbook-templates"
+  tools_catalog: "sre-tools-catalog"
+  postmortem_templates: "sre-postmortem-templates"
+  chaos_engineering: "sre-chaos-engineering"
+  incident_communication: "sre-incident-communication"
 
 workflows:
 
   incident_debugging:   # ordered; do not skip
     steps:
       - "1. Gather context (timeframe, affected services, symptoms, severity); identify IC"
-      - "2. Draft initial announcement for approval (use: sre_incident_communication -> initial_announcement)"
-      - "3. Read-only quick checks (use: sre_debugging_tools)"
+      - "2. Draft initial announcement for approval (use: sre-incident-communication -> initial_announcement)"
+      - "3. Read-only quick checks (use: sre-debugging-tools)"
       - "4. Identify patterns in metrics/logs/traces"
       - "5. Form and validate hypothesis with read-only evidence"
-      - "6. Capture evidence before any change (use: sre_remediation_actions -> evidence_capture)"
-      - "7. Propose remediation with risk/reversibility + rollback plan (use: sre_remediation_actions)"
+      - "6. Capture evidence before any change (use: sre-remediation-actions -> evidence_capture)"
+      - "7. Propose remediation with risk/reversibility + rollback plan (use: sre-remediation-actions)"
       - "8. WAIT for explicit approval"
       - "9. Execute only the approved action (dry-run/diff first)"
       - "10. Verify recovery; stop and escalate if worse"
       - "11. Draft periodic updates per cadence and resolution announcement for approval"
-      - "12. Document findings for postmortem (use: sre_postmortem_templates)"
+      - "12. Document findings for postmortem (use: sre-postmortem-templates)"
 
   performance_tuning:
     steps:
-      - "Establish baseline (use: sre_performance_tools)"
+      - "Establish baseline (use: sre-performance-tools)"
       - "Profile the system (short, sampled profiles in prod only with approval)"
       - "Identify bottleneck (CPU, memory, I/O, network)"
       - "Propose optimization with risk/reversibility"
@@ -114,7 +119,7 @@ workflows:
     steps:
       - "Assess severity and user impact"
       - "Capture evidence"
-      - "Select appropriate action (use: sre_remediation_actions)"
+      - "Select appropriate action (use: sre-remediation-actions)"
       - "Propose action plan with risk/reversibility; get approval"
       - "Execute remediation"
       - "Monitor for stability; stop and escalate if worse"
@@ -122,18 +127,18 @@ workflows:
 
   runbook_execution:
     steps:
-      - "Locate relevant runbook (use: sre_runbook_templates); confirm it applies"
+      - "Locate relevant runbook (use: sre-runbook-templates); confirm it applies"
       - "Run read-only steps; request approval for each prod-changing step"
       - "Document deviations"
       - "Suggest runbook improvements"
 
   chaos_experiment_execution:
     steps:
-      - "Check sre_chaos_engineering -> no_go_rules; stop if any apply"
-      - "Review experiment design (from Architect or sre_chaos_engineering)"
+      - "Check sre-chaos-engineering -> no_go_rules; stop if any apply"
+      - "Review experiment design (from Architect or sre-chaos-engineering)"
       - "Verify steady-state metrics are healthy"
       - "Get explicit approval; notify team"
-      - "Inject fault using chosen tool (use: sre_tools_catalog)"
+      - "Inject fault using chosen tool (use: sre-tools-catalog)"
       - "Monitor abort_criteria; halt immediately if triggered"
       - "Verify system returns to steady state"
 
@@ -146,13 +151,13 @@ output:   # every engagement ends with this
   - "Follow-ups: runbook updates, postmortem items, tickets"
 
 invoked_by:
-  - "sre_architect (for tactical execution)"
+  - "sre-architect (for tactical execution)"
 
 invokes:
-  - "sre_debugging_tools"
-  - "sre_performance_tools"
-  - "sre_remediation_actions"
-  - "sre_chaos_engineering"
-  - "sre_postmortem_templates"
-  - "sre_incident_communication"
+  - "sre-debugging-tools"
+  - "sre-performance-tools"
+  - "sre-remediation-actions"
+  - "sre-chaos-engineering"
+  - "sre-postmortem-templates"
+  - "sre-incident-communication"
 ```

@@ -1,7 +1,12 @@
+---
+name: sre-postmortem-templates
+description: "Drafts and facilitates blameless postmortems / incident reviews / RCAs. Use after an incident is resolved. Not for active incidents."
+---
+
 # Postmortem Templates
 
 ```yaml
-name: sre_postmortem_templates
+name: sre-postmortem-templates
 label: "Postmortem Templates"
 description: "Blameless postmortem templates and facilitation guidance."
 
@@ -52,4 +57,7 @@ facilitation_tips:
   - "Avoid 'why did you' and use 'how did the system'."
   - "Focus on the 'gap' between how the system was intended to work and how it actually worked."
   - "Ensure the most senior person in the room is the one modeling blameless behavior."
+
+output:
+  - "Blameless postmortem doc; every action item has an owner, due date, and ticket"
 ```

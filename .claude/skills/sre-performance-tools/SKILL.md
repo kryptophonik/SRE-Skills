@@ -1,7 +1,12 @@
+---
+name: sre-performance-tools
+description: "Profiling and performance-tuning reference (perf, strace, flame graphs, bottleneck identification) with load and PII warnings. Use when investigating slowness or resource bottlenecks."
+---
+
 # SRE Performance Tools
 
 ```yaml
-name: sre_performance_tools
+name: sre-performance-tools
 label: "Performance Tools"
 description: >
   Profiling tools, bottleneck identification techniques, and tuning guidance
@@ -24,7 +29,7 @@ profiling_tools:
   i_o:
     - "iotop: I/O monitoring"
     - "iostat -x: Disk statistics"
-    - "strace: System call tracing"
+    - "strace: System call tracing (HIGH overhead: can slow target 10x+; use -c summary, -p <pid> briefly, never long-running in prod without approval)"
     - "bcc/eBPF: Advanced I/O profiling"
 
 bottleneck_identification:
@@ -80,8 +85,8 @@ bottleneck_identification:
       - "Connection timeouts"
     investigation:
       - "ping/traceroute for path analysis"
-      - "netstat/ss for connection stats"
-      - "tcpdump for packet capture"
+      - "ss -s / ss -tan for connection stats (netstat is deprecated)"
+      - "tcpdump -c 1000 with a narrow filter for packet capture (PII risk; see profiling_warnings)"
     remedies:
       - "Connection pooling"
       - "CDN for static content"
@@ -121,7 +126,7 @@ profiling_workflow:
 quick_commands:
   profiling:
     - "pprof: go tool pprof http://localhost:6060/debug/pprof/profile"
-    - "perf: perf record -F 99 -p <pid> && perf report"
+    - "perf: perf record -F 99 -g -p <pid> -- sleep 30 && perf report (short, sampled)"
     - "py-spy: py-spy top --pid <pid>"
     - "Java: jcmd <pid> GC.heap_info"
 
@@ -129,4 +134,15 @@ quick_commands:
     - "Prometheus: query rate metrics"
     - "Statsd: emit timing metrics"
     - "OpenTelemetry: distributed tracing"
+
+profiling_warnings:
+  - "Profilers and tracers add load: use sampling (e.g., -F 99), short windows (<=30-60s), and one host/pod at a time."
+  - "Get approval before profiling or tracing production processes."
+  - "strace and tcpdump output can contain secrets, tokens, and PII: store securely, redact, delete after use."
+  - "Stop immediately if latency or error rate rises during profiling."
+
+output:
+  - "Baseline vs. after metrics (p50/p95/p99, throughput, saturation)"
+  - "Identified bottleneck with evidence (profile/flame graph paths)"
+  - "Proposed change with risk/reversibility and test results"
 ```

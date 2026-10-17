@@ -30,57 +30,13 @@ Whether you're designing observability for a new service, defining SLOs, fixing 
 ## Architecture
 
 ```
-┌───────────────────────────────────────────────────────────────────┐
-│                    SRE Architect Skill Pack                       │
-│                       (sre_architect_pack)                        │
-├───────────────────────────────────────────────────────────────────┤
-│                                                                   │
-│  ┌─────────────┐  ┌─────────────────────────────────────────┐     │
-│  │  router.md  │→ │   Intent-based routing to appropriate   │     │
-│  └─────────────┘  │   primary skill (Architect or Engineer) │     │
-│                   └─────────────────────────────────────────┘     │
-│                                                                   │
-│  ┌──────────────┐ ┌─────────────────────────────────────────┐     │
-│  │ manifest.md  │→ │  Skill declarations & dependencies     │     │
-│  └──────────────┘ └─────────────────────────────────────────┘     │
-│                           │                                       │
-│        ┌──────────────────┴─────────────────┐                     │
-│        │                                    │                     │
-│  ┌─────▼──────────────────────────────┐  ┌──▼─────────────────┐   │
-│  │     sre_architect.md (Strategic)   │  │ sre_engineer.md    │   │
-│  │  • Observability design            │  │   (Tactical)       │   │
-│  │  • SLO/SLI definition              │  │  • Debugging       │   │
-│  │  • Alerting strategy               │  │  • Performance     │   │
-│  │  • Reliability reviews             │  │  • Remediation     │   │
-│  │  • Postmortem facilitation         │  │  • Runbook exec    │   │
-│  │  • Chaos strategy                  │  │                    │   │
-│  └─────┬──────────────────────────────┘  └──┬─────────────────┘   │
-│        │                                    │                     │
-│        └──────────────────┬─────────────────┘                     │
-│                           │                                       │
-│  ┌───────────┬─────────── ┴──────────┬───────────┬────────────┐   │
-│  │           │            │          │           │            │   │
-│┌─▼───┐ ┌─────▼────┐ ┌─────▼────┐ ┌───▼────┐ ┌────▼────┐ ┌─────▼─┐ │
-││Tools│ │   SLOs   │ │ Alerting │ │Runbooks│ │Postmort │ │ Chaos │ │
-││Cat  │ │Templates │ │Templates │ │Template│ │Templates│ │ Eng   │ │
-│└─────┘ └──────────┘ └──────────┘ └────────┘ └─────────┘ └───────┘ │
-│       ┌───────────┐                       ┌─────────────┐         │
-│       │   PRR     │                       │  Incident   │         │
-│       │ Checklist │                       │  Comms      │         │
-│       └───────────┘                       └─────────────┘         │
-│                                                   ┌───────────┐   │
-│                                                   │Debugging  │   │
-│                                                   │   Tools   │   │
-│                                                   └───────────┘   │
-│                                                   ┌───────────┐   │
-│                                                   │Performance│   │
-│                                                   │   Tools   │   │
-│                                                   └───────────┘   │
-│                                                   ┌───────────┐   │
-│                                                   │Remediation│   │
-│                                                   │  Actions  │   │
-│                                                   └───────────┘   │
-└───────────────────────────────────────────────────────────────────┘
+.claude/skills/
+├── sre-architect/            (strategic persona)
+│   └── uses: tools-catalog, slo, alerting, runbook, postmortem, chaos, production-readiness
+├── sre-engineer/             (tactical persona, approval-gated)
+│   └── uses: debugging-tools, performance-tools, remediation-actions, runbook,
+│             incident-communication, postmortem, chaos
+└── sre-*/SKILL.md            (13 skills total; see SKILLS.md for routing)
 ```
 
 ---
@@ -89,57 +45,50 @@ Whether you're designing observability for a new service, defining SLOs, fixing 
 
 | File | Purpose |
 |------|---------|
-| **manifest.md** | Declares all SRE skills and their dependencies |
-| **router.md** | Determines which skill handles which user intent |
-| **sre_architect.md** | Strategic SRE architect persona and workflows |
-| **sre_engineer.md** | Tactical SRE engineer persona and workflows |
-| **sre_tools_catalog.md** | Tooling recommendations across all SRE domains |
-| **sre_slo_templates.md** | SLO templates and error budget models |
-| **sre_alerting_templates.md** | Alerting templates and taxonomy |
-| **sre_runbook_templates.md** | Runbook skeletons for incidents |
-| **sre_postmortem_templates.md** | Blameless postmortem templates and facilitation |
-| **sre_chaos_engineering.md** | Chaos engineering workflows and experiments |
-| **sre_debugging_tools.md** | Debugging workflows, log analysis, trace queries |
-| **sre_performance_tools.md** | Profiling tools and tuning guidance |
-| **sre_remediation_actions.md** | Recovery procedures and remediation patterns |
-| **sre_production_readiness.md** | PRR checklists and templates |
-| **sre_incident_communication.md** | Stakeholder comms templates |
+| **SKILLS.md** | Index, dependencies, and routing guidance (single source of truth) |
+| **.claude/skills/sre-architect/SKILL.md** | Strategic SRE architect persona and workflows |
+| **.claude/skills/sre-engineer/SKILL.md** | Tactical SRE engineer persona and workflows |
+| **.claude/skills/sre-tools-catalog/SKILL.md** | Tooling recommendations across all SRE domains |
+| **.claude/skills/sre-slo-templates/SKILL.md** | SLO templates and error budget models |
+| **.claude/skills/sre-alerting-templates/SKILL.md** | Alerting templates and taxonomy |
+| **.claude/skills/sre-runbook-templates/SKILL.md** | Runbook skeletons for incidents |
+| **.claude/skills/sre-postmortem-templates/SKILL.md** | Blameless postmortem templates and facilitation |
+| **.claude/skills/sre-chaos-engineering/SKILL.md** | Chaos engineering workflows and experiments |
+| **.claude/skills/sre-debugging-tools/SKILL.md** | Debugging workflows, log analysis, trace queries |
+| **.claude/skills/sre-performance-tools/SKILL.md** | Profiling tools and tuning guidance |
+| **.claude/skills/sre-remediation-actions/SKILL.md** | Recovery procedures and remediation patterns |
+| **.claude/skills/sre-production-readiness/SKILL.md** | PRR checklists and templates |
+| **.claude/skills/sre-incident-communication/SKILL.md** | Stakeholder comms templates |
 
 ---
 
 ## Installation
 
-### Global Installation (recommended)
+Claude Code loads skills from `<skills-dir>/<skill-name>/SKILL.md` (one level deep).
+This repo ships them under `.claude/skills/`.
 
-Clone this repository into your Claude Code skills directory:
+### Use in this repo / a project
+
+Clone the repo (or copy `.claude/skills/` into your project). Starting Claude Code in
+that directory loads all `sre-*` skills automatically.
 
 ```bash
-# Create the skills directory if it doesn't exist
+git clone https://github.com/kryptophonik/claude-sre.git
+cd claude-sre && claude
+```
+
+### Personal installation (all projects)
+
+```bash
+git clone https://github.com/kryptophonik/claude-sre.git
 mkdir -p ~/.claude/skills
-
-# Clone this repository
-git clone [https://github.com/kryptophonik/claude-sre.git] ~/.claude/skills/sre_architect_pack
+cp -r claude-sre/.claude/skills/sre-* ~/.claude/skills/
 ```
 
-### Project-Local Installation
+### Verify installation
 
-For project-specific usage:
-
-```bash
-# In your project directory
-mkdir -p .claude/skills
-
-# Copy or symlink the skill pack
-ln -s ~/.claude/skills/sre_architect_pack .claude/skills/
-```
-
-### Verify Installation
-
-Start Claude Code and invoke the skill:
-
-```
-> /skill sre_architect_pack
-```
+In Claude Code, ask `What skills are available?` or type `/` and look for the `sre-*`
+skills. Invoke one directly with its name, e.g. `/sre-slo-templates`.
 
 ---
 
@@ -202,18 +151,11 @@ What tools should I use for metrics, logs, and traces in Kubernetes?
 
 ---
 
-## Trigger Keywords
+## When skills activate
 
-The skill pack activates on these keywords:
-
-**Strategic (Architect):**
-- `sre`, `reliability`, `observability`, `incident`, `oncall`
-- `alerting`, `slo`, `runbook`, `error budget`
-
-**Tactical (Engineer):**
-- `debug`, `troubleshoot`, `diagnose`, `investigate`
-- `slow`, `latency`, `performance`, `bottleneck`
-- `fix`, `remediate`, `recover`, `rollback`, `restart`, `scale`
+Claude Code picks a skill from each `SKILL.md` frontmatter `description`. See
+[SKILLS.md](SKILLS.md) for the routing table. Prod-changing actions and external posts
+always require your explicit approval (see each skill's **Safety gates**).
 
 ---
 
@@ -244,4 +186,4 @@ Contributions welcome! Please open an issue or submit a pull request.
 
 ## Version
 
-1.2.0
+2.0.0

@@ -1,7 +1,12 @@
+---
+name: sre-slo-templates
+description: "Defines SLIs, SLOs, and error budget policies using a standard template. Use when creating or revising SLOs, availability/latency targets, or error budgets."
+---
+
 # SLO Templates
 
 ```yaml
-name: sre_slo_templates
+name: sre-slo-templates
 label: "SLO Templates"
 description: >
   SLO document templates, SLI selection guidance, and error budget management.
@@ -53,4 +58,7 @@ error_budget_best_practices:
   - "Don't aim for 100%; leave room for innovation and failure."
   - "Ensure both developers and SREs agree on the consequences of a budget depletion."
   - "Automate the measurement; manual SLOs are never accurate."
+
+output:
+  - "Completed SLO document: SLIs with queries, targets, windows, error budget policy, owners"
 ```

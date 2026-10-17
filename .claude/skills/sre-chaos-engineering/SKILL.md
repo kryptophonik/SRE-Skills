@@ -1,3 +1,8 @@
+---
+name: sre-chaos-engineering
+description: "Designs and runs controlled chaos / fault-injection experiments and game days with hard no-go rules, approval, and abort criteria. Not for live incident response."
+---
+
 # Chaos Engineering Skill
 
 ## Safety gates (REQUIRED — read before anything else)
@@ -11,7 +16,7 @@ These gates apply to every step in this skill. Never skip or reorder them.
 5. **Verify.** Confirm error rate, latency, and saturation returned to baseline / within SLO; watch 5-15 min.
 6. **Stop and escalate if worse.** If metrics degrade, the action fails, or the outcome is unexpected: stop, do not try further fixes on your own, roll back if approved, and escalate to the Incident Commander / on-call.
 ```yaml
-name: sre_chaos_engineering
+name: sre-chaos-engineering
 label: "Chaos Engineering"
 description: >
   Design and run controlled fault-injection experiments to test system
@@ -40,7 +45,7 @@ experiment_workflow:
     - "Check no_go_rules; stop if any apply."
     - "Define 'Steady State': Metrics that indicate the system is healthy."
     - "Formulate Hypothesis: 'If we do X, the system will still be Y'."
-    - "Design Experiment: Choose tool and parameters (use: sre_tools_catalog -> chaos)."
+    - "Design Experiment: Choose tool and parameters (use: sre-tools-catalog -> chaos)."
     - "Define Abort Criteria and rollback (see abort_criteria)."
     - "Propose plan: target, blast radius, owner, timebox, risk, rollback — get explicit approval."
     - "Run Experiment within timebox; monitor abort criteria continuously."

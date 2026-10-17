@@ -1,9 +1,15 @@
+---
+name: sre-tools-catalog
+description: "Recommends SRE tooling (metrics, logs, traces, alerting, on-call, chaos) with trade-offs. Use when choosing or comparing observability/reliability tools. Not for debugging a specific incident."
+---
+
 # SRE Tools Catalog
 
 ```yaml
-name: sre_tools_catalog
+name: sre-tools-catalog
 label: "SRE Tools Catalog"
 description: "Categorized catalog of SRE tooling with guidance on selection."
+last_reviewed: "2026-10-16"   # re-review quarterly; tool landscape changes fast
 
 tools:
 
@@ -173,4 +179,7 @@ tools:
       when_to_use: "Vulnerability scanning in CI/CD."
       pros: "Fast, easy to integrate, scans images and IaC."
       cons: "Can produce many false positives or unfixable alerts."
+
+output:
+  - "Recommended stack per domain with rationale, trade-offs, and alternatives; note catalog last_reviewed date"
 ```
