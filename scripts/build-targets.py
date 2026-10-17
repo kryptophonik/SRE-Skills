@@ -25,7 +25,7 @@ SRC = os.path.join(ROOT, ".claude", "skills")
 PACK = {
     "name": "sre",
     "displayName": "SRE skill pack",
-    "version": "3.0.0",  # single source of truth for the pack version
+    "version": "3.0.1",  # single source of truth for the pack version
     "description": "Generic SRE skills with shared approval gates: incident command, diagnosis, gated remediation, SLOs, DR, capacity, cost, and read-only adapters for Kubernetes, AWS, Azure, GCP, Terraform, Dynatrace, Prometheus/Grafana, Datadog and PagerDuty/Opsgenie.",
     "author": {"name": "Mike May", "email": "mike48229@gmail.com"},
     "repository": "https://github.com/kryptophonik/claude-sre",
