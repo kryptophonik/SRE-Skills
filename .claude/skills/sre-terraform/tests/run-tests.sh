@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # run-tests.sh: tests the scripts and hook against a throwaway terraform_data config in a
-# temp dir (local state only, no cloud), then deletes it. Needs terraform 1.7+ (removed
+# temp dir (local state only, no cloud), then deletes it. Needs terraform 1.16+ (1.9.x misses root-output drift in 2 tests; removed
 # blocks) and jq.
 # The test harness itself runs `terraform apply -auto-approve` on that throwaway local state
 # to set up fixtures. The helpers under test never apply.

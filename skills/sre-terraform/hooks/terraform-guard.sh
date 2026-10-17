@@ -96,6 +96,6 @@ while IFS= read -r seg; do
 done <<<"$segments"
 
 [[ -n $decision ]] || exit 0
-reason="terraform-guard: $(printf '%s ' "${reasons[@]}")"
+reason="terraform-guard: $(printf '%s ' ${reasons[@]+"${reasons[@]}"})"
 jq -n --arg d "$decision" --arg r "$reason" \
   '{hookSpecificOutput: {hookEventName: "PreToolUse", permissionDecision: $d, permissionDecisionReason: $r}}'

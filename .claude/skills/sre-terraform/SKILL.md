@@ -30,7 +30,7 @@ Sensitive values: never print. `terraform show` masks only values **marked** sen
 ## Confirm the target first
 
 ```bash
-S=${CLAUDE_SKILL_DIR}/scripts
+S=scripts   # relative to this skill folder (the one containing SKILL.md)
 $S/preflight.sh -C <root-module-dir>   # version, workspace, backend type, lock file, risky env (names only)
 terraform -chdir=<root-module-dir> workspace show
 # plus the provider's own identity check, e.g. `aws sts get-caller-identity`, `az account show`, `gcloud config list`
@@ -99,7 +99,7 @@ There is no `terraform rollback`.
 - Remote state with locking. `terraform force-unlock LOCK_ID` only with explicit approval, after confirming no run is active, and never `-force`.
 - **Opt-in second layer (not enabled by default):** [hooks/terraform-guard.sh](hooks/terraform-guard.sh) (PreToolUse: denies auto-approve, destroy, refresh, plan-less apply; asks for saved-plan apply, state surgery, import, force-unlock) and the rules in [assets/settings.example.json](assets/settings.example.json). They match strings: a guardrail, not a sandbox.
 - MCP: [references/mcp-server-safety.md](references/mcp-server-safety.md).
-- Tests: `${CLAUDE_SKILL_DIR}/tests/run-tests.sh` (throwaway `terraform_data` config). Requires bash 4+, jq, terraform 1.x.
+- Tests: `tests/run-tests.sh` (throwaway `terraform_data` config). Requires bash 3.2+, jq, terraform 1.16+.
 
 If terraform is not available, output the commands for the human and stop.
 

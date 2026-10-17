@@ -14,6 +14,9 @@ This repository is a generic SRE skill pack. Each skill is a folder with a `SKIL
 
 Never run a write command, call an MCP write tool, or post an external message without explicit human approval in this conversation. Skills marked "manual only" must be started by the user (for example `/sre-chaos-engineering`); never run their steps on your own.
 
+Script and reference paths inside a skill (for example `scripts/az-ro.sh` or `../sre-k8s-triage/scripts/...`) are relative to that skill's folder, the folder containing its `SKILL.md`. Resolve them against that folder: `cd` into it, or prefix the skill path. Older copies may write `${CLAUDE_SKILL_DIR}`, which means the same folder; substitute it yourself if your tool doesn't.
+
+
 Skills live in `.claude/skills/` (read natively by Claude Code, Cursor, Copilot and Grok). Codex reads `.agents/skills/`: install per docs/install/codex.md.
 
 ## Skills

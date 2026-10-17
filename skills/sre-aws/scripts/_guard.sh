@@ -9,5 +9,5 @@ aws_ro() {
   esac
   local args=()
   [[ -n "${AWS_PROFILE:-}" ]] && args+=(--profile "$AWS_PROFILE")
-  aws "${args[@]}" "$@"
+  aws ${args[@]+"${args[@]}"} "$@"
 }

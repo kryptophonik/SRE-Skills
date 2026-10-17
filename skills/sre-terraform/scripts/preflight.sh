@@ -54,10 +54,11 @@ fi
 echo "== Files"
 if [[ -f $root/.terraform.lock.hcl ]]; then echo "lock file: present"; else w "no .terraform.lock.hcl, so provider versions are not pinned (fine if only built-in providers). Commit the lock file."; fi
 shopt -s nullglob
-declare -A seen=()
+seen=$'\n'  # newline-delimited list (bash 3.2: no associative arrays)
 for f in "$root"/*.tfstate "$root"/*.tfstate.* "$root"/tfplan "$root"/*.tfplan "$root"/tfplan.json; do
-  [[ -e $f && -z ${seen[$f]-} ]] || continue
-  seen[$f]=1
+  [[ -e $f ]] || continue
+  case $seen in *$'\n'"$f"$'\n'*) continue ;; esac
+  seen+="$f"$'\n'
   w "sensitive file on disk: $(basename "$f") (state and plan files hold secrets in cleartext; never commit, upload, or paste them)"
   if git -C "$root" rev-parse --is-inside-work-tree >/dev/null 2>&1 && ! git -C "$root" check-ignore -q -- "$(basename "$f")"; then
     w "  ...and git does NOT ignore $(basename "$f"). Add it to .gitignore."

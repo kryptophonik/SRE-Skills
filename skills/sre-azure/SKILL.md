@@ -96,7 +96,7 @@ ContainerLogV2
 Every script requires `--subscription <subscription-id>` and calls through the read-only guard `scripts/az-ro.sh` (refuses non-read verbs; never runs `az account set`).
 
 ```bash
-S=${CLAUDE_SKILL_DIR}/scripts
+S=scripts   # relative to this skill folder (the one containing SKILL.md)
 $S/az-ro.sh --subscription <subscription-id> account show -o table
 $S/health-snapshot.sh --subscription <subscription-id> --resource-group <rg> --offset 6h
 $S/aks-triage.sh --subscription <subscription-id> --resource-group <rg> --cluster <cluster>

@@ -41,7 +41,7 @@ if [[ "${positional[0]:-}" == "rest" ]]; then
       --method=*) method="${args[$i]#--method=}" ;;
     esac
   done
-  [[ "${method,,}" == "get" ]] || { echo "refused: az rest needs an explicit --method get" >&2; exit 3; }
+  [[ "$(printf %s "$method" | tr '[:upper:]' '[:lower:]')" == "get" ]] || { echo "refused: az rest needs an explicit --method get" >&2; exit 3; }
   # The subscription in the URL must match the one passed with --subscription.
   url=""
   for i in "${!args[@]}"; do
@@ -55,7 +55,7 @@ else
     *) echo "refused: verb '$verb' is not in the read-only allowlist (show|list|query|get-instance-view)" >&2; exit 3 ;;
   esac
   # Secret- or credential-returning subcommands are POST actions even when they read.
-  for p in "${positional[@]}"; do
+  for p in ${positional[@]+"${positional[@]}"}; do
     case "$p" in
       keys|credential|credentials|secret|secrets|connection-string|list-keys|list-secrets|get-credentials)
         echo "refused: '$p' returns secrets or credentials" >&2; exit 3 ;;

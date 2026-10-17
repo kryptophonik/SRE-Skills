@@ -41,7 +41,7 @@ Env (one set for scripts and snippets): `PD_API_KEY` (read-only REST key), `PD_R
 Use the bundled GET-only scripts. They send keys over stdin, retry HTTP 429, and cap pagination at `MAX_PAGES` (default 20 pages of 100):
 
 ```bash
-S=${CLAUDE_SKILL_DIR}/scripts
+S=scripts   # relative to this skill folder (the one containing SKILL.md)
 $S/pd_oncall.sh                                              # who is on call now
 $S/pd_incidents.sh --status triggered --status acknowledged  # open incidents (table)
 $S/pd_incidents.sh --since <ISO8601> --until <ISO8601> --json | wc -l   # page count for handoff/toil

@@ -27,8 +27,8 @@ Process skills: `sre-incident-command`, `sre-engineer`, `sre-diagnostics`, `sre-
 
 These live in this skill's folder. Paths are relative to it.
 
-- `${CLAUDE_SKILL_DIR}/scripts/dql.sh '<query>'` runs one read-only DQL query. It uses `dtctl` if it's installed and signed in. Otherwise it uses the Grail query API with `DT_ENVIRONMENT` and `DT_PLATFORM_TOKEN` from the environment. It refuses anything that isn't a read query (fetch, timeseries, smartscapeNodes, smartscapeEdges, data, describe, fieldsSnapshot). Use it when no Dynatrace MCP server is connected and the user has set up access.
-- `${CLAUDE_SKILL_DIR}/scripts/check-fields.sh <data object> [window]` prints the field names of one sample record, for example `check-fields.sh logs 2h`. Run it before writing a query against fields you haven't seen in this tenant.
+- `scripts/dql.sh '<query>'` runs one read-only DQL query. It uses `dtctl` if it's installed and signed in. Otherwise it uses the Grail query API with `DT_ENVIRONMENT` and `DT_PLATFORM_TOKEN` from the environment. It refuses anything that isn't a read query (fetch, timeseries, smartscapeNodes, smartscapeEdges, data, describe, fieldsSnapshot). Use it when no Dynatrace MCP server is connected and the user has set up access.
+- `scripts/check-fields.sh <data object> [window]` prints the field names of one sample record, for example `check-fields.sh logs 2h`. Run it before writing a query against fields you haven't seen in this tenant.
 - [references/dql-cheatsheet.md](references/dql-cheatsheet.md) has the start commands, time ranges and the common-mistakes table. Read it before writing DQL.
 - [references/metrics-and-fields.md](references/metrics-and-fields.md) lists metric keys, units and key fields. Anything marked "verify" has to be checked in the tenant.
 - [references/problems.md](references/problems.md) has the problem triage queries.

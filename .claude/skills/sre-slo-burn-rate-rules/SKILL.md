@@ -21,7 +21,7 @@ Requires `sre-prometheus-grafana` installed alongside (sibling folder).
 1. Get from the user, or ask: SLO name, objective (a ratio such as `0.999`), the **bad-events** counter selector, the **all-events** counter selector, the labels to keep (default `job`), and the SLO period (default `30d`). Check that the metric and label names exist (`promtool query series "$PROM_URL" --match='<selector>'`), and don't guess `code` vs `status`.
 2. Generate:
    ```bash
-   python3 ${CLAUDE_SKILL_DIR}/../sre-prometheus-grafana/scripts/gen-burn-rate-rules.py \
+   python3 ../sre-prometheus-grafana/scripts/gen-burn-rate-rules.py \
      --slo-name <name> --objective <0.999> \
      --errors '<metric>{job="<svc>",code=~"5.."}' --total '<metric>{job="<svc>"}' \
      --by job --runbook-url 'https://runbooks.example.com/slo/<slo-name>' --out slo-<name>.rules.yml

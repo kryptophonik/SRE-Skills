@@ -70,6 +70,11 @@ def index_table(sk, link_prefix):
     return "\n".join(rows)
 
 
+PATHS_NOTE = """
+Script and reference paths inside a skill (for example `scripts/az-ro.sh` or `../sre-k8s-triage/scripts/...`) are relative to that skill's folder, the folder containing its `SKILL.md`. Resolve them against that folder: `cd` into it, or prefix the skill path. Older copies may write `${CLAUDE_SKILL_DIR}`, which means the same folder; substitute it yourself if your tool doesn't.
+"""
+
+
 def instructions(sk, title, link_prefix, extra=""):
     return f"""<!-- {HEADER} -->
 # {title}
@@ -81,6 +86,7 @@ This repository is a generic SRE skill pack. Each skill is a folder with a `SKIL
 {gate_block()}
 
 Never run a write command, call an MCP write tool, or post an external message without explicit human approval in this conversation. Skills marked "manual only" must be started by the user (for example `/sre-chaos-engineering`); never run their steps on your own.
+{PATHS_NOTE}
 {extra}
 ## Skills
 
@@ -112,6 +118,13 @@ def render(sk):
         f"<!-- {HEADER} -->\n\n# SRE safety gates\n\n{gate_block()}\n\n"
         "Never run a write command, call an MCP write tool, or post an external message without explicit human approval. "
         "Skills live in `.claude/skills/` (Cursor reads them natively); manual-only skills must be started by the user with `/<skill-name>`.\n")
+    # Codex: agents/openai.yaml blocks implicit invocation for manual-only skills
+    # (https://learn.chatgpt.com/docs/build-skills.md, "Optional metadata").
+    for k in sk:
+        if k["manual"]:
+            files[f".claude/skills/{k['name']}/agents/openai.yaml"] = (
+                f"# {HEADER}\n# Codex: manual only (mirrors disable-model-invocation: true). Start with ${k['name']}.\n"
+                "policy:\n  allow_implicit_invocation: false\n")
     return files
 
 

@@ -68,7 +68,7 @@ case "$rc" in
   2)
     info "DRIFT DETECTED (exit 2): objects changed outside Terraform. Nothing was changed."
     pr_args=(--drift-only); [[ -n $dir ]] && pr_args=(-C "$dir" --drift-only)
-    "$here/plan-risk.sh" "${pr_args[@]}" "$planfile" || true
+    "$here/plan-risk.sh" ${pr_args[@]+"${pr_args[@]}"} "$planfile" || true
     $show_log && { echo "--- terraform output ---"; cat "$TMPD/plan.log"; }
     info ""
     info "Next: find out why it drifted (incident fix, console change, another tool). Then either"
