@@ -26,6 +26,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 - Every skill name now has the `sre-` prefix. Descriptions are ≤250 characters and lead with the trigger.
 - Unified placeholders (`<ns>`, `<env>`, `<ctx>`…), IC terminology, postmortem timing ("within 48 h of resolution") and SEV cadence.
 - Merged `sre-debugging-tools` + `sre-performance-tools` into `sre-diagnostics`, and `sre-slo-templates` + `sre-alerting-templates` into `sre-slo-alerting`.
+- README: skills table for all 34 skills, per-tool quick-start commands, the safety-gate flowchart, and an example 5xx walkthrough.
 - Moved the MCP setup to `sre-safety-gates/references/mcp.md`.
 - Datadog: MCP endpoint `https://mcp.<site>/v1/mcp`; burn rate `.over()` uses the SLO window; corrected the CPU-limit unit note.
 - PagerDuty/Opsgenie paginators: `MAX_PAGES` cap and 429 backoff. All scripts are bash 3.2-compatible (tested with 3.2.57). Script paths in skills and references are relative to the skill folder, with no `${CLAUDE_SKILL_DIR}`. The Terraform tests need terraform 1.16+.
