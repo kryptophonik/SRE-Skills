@@ -2,8 +2,6 @@
 
 Each skill lives at `.claude/skills/<name>/SKILL.md`. Claude Code picks skills from each frontmatter `description`. **This table is guidance for humans and for keeping descriptions consistent — it is not executed.** Change a skill's scope and this table together.
 
-Version: `3.0.0`
-
 ## Shared rules
 
 - [sre-safety-gates](.claude/skills/sre-safety-gates/SKILL.md) applies to every skill: read-only first -> propose with risk/reversibility -> explicit approval before prod changes, MCP writes, or external posts -> act -> verify -> stop and escalate if worse.
@@ -78,8 +76,4 @@ Every profile needs `sre-safety-gates` (each skill also carries an inline gate b
 
 Not used as triggers (too broad): bare "fix", "scale", "restart", "tools", "logs", "metrics", "experiment", "performance".
 
-## Changes from 2.x
-
-- Merged `sre-debugging-tools` + `sre-performance-tools` -> `sre-diagnostics`; `sre-slo-templates` + `sre-alerting-templates` -> `sre-slo-alerting`.
-- Safety gates moved to one shared skill.
-- Added 11 generic skills and 8 tool adapters.
+Release history: [CHANGELOG.md](CHANGELOG.md).
