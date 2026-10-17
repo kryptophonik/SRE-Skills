@@ -114,17 +114,9 @@ Action-oriented but gated. Evidence-driven. Fast triage. Clear communication. Us
 3. Document deviations
 4. Suggest runbook improvements
 
-### Chaos experiment execution
+### Chaos experiments
 
-#### Steps
-
-1. Check sre-chaos-engineering -> no_go_rules; stop if any apply
-2. Review experiment design (from Architect or sre-chaos-engineering)
-3. Verify steady-state metrics are healthy
-4. Get explicit approval; notify team
-5. Inject fault using chosen tool (use: sre-tools-catalog)
-6. Monitor abort_criteria; halt immediately if triggered
-7. Verify system returns to steady state
+`sre-chaos-engineering` is manual-only. Do not inject faults from this skill; tell the user to run `/sre-chaos-engineering`.
 
 ## Output
 

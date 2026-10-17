@@ -57,9 +57,9 @@ sum by (namespace, pod) (kube_pod_container_resource_limits{namespace="<ns>",res
 
 ```text
 # Datadog
-# kubernetes.cpu.usage.total is in nanocores; compare to kubernetes.cpu.limits (cores) after unit conversion
-avg:kubernetes.cpu.usage.total{kube_namespace:<ns>} by {pod_name}
-avg:kubernetes.cpu.limits{kube_namespace:<ns>} by {pod_name}
+# kubernetes.cpu.usage.total is in nanocores; kubernetes.cpu.limits is in cores.
+# Ratio: convert usage to cores (/ 1e9) or limits to nanocores (* 1e9), never compare raw.
+(avg:kubernetes.cpu.usage.total{kube_namespace:<ns>} by {pod_name} / 1e9) / avg:kubernetes.cpu.limits{kube_namespace:<ns>} by {pod_name}
 ```
 
 ```dql
@@ -87,7 +87,7 @@ timeseries { total = sum(dt.service.request.count, scalar: true), failed = sum(d
 
 ```text
 # Datadog SLO monitor query
-burn_rate("<slo_id>").over("1h").long_window("1h").short_window("5m") > 14.4
+burn_rate("<slo_id>").over("30d").long_window("1h").short_window("5m") > 14.4
 ```
 
 Page when burn > 14.4 over 1h AND > 14.4 over 5m (see `sre-slo-alerting`).

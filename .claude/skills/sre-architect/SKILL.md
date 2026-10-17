@@ -22,7 +22,7 @@ Strategic, read-only design and review. Keep it short: frame the problem, route 
 | SLOs, error budgets, alert rules, alert fatigue | `sre-slo-alerting` |
 | Production readiness / launch | `sre-production-readiness` |
 | Runbook writing | `sre-runbook-templates` |
-| Chaos program or experiment | `sre-chaos-engineering` |
+| Chaos program or experiment | manual only: tell the user to run `/sre-chaos-engineering` |
 | Capacity / headroom / load tests | `capacity-planning` |
 | Backup and DR drills | `dr-backup-test` |
 | Upstream/downstream, blast radius | `dependency-mapping` |

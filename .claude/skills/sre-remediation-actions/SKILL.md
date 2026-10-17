@@ -6,7 +6,7 @@ user-invocable: false
 
 # SRE Remediation Actions
 
-All `kubectl`/`helm` commands here also take `--context <ctx>` (`--kube-context <ctx>` for helm); never rely on the current context. Never `delete --force --grace-period=0`, `delete --all`, or patch away finalizers without SRE approval.
+Every `kubectl`/`helm` command below carries `--context <ctx> -n <ns>` (`--kube-context <ctx>` for helm) literally; never rely on the current context. Never `delete --force --grace-period=0`, `delete --all`, or patch away finalizers without SRE approval.
 
 ## Safety gates (REQUIRED)
 Follow [sre-safety-gates](../sre-safety-gates/SKILL.md) for every step. In short: read-only diagnosis -> propose with risk/reversibility -> **explicit human approval** before any prod change, MCP write, or external post -> act -> verify -> stop and escalate if worse.
@@ -30,11 +30,11 @@ Follow [sre-safety-gates](../sre-safety-gates/SKILL.md) for every step. In short
 ### Kubernetes
 
 ```bash
-kubectl rollout history deployment/<name> -n <namespace>
-kubectl describe deployment/<name> -n <namespace>
-kubectl events -n <namespace> --types=Warning
-kubectl logs <pod> -n <namespace> --all-containers --timestamps > <pod>.log   # may contain secrets/PII: keep out of repos, redact
-kubectl logs <pod> -n <namespace> --all-containers --previous > <pod>.prev.log   # errors if no previous instance; harmless
+kubectl --context <ctx> rollout history deployment/<name> -n <ns>
+kubectl --context <ctx> describe deployment/<name> -n <ns>
+kubectl --context <ctx> events -n <ns> --types=Warning
+kubectl --context <ctx> logs <pod> -n <ns> --all-containers --timestamps > <pod>.log   # may contain secrets/PII: keep out of repos, redact
+kubectl --context <ctx> logs <pod> -n <ns> --all-containers --previous > <pod>.prev.log   # errors if no previous instance; harmless
 ```
 
 ### JVM or runtime
@@ -60,10 +60,12 @@ journalctl -u <service> --since '-1h' > <service>.log
 ## Dry run first
 
 ```bash
-kubectl diff -f <file>; kubectl apply --dry-run=server -f <file>   # diff exits 1 when there are differences, so do not chain with &&; server dry-run still calls admission webhooks
+kubectl --context <ctx> diff -f <file>; kubectl --context <ctx> apply --dry-run=server -f <file>   # diff exits 1 when there are differences, so do not chain with &&; server dry-run still calls admission webhooks
 terraform plan -input=false -out=<plan-file> && terraform show -no-color <plan-file>   # an unsaved plan is speculative
-helm diff upgrade <release> <chart> (helm-diff plugin) / helm upgrade --dry-run=server (Helm >= 3.13)
-helm history <release> -n <namespace>
+helm diff upgrade --kube-context <ctx> <release> <chart> -n <ns> --suppress-secrets   # helm-diff plugin
+helm upgrade --kube-context <ctx> <release> <chart> -n <ns> --dry-run=server --hide-secret (Helm >= 3.13; without --hide-secret it prints rendered Secrets)
+# helm diff also shows Secret changes unless the plugin is configured to suppress them (HELM_DIFF / --suppress-secrets)
+helm history --kube-context <ctx> <release> -n <ns>
 ```
 
 ## Common actions
@@ -74,8 +76,8 @@ helm history <release> -n <namespace>
 
 | Action | Risk | Reversible | Note |
 |---|---|---|---|
-| `kubectl rollout restart deployment/<name> -n <namespace>` | med | no | Evidence capture first; rolling, but loses in-memory state |
-| `kubectl delete pod <pod-name> -n <namespace>` | med | no | Capture logs/--previous first; single pod only, never by label selector without approval |
+| `kubectl --context <ctx> rollout restart deployment/<name> -n <ns>` | med | no | Evidence capture first; rolling, but loses in-memory state |
+| `kubectl --context <ctx> delete pod <pod-name> -n <ns>` | med | no | Capture logs/--previous first; single pod only, never by label selector without approval |
 
 #### Systemd
 
@@ -97,10 +99,10 @@ helm history <release> -n <namespace>
 
 | Action | Risk | Reversible | Note |
 |---|---|---|---|
-| `kubectl rollout history deployment/<name> -n <namespace>` | low | yes | Read-only; confirm target revision first |
-| `kubectl rollout undo deployment/<name> -n <namespace>` | med | yes | Check history; schema/data migrations may make this unsafe; uses ReplicaSet history (`revisionHistoryLimit`); GitOps (Argo/Flux) reverts it unless sync is paused or Git is reverted |
-| `helm rollback <release> <revision> -n <namespace>` | med | yes | Check `helm history` first; GitOps caveat applies |
-| `kubectl rollout undo deployment/<name> -n <namespace> --to-revision=<n>` | med | yes |  |
+| `kubectl --context <ctx> rollout history deployment/<name> -n <ns>` | low | yes | Read-only; confirm target revision first |
+| `kubectl --context <ctx> rollout undo deployment/<name> -n <ns>` | med | yes | Check history; schema/data migrations may make this unsafe; uses ReplicaSet history (`revisionHistoryLimit`); GitOps (Argo/Flux) reverts it unless sync is paused or Git is reverted |
+| `helm rollback --kube-context <ctx> <release> <revision> -n <ns>` | med | yes | Check `helm history` first; GitOps caveat applies |
+| `kubectl --context <ctx> rollout undo deployment/<name> -n <ns> --to-revision=<n>` | med | yes |  |
 
 #### Cloud
 
@@ -127,16 +129,17 @@ helm history <release> -n <namespace>
 
 | Action | Risk | Reversible | Note |
 |---|---|---|---|
-| `kubectl scale deployment/<name> --replicas=<n> -n <namespace>` | low | yes | Note current replica count first; HPA overrides; GitOps reverts |
-| `kubectl autoscale deployment/<name> --min=<min> --max=<max> -n <namespace>` | low | yes | Creates an HPA; conflicts with an existing HPA or GitOps. Revert: `kubectl delete hpa <name> -n <namespace>` |
+| `kubectl --context <ctx> scale deployment/<name> --replicas=<n> -n <ns>` (scale up) | low | yes | Note current replica count first; HPA overrides; GitOps reverts |
+| `kubectl --context <ctx> scale deployment/<name> --replicas=<n> -n <ns>` (scale down) | med | yes | Can overload remaining pods; check load and PDBs first |
+| `kubectl --context <ctx> autoscale deployment/<name> --min=<min> --max=<max> -n <ns>` | low | yes | Creates an HPA; conflicts with an existing HPA or GitOps. Revert: `kubectl --context <ctx> delete hpa <name> -n <ns>` |
 
 #### Cloud
 
 | Action | Risk | Reversible |
 |---|---|---|
-| AWS: Modify auto-scaling group desired/max | low | yes |
-| GCP: Update instance group size | low | yes |
-| Azure: Scale VM scale set | low | yes |
+| AWS: Modify auto-scaling group desired/max (up / down) | low / med | yes |
+| GCP: Update instance group size (up / down) | low / med | yes |
+| Azure: Scale VM scale set (up / down) | low / med | yes |
 
 ### Failover
 
