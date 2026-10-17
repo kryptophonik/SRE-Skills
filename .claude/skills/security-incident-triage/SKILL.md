@@ -32,7 +32,7 @@ Follow [sre-safety-gates](../sre-safety-gates/SKILL.md): read-only first; explic
 
 ```bash
 # AWS: recent activity for an access key
-aws cloudtrail lookup-events --lookup-attributes AttributeKey=AccessKeyId,AttributeValue=<AKIA...> --max-results 50
+aws cloudtrail lookup-events --profile <profile> --region <region> --lookup-attributes AttributeKey=AccessKeyId,AttributeValue=<AKIA...> --max-results 50
 # Azure: activity log for a resource group, last 24h
 az monitor activity-log list --resource-group <rg> --subscription <subscription-id> --offset 24h -o table
 # GCP: admin activity audit log
@@ -45,7 +45,7 @@ kubectl --context <ctx> -n <ns> auth can-i --list --as=<user>
 
 | Action | Risk | Reversible |
 |---|---|---|
-| Deactivate AWS access key: `aws iam update-access-key --access-key-id <id> --status Inactive --user-name <user>` | med | yes |
+| Deactivate AWS access key: `aws iam update-access-key --profile <profile> --access-key-id <id> --status Inactive --user-name <user>` | med | yes |
 | Isolate pod: apply deny-all NetworkPolicy selecting the pod | med | yes |
 | Cordon node: `kubectl --context <ctx> cordon <node>` | low | yes |
 | Rotate secret in secret manager and redeploy consumers | med | partial |

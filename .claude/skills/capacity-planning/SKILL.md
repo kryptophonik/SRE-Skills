@@ -30,7 +30,7 @@ Follow [sre-safety-gates](../sre-safety-gates/SKILL.md): read-only first; explic
 ```bash
 kubectl --context <ctx> top nodes
 kubectl --context <ctx> get hpa -A
-aws service-quotas list-service-quotas --service-code ec2
+aws service-quotas list-service-quotas --profile <profile> --region <region> --service-code ec2 --max-items 100
 az vm list-usage --location <region> --subscription <subscription-id> -o table
 gcloud compute regions describe <REGION> --project=<PROJECT_ID> --format="table(quotas.metric,quotas.limit,quotas.usage)"   # field paths: verify in your environment
 ```

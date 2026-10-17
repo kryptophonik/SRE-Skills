@@ -26,9 +26,11 @@ Follow [sre-safety-gates](../sre-safety-gates/SKILL.md): read-only first; explic
 
 ```bash
 # AWS
-aws ce get-cost-and-usage --time-period Start=<YYYY-MM-01>,End=<YYYY-MM-01> --granularity MONTHLY --metrics UnblendedCost --group-by Type=DIMENSION,Key=SERVICE
-aws ec2 describe-volumes --filters Name=status,Values=available
-aws ec2 describe-addresses --query 'Addresses[?AssociationId==null]'
+# Cost Explorer: single endpoint us-east-1; billed per request (cache results); End is exclusive; paginated via NextPageToken
+aws ce get-cost-and-usage --profile <profile> --region us-east-1 --time-period Start=<YYYY-MM-01>,End=<YYYY-MM-01> --granularity MONTHLY --metrics UnblendedCost --group-by Type=DIMENSION,Key=SERVICE
+# Regional resources: repeat per region
+aws ec2 describe-volumes --profile <profile> --region <region> --filters Name=status,Values=available --max-items 200
+aws ec2 describe-addresses --profile <profile> --region <region> --query 'Addresses[?AssociationId==null]'
 # Azure
 # needs the costmanagement extension and Cost Management Reader
 az costmanagement query --type ActualCost --timeframe Custom --time-period from=<YYYY-MM-DD> to=<YYYY-MM-DD> --scope /subscriptions/<subscription-id>

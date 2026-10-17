@@ -33,8 +33,8 @@ Never restore over a live resource. Always restore to a **new, isolated** target
 
 ```bash
 # AWS
-aws backup list-backup-jobs --by-state COMPLETED --max-results 20
-aws rds describe-db-snapshots --db-instance-identifier <db>
+aws backup list-backup-jobs --profile <profile> --region <region> --by-state COMPLETED --by-created-after <ISO8601> --max-items 20
+aws rds describe-db-snapshots --profile <profile> --region <region> --db-instance-identifier <db> --snapshot-type automated --max-items 20
 # Azure
 az backup job list --resource-group <rg> --vault-name <vault> --subscription <subscription-id> --status Completed --start-date <dd-mm-yyyy> -o table
 # GCP
@@ -47,8 +47,19 @@ velero backup describe <backup> --details
 ## Restore commands (WRITE — approval required, new target only)
 
 ```bash
-aws rds restore-db-instance-from-db-snapshot --db-instance-identifier <new-db> --db-snapshot-identifier <snap>
-aws rds restore-db-instance-to-point-in-time --source-db-instance-identifier <db> --target-db-instance-identifier <new-db> --restore-time <ISO8601>
+# RDS restores are billable and NOT isolated by default (default SG, default subnet group). Always override:
+aws rds restore-db-instance-from-db-snapshot --profile <profile> --region <region> --db-instance-identifier drtest-<db>-<date> --db-snapshot-identifier <snap> \
+  --db-subnet-group-name <isolated-subnet-group> --vpc-security-group-ids <isolated-sg> --no-publicly-accessible --no-multi-az \
+  --db-instance-class <small-class> --tags Key=purpose,Value=dr-drill
+# MySQL/PostgreSQL restores may default to RDS Extended Support (extra charges); set --engine-lifecycle-support if needed
+aws rds restore-db-instance-to-point-in-time --profile <profile> --region <region> --source-db-instance-identifier <db> --target-db-instance-identifier drtest-<db>-<date> \
+  --restore-time <ISO8601> --db-subnet-group-name <isolated-subnet-group> --vpc-security-group-ids <isolated-sg> --no-publicly-accessible --no-multi-az \
+  --db-instance-class <small-class> --tags Key=purpose,Value=dr-drill      # or --use-latest-restorable-time instead of --restore-time
+# Aurora: restore a cluster, then add an instance
+aws rds restore-db-cluster-from-snapshot --profile <profile> --region <region> --db-cluster-identifier drtest-<cluster>-<date> --snapshot-identifier <snap> --engine <aurora-mysql|aurora-postgresql> \
+  --db-subnet-group-name <isolated-subnet-group> --vpc-security-group-ids <isolated-sg> --tags Key=purpose,Value=dr-drill
+# Cleanup (WRITE, approval required): only if the identifier starts with drtest-
+aws rds delete-db-instance --profile <profile> --region <region> --db-instance-identifier drtest-<db>-<date> --skip-final-snapshot
 velero restore create --from-backup <backup> --namespace-mappings <ns>:<ns>-drtest
 # GCP Cloud SQL: restore to a NEW isolated instance, never the source instance (restoring onto an existing instance replaces its data)
 gcloud sql backups restore <BACKUP_ID> --restore-instance=<NEW_ISOLATED_INSTANCE> --backup-instance=<SOURCE_INSTANCE> --project=<PROJECT_ID>
