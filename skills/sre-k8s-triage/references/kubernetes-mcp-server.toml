@@ -1,0 +1,27 @@
+# Read-only config for containers/kubernetes-mcp-server.
+# Recent releases take runtime settings from TOML, not CLI flags (--read-only was dropped):
+#   https://github.com/containers/kubernetes-mcp-server/blob/main/docs/configuration-changes.md
+#   https://github.com/containers/kubernetes-mcp-server/blob/main/docs/configuration.md
+# Run:  npx -y kubernetes-mcp-server@<pinned-version> --config /abs/path/kubernetes-mcp-server.toml
+# Unknown keys fail the load, so a typo is caught at startup.
+
+# Only tools annotated readOnlyHint=true are exposed (hides pods_exec, pods_run, pods_delete,
+# resources_create_or_update, resources_delete, resources_scale, helm_install, helm_uninstall).
+read_only = true
+
+# Keep toolsets minimal; add "helm" only if needed (read_only still hides helm_install/uninstall).
+toolsets = ["core", "config"]
+
+# Point at a kubeconfig that holds ONLY the read-only ServiceAccount credentials (see rbac-readonly.yaml).
+# kubeconfig = "/home/<you>/.kube/sre-agent-readonly.yaml"
+
+# Defence in depth on top of RBAC.
+[[denied_resources]]
+group = ""
+version = "v1"
+kind = "Secret"
+
+[[denied_resources]]
+group = "rbac.authorization.k8s.io"
+version = "v1"
+kind = "ClusterRoleBinding"

@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "permissions": {
+    "allow": [
+      "Bash(.claude/skills/sre-terraform/scripts/preflight.sh *)",
+      "Bash(.claude/skills/sre-terraform/scripts/plan-risk.sh *)",
+      "Bash(.claude/skills/sre-terraform/scripts/drift-check.sh *)",
+      "Bash(.claude/skills/sre-terraform/scripts/tf-readonly.sh *)"
+    ],
+    "ask": [
+      "Bash(terraform apply *)",
+      "Bash(terraform import *)",
+      "Bash(terraform state mv *)",
+      "Bash(terraform state rm *)",
+      "Bash(terraform state push *)",
+      "Bash(terraform state pull*)",
+      "Bash(terraform state replace-provider *)",
+      "Bash(terraform state show *)",
+      "Bash(terraform force-unlock *)",
+      "Bash(terraform taint *)",
+      "Bash(terraform untaint *)",
+      "Bash(terraform workspace select *)",
+      "Bash(terraform workspace new *)",
+      "Bash(terraform workspace delete *)",
+      "Bash(terraform output*)",
+      "Bash(terraform console*)",
+      "Bash(terraform show -json*)"
+    ],
+    "deny": [
+      "Bash(terraform destroy*)",
+      "Bash(terraform refresh*)",
+      "Bash(terraform * -auto-approve*)",
+      "Bash(terraform force-unlock -force *)",
+      "mcp__terraform__action_run",
+      "mcp__terraform__create_run",
+      "mcp__terraform__force_unlock_workspace",
+      "mcp__terraform__delete_workspace_safely",
+      "mcp__terraform__create_workspace",
+      "mcp__terraform__update_workspace",
+      "mcp__terraform__create_workspace_variable",
+      "mcp__terraform__update_workspace_variable",
+      "mcp__terraform__grant_team_access"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          { "type": "command", "command": "${CLAUDE_PROJECT_DIR}/.claude/skills/sre-terraform/hooks/terraform-guard.sh" }
+        ]
+      }
+    ]
+  }
+}

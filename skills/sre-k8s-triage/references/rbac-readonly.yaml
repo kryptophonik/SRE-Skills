@@ -1,0 +1,89 @@
+# Read-only triage role for an agent identity, modelled on the built-in `view` ClusterRole
+# but explicit: NO secrets, NO pods/exec, pods/attach, pods/portforward, pods/proxy,
+# services/proxy, serviceaccounts/token; no write verbs. Do not use resources: ["*"] (would include secrets).
+# Sources:
+#   https://kubernetes.io/docs/reference/access-authn-authz/rbac/#user-facing-roles
+#   https://kubernetes.io/docs/concepts/security/rbac-good-practices/
+# Bind per namespace with a RoleBinding (preferred, least privilege) or cluster-wide with a ClusterRoleBinding.
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: sre-agent-readonly
+  namespace: sre-agent
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: sre-agent-readonly
+rules:
+  - apiGroups: [""]
+    resources: [pods, pods/log, pods/status, services, endpoints, events, configmaps,
+                persistentvolumeclaims, replicationcontrollers, resourcequotas, limitranges,
+                namespaces, serviceaccounts]
+    verbs: [get, list, watch]
+  - apiGroups: ["discovery.k8s.io"]
+    resources: [endpointslices]
+    verbs: [get, list, watch]
+  - apiGroups: ["events.k8s.io"]
+    resources: [events]
+    verbs: [get, list, watch]
+  - apiGroups: ["apps"]
+    resources: [deployments, deployments/status, replicasets, statefulsets, daemonsets, controllerrevisions]
+    verbs: [get, list, watch]
+  - apiGroups: ["batch"]
+    resources: [jobs, cronjobs]
+    verbs: [get, list, watch]
+  - apiGroups: ["autoscaling"]
+    resources: [horizontalpodautoscalers]
+    verbs: [get, list, watch]
+  - apiGroups: ["policy"]
+    resources: [poddisruptionbudgets]
+    verbs: [get, list, watch]
+  - apiGroups: ["networking.k8s.io"]
+    resources: [ingresses, networkpolicies]
+    verbs: [get, list, watch]
+  - apiGroups: ["metrics.k8s.io"]
+    resources: [pods, nodes]
+    verbs: [get, list]
+---
+# Cluster-scoped reads (nodes, PVs, storage classes) need a ClusterRoleBinding; keep separate.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: sre-agent-readonly-cluster
+rules:
+  - apiGroups: [""]
+    resources: [nodes, persistentvolumes, namespaces]
+    verbs: [get, list, watch]
+  - apiGroups: ["storage.k8s.io"]
+    resources: [storageclasses]
+    verbs: [get, list, watch]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: sre-agent-readonly
+  namespace: <target-namespace>   # repeat per namespace the agent may triage
+subjects:
+  - kind: ServiceAccount
+    name: sre-agent-readonly
+    namespace: sre-agent
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: sre-agent-readonly
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: sre-agent-readonly-cluster
+subjects:
+  - kind: ServiceAccount
+    name: sre-agent-readonly
+    namespace: sre-agent
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: sre-agent-readonly-cluster
+# Note: configmaps are included because triage needs them; drop them if your teams store credentials in ConfigMaps.
+# Verify after applying: scripts/k8s-preflight.sh --context <ctx> -n <ns> --as system:serviceaccount:sre-agent:sre-agent-readonly
