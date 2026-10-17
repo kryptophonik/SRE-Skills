@@ -13,9 +13,9 @@ Follow [sre-safety-gates](../sre-safety-gates/SKILL.md): read-only first; explic
 
 | Sev | Definition | Response |
 |---|---|---|
-| SEV-1 | Critical user impact, revenue/data at risk, broad outage | Page IC + on-call now; updates every 15 min internal / 30 min status page |
-| SEV-2 | Major degradation or partial outage | Page on-call; IC assigned; updates every 30 / 60 min |
-| SEV-3 | Minor impact, workaround exists | Ticket + on-call aware; updates on change |
+| SEV-1 | Critical user impact, revenue/data at risk, broad outage | Page IC + on-call now; update cadence per `sre-incident-communication` |
+| SEV-2 | Major degradation or partial outage | Page on-call; IC assigned; update cadence per `sre-incident-communication` |
+| SEV-3 | Minor impact, workaround exists | Ticket + on-call aware; update cadence per `sre-incident-communication` |
 | SEV-4 | No user impact | Ticket only |
 
 When unsure, pick the higher severity; downgrade later.
@@ -36,7 +36,7 @@ When unsure, pick the higher severity; downgrade later.
 5. **Track decisions.** Log each decision, who approved, and timestamp (UTC).
 6. **Hand off** if the IC changes or a shift ends (see Handoff note).
 7. **Resolve.** Confirm metrics at baseline and stable 15+ min; IC declares resolved.
-8. **Close out.** Draft resolution notice, schedule postmortem within 48 h (`sre-postmortem-templates`), file follow-ups.
+8. **Close out.** Draft resolution notice, schedule the postmortem within 48 h of resolution (`sre-postmortem-templates`), file follow-ups.
 
 ## Handoff note
 

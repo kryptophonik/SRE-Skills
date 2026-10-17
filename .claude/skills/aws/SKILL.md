@@ -16,7 +16,7 @@ Process skills: `sre-engineer`, `k8s-triage` (EKS), `dr-backup-test`, `capacity-
 - **Every command carries `--profile <profile> --region <region>`** (or `AWS_PROFILE`/`AWS_REGION` set and confirmed). Nothing depends on local defaults.
 - **Bound pagination:** add `--max-items <n>` to list/describe calls.
 - **Writes needing approval:** any `create-*`, `update-*`, `modify-*`, `delete-*`, `put-*`, `start-*`/`stop-*`/`reboot-*`, `terminate-*`, `restore-*`, `register-*`/`deregister-*`, `attach-*`/`detach-*`, `tag-*`/`untag-*`, `set-desired-capacity`; also `logs start-query` (cost) and `eks update-kubeconfig` (local write).
-- **IAM:** `ReadOnlyAccess` plus explicit `ce:GetCostAndUsage` and `health:Describe*`. ReadOnlyAccess can still read data, so add explicit **Deny** for `secretsmanager:GetSecretValue`, `ssm:GetParameter*` (with decryption), `s3:GetObject`, and `kms:Decrypt`.
+- **IAM:** `ViewOnlyAccess` (metadata only) plus the extras in [references/readonly-iam-policy.json](references/readonly-iam-policy.json) (`ce:GetCostAndUsage`, `health:Describe*`, `logs:StartQuery`/`GetQueryResults`/`FilterLogEvents`, `sts:GetCallerIdentity`) and its explicit **Deny** for secret/data reads (`secretsmanager:GetSecretValue`, `ssm:GetParameter*`, `s3:GetObject`, `kms:Decrypt`). Do not grant `logs:StartLiveTail` (streams). Avoid `ReadOnlyAccess`: it can read data.
 - **Cost:** CloudWatch metric API calls are billed per request; Logs Insights bills per GB scanned; Cost Explorer bills per request. Keep windows narrow.
 
 ## Always first
@@ -43,7 +43,7 @@ aws eks describe-cluster --profile <profile> --region <region> --name <cluster> 
 Kubeconfig (local write: edits `~/.kube/config` and can switch your current context; use an alias, then confirm):
 
 ```bash
-aws eks update-kubeconfig --profile <profile> --region <region> --name <cluster> --alias <cluster>-ro
+aws eks update-kubeconfig --profile <profile> --region <region> --name <cluster> --alias <cluster>-ro --kubeconfig ./kubeconfig-<cluster>   # per-incident file
 kubectl config current-context
 ```
 
@@ -53,7 +53,7 @@ kubectl config current-context
 aws cloudwatch describe-alarms --profile <profile> --region <region> --state-value ALARM --max-items 100
 aws cloudwatch get-metric-statistics --profile <profile> --region <region> --namespace AWS/ApplicationELB --metric-name HTTPCode_Target_5XX_Count \
   --dimensions Name=LoadBalancer,Value=<app/name/id> --start-time <ISO8601> --end-time <ISO8601> --period 300 --statistics Sum
-aws logs tail /aws/lambda/<fn> --profile <profile> --region <region> --since 30m      # never --follow unattended
+aws logs tail /aws/lambda/<fn> --profile <profile> --region <region> --since 30m --filter-pattern "?ERROR ?Exception" | head -200   # filtered and capped; never --follow unattended
 # Logs Insights: one log group, narrow window (billed per GB scanned)
 aws logs start-query --profile <profile> --region <region> --log-group-name <group> --start-time <epoch> --end-time <epoch> \
   --query-string 'fields @timestamp, @message | filter @message like /ERROR/ | sort @timestamp desc | limit 50'

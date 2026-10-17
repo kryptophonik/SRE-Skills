@@ -32,7 +32,7 @@ Follow [sre-safety-gates](../sre-safety-gates/SKILL.md) for every step. In short
 - Draft using templates below.
 - Present draft with channel + audience; wait for explicit approval.
 - After approval, post exactly the approved text (or hand it to the human to post).
-- Schedule next update per update_cadence.
+- Schedule next update per the Update cadence section.
 
 ## Templates
 
@@ -43,7 +43,7 @@ Follow [sre-safety-gates](../sre-safety-gates/SKILL.md) for every step. In short
 **Service:** [Service Name]
 **Severity:** [SEV-1/SEV-2]
 **Symptom:** [e.g., High 5xx rates on Checkout]
-**Incident Lead:** [@User]
+**Incident Commander (IC):** [@User]
 **Bridge/Channel:** [#inc-checkout-YYYY-MM-DD]
 **Status:** Investigating.
 **Next Update:** [Time] UTC
@@ -65,7 +65,7 @@ Follow [sre-safety-gates](../sre-safety-gates/SKILL.md) for every step. In short
 **Service:** [Service Name]
 **Resolution Time:** [Time] UTC
 **Summary:** [Short description of fix]
-**Follow-up:** A blameless postmortem will be scheduled within 48 hours.
+**Follow-up:** A blameless postmortem will be scheduled within 48 hours of resolution.
 ```
 
 ### Executive summary
@@ -84,5 +84,5 @@ Follow [sre-safety-gates](../sre-safety-gates/SKILL.md) for every step. In short
 - Be concise and factual; no speculation on root cause in external posts.
 - Never include secrets, internal hostnames, customer PII, or blame in any message.
 - Avoid technical jargon in executive summaries.
-- Stick to the update_cadence heartbeat.
+- Stick to the Update cadence heartbeat.
 - Under-promise and over-deliver on resolution times.

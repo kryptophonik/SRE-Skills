@@ -41,10 +41,10 @@ Logs and spans **search** use POST but are read-only.
 APM trace metrics are named `trace.<SPAN_NAME>.<suffix>`; the span name depends on the integration (`servlet.request`, `rack.request`, `flask.request`, `http.request`, …). Find yours in APM service page.
 
 ```text
-avg:system.cpu.user{env:prod} by {host}
-sum:trace.<span_name>.errors{env:prod,service:<svc>}.as_count()
-sum:trace.<span_name>.hits{env:prod,service:<svc>}.as_count()
-p95:trace.<span_name>{env:prod,service:<svc>}
+avg:system.cpu.user{env:<env>} by {host}
+sum:trace.<span_name>.errors{env:<env>,service:<svc>}.as_count()
+sum:trace.<span_name>.hits{env:<env>,service:<svc>}.as_count()
+p95:trace.<span_name>{env:<env>,service:<svc>}
 avg:kubernetes.memory.usage{kube_namespace:<ns>} by {pod_name}
 ```
 
@@ -53,7 +53,7 @@ p95 requires the **distribution** trace metric (`trace.<span_name>`). The legacy
 Logs search:
 
 ```text
-service:<svc> env:prod status:error
+service:<svc> env:<env> status:error
 @http.status_code:[500 TO 599] service:<svc>
 ```
 
@@ -65,7 +65,7 @@ H=(-H "DD-API-KEY: $DD_API_KEY" -H "DD-APPLICATION-KEY: $DD_APP_KEY")
 # Metric query (last hour)
 curl -sG "$DD_API/api/v1/query" "${H[@]}" \
   --data-urlencode "from=$(($(date +%s)-3600))" --data-urlencode "to=$(date +%s)" \
-  --data-urlencode "query=sum:trace.<span_name>.errors{env:prod,service:<svc>}.as_count()"
+  --data-urlencode "query=sum:trace.<span_name>.errors{env:<env>,service:<svc>}.as_count()"
 # Monitors currently alerting
 curl -sG "$DD_API/api/v1/monitor/search" "${H[@]}" \
   --data-urlencode 'query=status:alert tag:"service:<svc>"'
@@ -74,7 +74,7 @@ curl -s -X POST "$DD_API/api/v2/logs/events/search" "${H[@]}" -H "Content-Type: 
   -d '{"filter":{"query":"service:<svc> status:error","from":"now-15m","to":"now"},"page":{"limit":50}}'
 # Span search (v2, read-only POST)
 curl -s -X POST "$DD_API/api/v2/spans/events/search" "${H[@]}" -H "Content-Type: application/json" \
-  -d '{"data":{"type":"search_request","attributes":{"filter":{"query":"service:<svc> env:prod status:error @duration:>1s","from":"now-15m","to":"now"},"page":{"limit":25}}}}'
+  -d '{"data":{"type":"search_request","attributes":{"filter":{"query":"service:<svc> env:<env> status:error @duration:>1s","from":"now-15m","to":"now"},"page":{"limit":25}}}}'
 ```
 
 ## Rate limits and cost
@@ -85,7 +85,7 @@ curl -s -X POST "$DD_API/api/v2/spans/events/search" "${H[@]}" -H "Content-Type:
 ## Monitor definition (for review; create only after approval)
 
 ```text
-Query:  sum(last_5m):sum:trace.http.request.errors{service:<svc>,env:prod}.as_count() / sum:trace.http.request.hits{service:<svc>,env:prod}.as_count() > 0.01
+Query:  sum(last_5m):sum:trace.http.request.errors{service:<svc>,env:<env>}.as_count() / sum:trace.http.request.hits{service:<svc>,env:<env>}.as_count() > 0.01
 Message must include: impact, runbook link, @pagerduty-<service> or @opsgenie-<team> handle
 ```
 

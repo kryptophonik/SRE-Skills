@@ -131,7 +131,8 @@ Genuine config example. Replace placeholders; keep secrets in env vars.
       "env": { "GRAFANA_URL": "https://grafana.example.com", "GRAFANA_SERVICE_ACCOUNT_TOKEN_FILE": "/path/to/grafana-sa-token" }
     },
     "dynatrace": {
-      "command": "npx", "args": ["-y", "@dynatrace-oss/dynatrace-mcp-server@latest"],
+      "_comment": "DEPRECATED local server, pinned to its final release; prefer the Dynatrace Remote MCP Server or Dynatrace for AI + dtctl",
+      "command": "npx", "args": ["-y", "@dynatrace-oss/dynatrace-mcp-server@2.1.2"],
       "env": { "DT_ENVIRONMENT": "https://<env-id>.apps.dynatrace.com", "DT_PLATFORM_TOKEN": "${DT_PLATFORM_TOKEN}", "DT_GRAIL_QUERY_BUDGET_GB": "50" }
     },
     "datadog": { "type": "http", "url": "https://mcp.datadoghq.com/v1/mcp" },

@@ -54,7 +54,8 @@ For tool-specific queries see `observability-query-cookbook`, `dynatrace-sre`, `
 - Error ratio:
 
   ```promql
-  sum by (job) (rate(http_requests_total{job="<svc>",<status_label>=~"5.."}[5m]))
+  # if your metrics label the HTTP status as `status` (not `code`), rename the label
+  sum by (job) (rate(http_requests_total{job="<svc>",code=~"5.."}[5m]))
   / sum by (job) (rate(http_requests_total{job="<svc>"}[5m]))
   ```
 - Latency p95:
@@ -73,17 +74,17 @@ For tool-specific queries see `observability-query-cookbook`, `dynatrace-sre`, `
 - Errors:
 
   ```text
-  sum:trace.<span_name>.errors{env:prod,service:<svc>}.as_count()
+  sum:trace.<span_name>.errors{env:<env>,service:<svc>}.as_count()
   ```
 - Latency:
 
   ```text
-  p95:trace.<span_name>{env:prod,service:<svc>}
+  p95:trace.<span_name>{env:<env>,service:<svc>}
   ```
 - Saturation:
 
   ```text
-  avg:system.mem.usable{env:prod} by {host}
+  avg:system.mem.usable{env:<env>} by {host}
   # or system.mem.pct_usable
   ```
 
@@ -99,7 +100,7 @@ For tool-specific queries see `observability-query-cookbook`, `dynatrace-sre`, `
 
 - Jaeger: UI search and trace inspection
 - Tempo: TraceQL queries
-- Datadog: Trace search, e.g. `service:<svc> env:prod status:error @duration:>1s` via `POST /api/v2/spans/events/search` (read-only; see `datadog`)
+- Datadog: Trace search, e.g. `service:<svc> env:<env> status:error @duration:>1s` via `POST /api/v2/spans/events/search` (read-only; see `datadog`)
 
 ## Correlation checks
 
@@ -120,10 +121,10 @@ For tool-specific queries see `observability-query-cookbook`, `dynatrace-sre`, `
 ### Kubernetes
 
 ```bash
-kubectl --context <ctx> -n prod logs -l app.kubernetes.io/name=<app> --prefix --all-containers --since=15m --tail=500
-kubectl --context <ctx> -n prod describe pod <pod-name>
-kubectl --context <ctx> -n prod events --types=Warning
-kubectl --context <ctx> -n prod top pod   # needs metrics-server
+kubectl --context <ctx> -n <ns> logs -l app.kubernetes.io/name=<app> --prefix --all-containers --since=15m --tail=100 --max-log-requests=5 > /tmp/<app>.log   # summarize the file; do not dump it
+kubectl --context <ctx> -n <ns> describe pod <pod-name>
+kubectl --context <ctx> -n <ns> events --types=Warning
+kubectl --context <ctx> -n <ns> top pod   # needs metrics-server
 ```
 
 ### System
@@ -133,7 +134,7 @@ kubectl --context <ctx> -n prod top pod   # needs metrics-server
 - ss -s / ss -tan for connection stats (replaces deprecated netstat)
 - ss -tulpn for listening ports
 ```bash
-tcpdump -i <if> -c 1000 -w /tmp/cap.pcap '<narrow filter>'  # see capture_warnings
+tcpdump -i <if> -c 1000 -w /tmp/cap.pcap '<narrow filter>'  # see Capture warnings
 ```
 
 ## Capture warnings
@@ -246,7 +247,7 @@ tcpdump -i <if> -c 1000 -w /tmp/cap.pcap '<narrow filter>'  # see capture_warnin
 
 - ping/traceroute for path analysis
 - ss -s / ss -tan for connection stats (netstat is deprecated)
-- tcpdump -c 1000 with a narrow filter for packet capture (PII risk; see profiling_warnings)
+- tcpdump -c 1000 with a narrow filter for packet capture (PII risk; see Profiling warnings)
 
 #### Remedies
 

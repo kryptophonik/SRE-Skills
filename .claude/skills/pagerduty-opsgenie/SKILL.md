@@ -38,21 +38,23 @@ PD_API="${PD_API:-https://api.pagerduty.com}"
 H=(-H "Authorization: Token token=$PD_TOKEN" -H "Accept: application/vnd.pagerduty+json;version=2")
 # Who is on call now
 curl -s "${H[@]}" "$PD_API/oncalls?earliest=true&limit=100"
-# Paginated fetch helper: pd_all <path-with-query> <json-key>
+# Paginated fetch helper: pd_all <path-with-query> <json-key> [jq-projection]
+# Capped at MAX_PAGES (default 10 = 1,000 records); projects fields so raw JSON never floods context.
 pd_all() {
-  local offset=0 more=true
-  while [ "$more" = "true" ]; do
+  local offset=0 more=true pages=0 max="${MAX_PAGES:-10}" proj="${3:-.}"
+  while [ "$more" = "true" ] && [ "$pages" -lt "$max" ]; do
     page=$(curl -s "${H[@]}" "$PD_API$1&limit=100&offset=$offset")
-    echo "$page" | jq -c ".$2[]"
-    more=$(echo "$page" | jq -r '.more'); offset=$((offset+100))
+    echo "$page" | jq -c ".$2[] | $proj"
+    more=$(echo "$page" | jq -r '.more'); offset=$((offset+100)); pages=$((pages+1))
   done
+  [ "$more" = "true" ] && echo "WARN: stopped at MAX_PAGES=$max; narrow the window" >&2
 }
 # Open incidents
-pd_all "/incidents?statuses[]=triggered&statuses[]=acknowledged" incidents
+pd_all "/incidents?statuses[]=triggered&statuses[]=acknowledged" incidents '{id,status,urgency,title,service:.service.summary,created_at}' | head -50
 # Incidents in a window (handoff/toil page counts)
 pd_all "/incidents?since=<ISO8601>&until=<ISO8601>" incidents | wc -l
 # Timeline of one incident
-pd_all "/incidents/<id>/log_entries?is_overview=false" log_entries
+pd_all "/incidents/<id>/log_entries?is_overview=false" log_entries '{created_at,type,summary}' | head -100
 ```
 
 Write (approval required): add a note

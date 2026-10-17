@@ -42,7 +42,9 @@ Categorized catalog of SRE tooling with guidance on selection.
 |---|---|---|---|
 | Alertmanager | Using Prometheus/Thanos. | Native integration, handles deduplication/grouping well. | Static configuration; UI is basic. |
 | Grafana Alerting | Visual alert management across multiple data sources. | Great UI, easy to set up, supports multi-cloud. | Can be confusing with many data sources. |
-| PagerDuty / Opsgenie | Enterprise on-call management. | Robust schedules, escalation, mobile app, integrations. | Paid service. |
+| PagerDuty | Enterprise on-call management. | Robust schedules, escalation, mobile app, integrations. | Paid service. |
+
+Opsgenie: end of sale 2025-06-04, end of support (access shut off, data deleted) 2027-04-05; not for new adoption.
 
 ### SLO management
 
@@ -57,6 +59,17 @@ Categorized catalog of SRE tooling with guidance on selection.
 |---|---|---|---|
 | Chaos Mesh | Kubernetes-native chaos engineering. | Great UI, many experiment types, easy to use. | K8s only. |
 | Gremlin | Enterprise chaos engineering platform. | Safety-first, robust, cross-platform. | Expensive, proprietary. |
+| LitmusChaos | CNCF Kubernetes chaos. | Open source, ChaosHub experiments, GitOps-friendly. | K8s focused. |
+| AWS Fault Injection Service (FIS) | Chaos on AWS resources. | Managed, IAM-scoped, stop conditions on CloudWatch alarms. | AWS only; per-action cost. |
+| Azure Chaos Studio | Chaos on Azure resources. | Managed, agent and service-direct faults. | Azure only. |
+
+### Feature flags
+
+| Name | When to use | Pros | Cons |
+|---|---|---|---|
+| OpenFeature + flagd | Vendor-neutral flag API. | CNCF standard SDKs, swap providers. | flagd is basic; you run it. |
+| LaunchDarkly | Enterprise flag management. | Kill switches, targeting, audit log. | Paid. |
+| Unleash | Open-source flag server. | Self-host or cloud, strategies. | Fewer enterprise features in OSS. |
 
 ### Load testing
 
@@ -98,7 +111,7 @@ Categorized catalog of SRE tooling with guidance on selection.
 
 | Name | When to use | Pros | Cons |
 |---|---|---|---|
-| pganalyze / VividCortex | Deep Postgres/MySQL performance tuning. | Query-level visibility, execution plans, index recommendations. | Specific to database engines; usually a separate paid tool. |
+| pganalyze / SolarWinds Database Performance Monitor (formerly VividCortex) | Deep Postgres/MySQL performance tuning. | Query-level visibility, execution plans, index recommendations. | Specific to database engines; usually a separate paid tool. |
 | Percona Monitoring and Management (PMM) | Open-source database monitoring. | Comprehensive, supports multiple DB engines, free. | Another component to host and manage. |
 
 ### Finops cost management
@@ -124,4 +137,4 @@ Categorized catalog of SRE tooling with guidance on selection.
 
 ## Output
 
-- Recommended stack per domain with rationale, trade-offs, and alternatives; note catalog last_reviewed date
+- Recommended stack per domain with rationale, trade-offs, and alternatives; note the catalog "Last reviewed" date

@@ -11,7 +11,7 @@ Follow [sre-safety-gates](../sre-safety-gates/SKILL.md): read-only first; explic
 
 ## Rules
 
-- **Every command carries `--context <ctx> -n <ns>`** (or `-A` for cluster-wide reads), or use a per-incident kubeconfig. Never rely on the current context.
+- **Every command carries `--context <ctx> -n <ns>`** (or `-A` for cluster-wide reads), or use a per-incident kubeconfig (`KUBECONFIG=./kubeconfig-<cluster>`, written by the `sre-aws`/`sre-azure`/`sre-gcp` get-credentials steps). Never rely on the current context.
 - **Never read Secrets:** no `kubectl get secret -o yaml/json`, no `exec -- env`, no `describe` output pasted with secret values. Redact log captures; keep them out of repos.
 - **Bounded commands only:** no `logs -f`, always `--tail`/`--since`; `rollout status` with `--timeout`.
 - Recommended identity: a Role/ClusterRole based on `view` (which already excludes Secrets) with no `secrets` get/list and no `pods/exec`, `pods/portforward`, `pods/attach`.

@@ -30,11 +30,11 @@ Process skills: `sre-slo-alerting`, `sre-engineer`, `sre-diagnostics`. More quer
 # Instant query via HTTP API (selector required)
 curl -sG "$PROM_URL/api/v1/query" --data-urlencode 'query=up{job="<svc>"} == 0'
 # Active alerts (pending AND firing)
-curl -s "$PROM_URL/api/v1/alerts"
+curl -s "$PROM_URL/api/v1/alerts" | jq -c '.data.alerts[] | {n:.labels.alertname,s:.state,j:.labels.job}' | head -50
 # Firing only
 curl -sG "$PROM_URL/api/v1/query" --data-urlencode 'query=ALERTS{alertstate="firing"}'
-amtool alert query --alertmanager.url="$AM_URL"
-amtool silence query --alertmanager.url="$AM_URL"
+amtool alert query --alertmanager.url="$AM_URL" | head -50
+amtool silence query --alertmanager.url="$AM_URL" | head -50
 # Validate rule files before any change
 promtool check rules --lint=all rules/*.yml
 promtool test rules tests/*.yml

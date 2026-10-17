@@ -12,7 +12,7 @@ Blameless postmortem templates and facilitation guidance.
 - Blameless: Focus on process and systems, not individuals.
 - Evidence-based: Use data, logs, and timelines.
 - Action-oriented: Every postmortem must result in meaningful follow-up items.
-- Timely: Conduct the review within 48-72 hours of the incident.
+- Timely: Conduct the review within 48 hours of resolution.
 
 ## Postmortem markdown template
 
@@ -20,7 +20,7 @@ Blameless postmortem templates and facilitation guidance.
 # Postmortem: [Incident Title]
 **Date:** [YYYY-MM-DD]
 **Severity:** [e.g., SEV-1]
-**Incident Lead:** [Name]
+**Incident Commander (IC):** [Name]
 
 ## 1. Summary
 Give a 2-3 sentence overview of what happened and the impact.

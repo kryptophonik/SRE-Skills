@@ -27,15 +27,15 @@ gcloud config list --format="value(core.account,core.project)"
 ## Health and status (read-only)
 
 ```bash
-gcloud container clusters list --project=<PROJECT_ID>
+gcloud container clusters list --project=<PROJECT_ID> --limit=50
 # kubectl needs gke-gcloud-auth-plugin for GKE (https://cloud.google.com/kubernetes-engine/docs/how-to/cluster-access-for-kubectl)
-gcloud components install gke-gcloud-auth-plugin   # or your OS package (e.g. google-cloud-cli-gke-gcloud-auth-plugin); local install
-gcloud container clusters get-credentials <cluster> --region=<REGION> --project=<PROJECT_ID>   # updates local kubeconfig
-kubectl config current-context                                                              # confirm the context it set
-gcloud compute instances list --project=<PROJECT_ID> --filter="status!=RUNNING"
+# USER STEP (software install, not run by the agent): gcloud components install gke-gcloud-auth-plugin, or the OS package google-cloud-cli-gke-gcloud-auth-plugin
+KUBECONFIG=./kubeconfig-<cluster> gcloud container clusters get-credentials <cluster> --region=<REGION> --project=<PROJECT_ID>   # per-incident file; ~/.kube/config untouched
+KUBECONFIG=./kubeconfig-<cluster> kubectl config current-context                                                              # confirm the context it set
+gcloud compute instances list --project=<PROJECT_ID> --filter="status!=RUNNING" --limit=50
 gcloud run services describe <svc> --region=<REGION> --project=<PROJECT_ID> --format="yaml(status.conditions,status.traffic)"
 gcloud sql instances describe <instance> --project=<PROJECT_ID> --format="value(state)"
-gcloud compute instance-groups managed list-instances <mig> --region=<REGION> --project=<PROJECT_ID>
+gcloud compute instance-groups managed list-instances <mig> --region=<REGION> --project=<PROJECT_ID> --limit=50
 ```
 
 ## Logging and monitoring (read-only)

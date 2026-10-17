@@ -38,9 +38,9 @@ aws rds describe-db-snapshots --profile <profile> --region <region> --db-instanc
 # Azure
 az backup job list --resource-group <rg> --vault-name <vault> --subscription <subscription-id> --status Completed --start-date <dd-mm-yyyy> -o table
 # GCP
-gcloud sql backups list --instance=<instance> --project=<PROJECT_ID>
+gcloud sql backups list --instance=<instance> --project=<PROJECT_ID> --limit=20
 # Kubernetes (Velero)
-velero backup get
+velero backup get | head -30
 velero backup describe <backup> --details
 ```
 
