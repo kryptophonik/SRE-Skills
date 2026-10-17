@@ -103,6 +103,20 @@ kubectl --context <ctx> -n <ns> auth can-i --list      # what your credentials c
 | Restart after evidence capture | `kubectl --context <ctx> -n <ns> rollout restart deployment/<name>` | Loses in-memory state |
 | Raise limits / fix probes | Change manifests via Git/GitOps, not `kubectl edit` | |
 
+## Bundled scripts and references
+
+```bash
+S=${CLAUDE_SKILL_DIR}/scripts
+$S/k8s-preflight.sh --context <ctx> -n <ns>        # auth can-i matrix; exits 1 if the identity can read Secrets, exec, port-forward or write
+$S/k8s-triage-snapshot.sh --context <ctx> -n <ns>  # bounded, read-only evidence bundle; Secrets never read
+```
+
+- [references/command-cheatsheet.md](references/command-cheatsheet.md) · [references/destructive-commands.md](references/destructive-commands.md)
+- Opt-in hardening: [references/rbac-readonly.yaml](references/rbac-readonly.yaml), [references/kubernetes-mcp-server.toml](references/kubernetes-mcp-server.toml), [references/claude-settings-k8s-deny.json](references/claude-settings-k8s-deny.json). The deny list also blocks `cordon` and other fixes, so Claude cannot execute an approved fix by design; a human runs it.
+- Writes: tell the user to run `/sre-k8s-safe-remediation`.
+
+If neither the Kubernetes MCP server nor kubectl is available, output the commands for the human and stop.
+
 ## Output
 
 - Triage note: context, namespace, affected workloads, status and reason, evidence (events, log paths, redacted), likely cause, proposed fix with risk/reversibility
