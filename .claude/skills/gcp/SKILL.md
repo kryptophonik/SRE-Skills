@@ -1,15 +1,22 @@
 ---
 name: gcp
-description: "Google Cloud adapter for SRE: project sanity, Cloud Monitoring alerts, Cloud Logging queries, GKE/Compute/Cloud Run/Cloud SQL status, audit logs, quotas. Uses gcloud with Viewer roles or Google's gcloud/observability MCP servers. Use when the system runs on GCP. Writes need approval."
+description: "Google Cloud adapter for SRE: project pinning, Cloud Monitoring alert policies, Cloud Logging queries, GKE/Compute/Cloud Run/Cloud SQL status, audit logs, quotas. Uses gcloud with ADC or an impersonated viewer service account, or Google's gcloud/observability MCP servers with a read-only allowlist. Use when the system runs on GCP. Writes need approval."
 ---
 
 # Google Cloud
 
 ## Safety gates (REQUIRED)
 
-Follow [sre-safety-gates](../sre-safety-gates/SKILL.md): read-only first; explicit approval before any prod change, MCP write, or external post. `create`, `update`, `delete`, `resize`, `reset`, `deploy`, and traffic changes are writes.
+Follow [sre-safety-gates](../sre-safety-gates/SKILL.md): read-only first; explicit approval before any prod change, MCP write, or external post.
 
 Process skills: `sre-engineer`, `k8s-triage` (GKE), `dr-backup-test`, `capacity-planning`, `cloud-cost-review`, `security-incident-triage`.
+
+## Rules
+
+- **Pin the target on every command:** `--project=<PROJECT_ID>`, plus `--region=<REGION>` or `--zone=<ZONE>` where they apply.
+- **Credentials:** Application Default Credentials, or `--impersonate-service-account=<VIEWER_SA>@<PROJECT_ID>.iam.gserviceaccount.com` with viewer roles. Never create or download service account keys.
+- **Writes** (`create`, `update`, `delete`, `resize`, `reset`, `deploy`, `update-traffic`, `restore`, IAM changes) need approval. **Never pass `--quiet` on writes**; keep confirmation prompts on.
+- `--format` field paths (e.g. `status.conditions`, `quotas.metric`) come from the REST resources; verify them in your environment.
 
 ## Always first
 
@@ -17,32 +24,35 @@ Process skills: `sre-engineer`, `k8s-triage` (GKE), `dr-backup-test`, `capacity-
 gcloud config list --format="value(core.account,core.project)"
 ```
 
-## Health and status
+## Health and status (read-only)
 
 ```bash
-gcloud container clusters list
-gcloud container clusters get-credentials <cluster> --region <region>   # writes local kubeconfig only
-gcloud compute instances list --filter="status!=RUNNING"
-gcloud run services describe <svc> --region <region> --format="yaml(status.conditions,status.traffic)"
-gcloud sql instances describe <instance> --format="value(state)"
-gcloud compute instance-groups managed list-instances <mig> --region <region>
+gcloud container clusters list --project=<PROJECT_ID>
+gcloud container clusters get-credentials <cluster> --region=<REGION> --project=<PROJECT_ID>   # updates local kubeconfig
+kubectl config current-context                                                              # confirm the context it set
+gcloud compute instances list --project=<PROJECT_ID> --filter="status!=RUNNING"
+gcloud run services describe <svc> --region=<REGION> --project=<PROJECT_ID> --format="yaml(status.conditions,status.traffic)"
+gcloud sql instances describe <instance> --project=<PROJECT_ID> --format="value(state)"
+gcloud compute instance-groups managed list-instances <mig> --region=<REGION> --project=<PROJECT_ID>
 ```
 
-## Logging and monitoring
+## Logging and monitoring (read-only)
+
+`--freshness` defaults to `1d` and applies only when the filter has no timestamp.
 
 ```bash
-gcloud logging read 'severity>=ERROR AND resource.type="k8s_container" AND resource.labels.namespace_name="<ns>"' --freshness=30m --limit=50
-gcloud logging read 'resource.type="cloud_run_revision" AND httpRequest.status>=500' --freshness=1h --limit=50
-gcloud alpha monitoring policies list --format="table(displayName,enabled)"
+gcloud logging read 'severity>=ERROR AND resource.type="k8s_container" AND resource.labels.namespace_name="<ns>"' --project=<PROJECT_ID> --freshness=30m --limit=50
+gcloud logging read 'resource.type="cloud_run_revision" AND httpRequest.status>=500' --project=<PROJECT_ID> --freshness=1h --limit=50
+gcloud monitoring policies list --project=<PROJECT_ID> --format="table(displayName,enabled)" --limit=100
 ```
 
-## Common remediations (WRITE — approval required)
+## Common remediations (WRITE — approval required, no `--quiet`)
 
 | Action | Command | Risk | Reversible |
 |---|---|---|---|
-| Shift Cloud Run traffic to previous revision | `gcloud run services update-traffic <svc> --region <region> --to-revisions <prev-rev>=100` | low | yes |
-| Resize MIG | `gcloud compute instance-groups managed resize <mig> --size <n> --region <region>` | low | yes |
-| Resize GKE node pool | `gcloud container clusters resize <cluster> --node-pool <pool> --num-nodes <n> --region <region>` | med | yes |
+| Shift Cloud Run traffic to previous revision | `gcloud run services update-traffic <svc> --region=<REGION> --project=<PROJECT_ID> --to-revisions=<prev-rev>=100` | low | yes |
+| Resize MIG | `gcloud compute instance-groups managed resize <mig> --size=<n> --region=<REGION> --project=<PROJECT_ID>` | low | yes |
+| Resize GKE node pool | `gcloud container clusters resize <cluster> --node-pool=<pool> --num-nodes=<n> --region=<REGION> --project=<PROJECT_ID>` | med | yes |
 
 ## Output
 

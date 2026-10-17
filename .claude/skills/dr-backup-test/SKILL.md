@@ -38,7 +38,7 @@ aws rds describe-db-snapshots --db-instance-identifier <db>
 # Azure
 az backup job list --resource-group <rg> --vault-name <vault> --subscription <subscription-id> --status Completed --start-date <dd-mm-yyyy> -o table
 # GCP
-gcloud sql backups list --instance=<instance>
+gcloud sql backups list --instance=<instance> --project=<PROJECT_ID>
 # Kubernetes (Velero)
 velero backup get
 velero backup describe <backup> --details
@@ -50,6 +50,8 @@ velero backup describe <backup> --details
 aws rds restore-db-instance-from-db-snapshot --db-instance-identifier <new-db> --db-snapshot-identifier <snap>
 aws rds restore-db-instance-to-point-in-time --source-db-instance-identifier <db> --target-db-instance-identifier <new-db> --restore-time <ISO8601>
 velero restore create --from-backup <backup> --namespace-mappings <ns>:<ns>-drtest
+# GCP Cloud SQL: restore to a NEW isolated instance, never the source instance (restoring onto an existing instance replaces its data)
+gcloud sql backups restore <BACKUP_ID> --restore-instance=<NEW_ISOLATED_INSTANCE> --backup-instance=<SOURCE_INSTANCE> --project=<PROJECT_ID>
 # Azure VM: restore disks to a NEW resource group / storage account, never the original location
 az backup restore restore-disks --resource-group <vault-rg> --vault-name <vault> --container-name <container> --item-name <vm> --rp-name <recovery-point> --storage-account <new-staging-sa> --target-resource-group <new-drtest-rg> --subscription <subscription-id>
 # Azure SQL / SAP HANA workloads in VMs: restore as a new database to an alternate target

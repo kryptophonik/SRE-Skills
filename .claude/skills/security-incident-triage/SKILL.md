@@ -36,7 +36,7 @@ aws cloudtrail lookup-events --lookup-attributes AttributeKey=AccessKeyId,Attrib
 # Azure: activity log for a resource group, last 24h
 az monitor activity-log list --resource-group <rg> --subscription <subscription-id> --offset 24h -o table
 # GCP: admin activity audit log
-gcloud logging read 'logName:"cloudaudit.googleapis.com%2Factivity"' --freshness=1d --limit=50
+gcloud logging read 'logName:"cloudaudit.googleapis.com%2Factivity"' --project=<PROJECT_ID> --freshness=1d --limit=50
 # Kubernetes: who can do what
 kubectl --context <ctx> -n <ns> auth can-i --list --as=<user>
 ```

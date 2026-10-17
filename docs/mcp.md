@@ -15,7 +15,7 @@ Add a server with `claude mcp add` or a project `.mcp.json`. Keep tokens in envi
 | Terraform | HashiCorp Terraform MCP server | https://github.com/hashicorp/terraform-mcp-server | Registry lookups are read-only. Leave HCP Terraform token unset, or use a read-only team token; run/workspace actions are writes. (awslabs and Azure Terraform MCP servers are deprecated.) |
 | AWS | AWS API MCP server (awslabs) | https://github.com/awslabs/mcp (`src/aws-api-mcp-server`) | `READ_OPERATIONS_ONLY=true`; optionally `REQUIRE_MUTATION_CONSENT=true`. IAM `ReadOnlyAccess`-style role is the real control. |
 | Azure | Azure MCP Server (`@azure/mcp`) | https://github.com/microsoft/mcp (`servers/Azure.Mcp.Server`) | Pin the version (`@azure/mcp@3.0.0`; new majors add write tools), start with `server start --read-only`, and limit tools with repeatable `--namespace` (e.g. `monitor`, `aks`, resource health — check names with `npx -y @azure/mcp@3.0.0 tools list`). Optionally `AZURE_MCP_COLLECT_TELEMETRY=false`. Roles: Reader, Log Analytics Reader, Cost Management Reader, AKS Cluster User Role (cluster scope); never Contributor/Owner. `--read-only` is defense in depth, not a guarantee. |
-| Google Cloud | gcloud MCP and observability MCP (local); Google remote MCP servers | https://github.com/googleapis/gcloud-mcp · https://github.com/google/mcp · https://docs.cloud.google.com/mcp | Use an account/service account with Viewer roles (`roles/viewer`, `roles/logging.viewer`, `roles/monitoring.viewer`). |
+| Google Cloud | gcloud MCP, observability MCP (local); Google remote MCP servers | https://github.com/googleapis/gcloud-mcp · https://github.com/google/mcp · https://docs.cloud.google.com/mcp | `run_gcloud_command` runs **any** gcloud command the caller is allowed to (minus a fixed default denylist): pass `-c /abs/config.json` with a read-only **allowlist** (example below). The **storage** and **backupdr** servers include delete/restore tools — disable or gate them; the observability server is list/get only. Remote servers use IAM (`roles/mcp.toolUser`). Credentials: ADC or `--impersonate-service-account` to a viewer SA; never create/download keys. Roles: `roles/logging.viewer`, `roles/monitoring.viewer`, `roles/recommender.computeViewer`, plus one viewer role per service used (e.g. `roles/container.viewer`, `roles/run.viewer`, `roles/cloudsql.viewer`, `roles/compute.viewer`). Add `roles/logging.privateLogViewer` only when Data Access logs are needed. |
 | GitHub | GitHub MCP server | https://github.com/github/github-mcp-server | Use `--read-only` and a fine-grained read-only token; link deploys/PRs to incidents. |
 
 ## Dynatrace setup details
@@ -73,6 +73,33 @@ Claude Code deny rules (in `.claude/settings.json` `permissions.deny`; verify ex
       "mcp__kubernetes__helm_uninstall"
     ]
   }
+}
+```
+
+## Google Cloud setup details
+
+gcloud MCP read-only allowlist (`config.json`, passed with `-c`; use `allow` or `deny`, not both; the default denylist always applies):
+
+```json
+{
+  "allow": [
+    "config list",
+    "projects describe",
+    "logging read",
+    "monitoring policies list",
+    "container clusters list",
+    "container clusters describe",
+    "compute instances list",
+    "compute instance-groups managed list-instances",
+    "compute regions describe",
+    "compute disks list",
+    "run services list",
+    "run services describe",
+    "sql instances list",
+    "sql instances describe",
+    "sql backups list",
+    "recommender recommendations list"
+  ]
 }
 ```
 

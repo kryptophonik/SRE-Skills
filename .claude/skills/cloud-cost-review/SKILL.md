@@ -34,8 +34,8 @@ aws ec2 describe-addresses --query 'Addresses[?AssociationId==null]'
 az costmanagement query --type ActualCost --timeframe Custom --time-period from=<YYYY-MM-DD> to=<YYYY-MM-DD> --scope /subscriptions/<subscription-id>
 az disk list --subscription <subscription-id> --query "[?diskState=='Unattached']" -o table
 # GCP
-gcloud compute disks list --filter="-users:*"
-gcloud recommender recommendations list --project=<project> --location=<zone> --recommender=google.compute.instance.MachineTypeRecommender
+gcloud compute disks list --project=<PROJECT_ID> --filter="-users:*"   # unattached disks
+gcloud recommender recommendations list --project=<PROJECT_ID> --location=<ZONE> --recommender=google.compute.instance.MachineTypeRecommender
 # Kubernetes requests vs usage
 kubectl --context <ctx> top pods -A --sort-by=cpu
 ```

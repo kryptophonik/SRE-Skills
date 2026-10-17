@@ -32,7 +32,7 @@ kubectl --context <ctx> top nodes
 kubectl --context <ctx> get hpa -A
 aws service-quotas list-service-quotas --service-code ec2
 az vm list-usage --location <region> --subscription <subscription-id> -o table
-gcloud compute regions describe <region> --format="table(quotas.metric,quotas.limit,quotas.usage)"
+gcloud compute regions describe <REGION> --project=<PROJECT_ID> --format="table(quotas.metric,quotas.limit,quotas.usage)"   # field paths: verify in your environment
 ```
 
 ## Output
