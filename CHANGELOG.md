@@ -56,3 +56,6 @@ Pre-release 3.0 names without the prefix map one-to-one by adding `sre-` (for ex
 
 ### Removed
 - The 2.x per-skill safety sections, replaced by the shared gates. No `.mcp.json` is shipped.
+
+### Fixed
+- PagerDuty schedule audit computes its UTC +14 day window with python3 (`date -d` is GNU-only and fails on macOS bash 3.2). Opsgenie export still creates `--out` mode 700; the test reads that mode without GNU `stat -c`.

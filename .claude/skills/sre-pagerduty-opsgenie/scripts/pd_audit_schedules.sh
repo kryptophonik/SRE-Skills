@@ -6,7 +6,14 @@
 # Env: PD_API_KEY, PD_REGION=us|eu
 # Ref: https://developer.pagerduty.com/api-reference/ (Get schedule, List escalation policies, List users)
 . "$(dirname "$0")/lib.sh"
-since=$(date -u +%Y-%m-%dT%H:%M:%SZ); until=$(date -u -d '+14 days' +%Y-%m-%dT%H:%M:%SZ)
+need python3
+# UTC now and +14d. python3, not GNU `date -d` (macOS date rejects -d).
+utc_plus_days() {
+  python3 -c 'import datetime, sys
+d = datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(days=int(sys.argv[1]))
+print(d.strftime("%Y-%m-%dT%H:%M:%SZ"))' "$1"
+}
+since=$(utc_plus_days 0); until=$(utc_plus_days 14)
 while [ $# -gt 0 ]; do case "$1" in
   --since) since=$2; shift 2;; --until) until=$2; shift 2;;
   -h|--help) sed -n 2,7p "$0"; exit 0;;
