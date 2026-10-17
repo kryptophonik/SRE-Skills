@@ -122,6 +122,14 @@ Deploy through Git, not by hand; never `/-/reload` from this skill.
 - **Grafana API keys** were replaced by service account tokens; `GRAFANA_API_KEY` is deprecated in mcp-grafana.
 - **Legacy Grafana alerting** was removed in Grafana v11 (use Grafana Alerting).
 
-## Output
+## Bundled scripts and references
+
+- Generate SLO burn-rate rules: `python3 ${CLAUDE_SKILL_DIR}/scripts/gen-burn-rate-rules.py --help` (or `/sre-slo-burn-rate-rules`). Self-test: `PROMTOOL=<path> ${CLAUDE_SKILL_DIR}/scripts/test-gen-burn-rate-rules.sh`.
+- Syntax-check every PromQL code block in Markdown: `${CLAUDE_SKILL_DIR}/scripts/validate-promql-snippets.py --promtool <path> <files>`.
+- Tested example + unit test: [references/slo-burn-rate.rules.yml](references/slo-burn-rate.rules.yml), [references/slo-burn-rate.test.yml](references/slo-burn-rate.test.yml)
+- [references/promql-cheatsheet.md](references/promql-cheatsheet.md) · [references/logql-cheatsheet.md](references/logql-cheatsheet.md) · [references/safe-operations.md](references/safe-operations.md)
+
+If neither the Grafana MCP server nor the CLIs are available, output the queries for the human and stop.
+
 
 - Queries/rules used (with selector and range), lint/test results, and any proposed rule or silence change with risk and approval status

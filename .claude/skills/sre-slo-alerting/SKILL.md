@@ -116,7 +116,7 @@ Alert only when both the long and the short window exceed `N * (1 - <slo>)`. The
 
 - Build the 1d and 3d windows from recording rules, not raw queries.
 - `for:` is only a noise filter; `for: 0m` is valid because the short window already de-noises.
-- Full Prometheus rule file (promtool-validated): `sre-prometheus-grafana`.
+- Full Prometheus rule file (promtool-validated): `sre-prometheus-grafana`; generate your own with `/sre-slo-burn-rate-rules`.
 
 ## Alert definition template
 
