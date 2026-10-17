@@ -9,7 +9,7 @@ Profiling tools, bottleneck identification techniques, and tuning guidance for o
 
 ## Profiling tools
 
-### Cpu
+### CPU
 
 - pprof: Go CPU profiling
 - perf: Linux kernel profiling
@@ -33,7 +33,7 @@ Profiling tools, bottleneck identification techniques, and tuning guidance for o
 
 ## Bottleneck identification
 
-### Cpu bottleneck
+### CPU bottleneck
 
 #### Symptoms
 
