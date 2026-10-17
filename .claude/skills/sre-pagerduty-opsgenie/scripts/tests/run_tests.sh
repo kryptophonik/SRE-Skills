@@ -28,7 +28,13 @@ t "audit: no false gap on OK schedule" bash -c "! jq -e '.findings[]|select(.sch
 n=$("$s/og_alerts.sh" --json 2>/dev/null | grep -c .); t "og_alerts follows paging.next (130)" [ "$n" = 130 ]
 o=$("$s/og_oncall.sh"); t "og_oncall shows recipient" grep -q 'test@example.invalid' <<<"$o"
 t "og_oncall flags empty schedule" grep -q 'NOBODY' <<<"$o"
-t "og_export writes files" bash -c "'$s/og_export.sh' --out '$tmp/exp' 2>/dev/null && [ -f '$tmp/exp/users/OU1.contacts.json' ] && [ \"\$(stat -c %a '$tmp/exp')\" = 700 ]"
+# Mode 700, octal, no leading zero. GNU `stat -c` is not on macOS.
+og_export_ok() {
+  "$s/og_export.sh" --out "$tmp/exp" >/dev/null 2>&1 &&
+    [ -f "$tmp/exp/users/OU1.contacts.json" ] &&
+    [ "$(python3 -c 'import os,sys; print(format(os.stat(sys.argv[1]).st_mode & 0o777, "o"))' "$tmp/exp")" = 700 ]
+}
+t "og_export writes files" og_export_ok
 # safety
 t "lib refuses POST" bash -c ". '$s/lib.sh'; ! (api_get POST pd http://127.0.0.1:$port/incidents) 2>/dev/null"
 t "lib refuses non-https base" bash -c "PD_BASE_URL=http://evil.example '$s/pd_oncall.sh' 2>&1 | grep -q refusing"
