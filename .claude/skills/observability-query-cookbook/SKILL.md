@@ -50,9 +50,9 @@ timeseries p95_us = percentile(dt.service.request.response_time, 95), rollup: av
 
 ```promql
 # CPU used by container vs. limit (container!="" drops pod-level cgroup series that double-count; pods without limits drop out)
-sum by (pod) (rate(container_cpu_usage_seconds_total{namespace="<ns>",container!="",container!="POD"}[5m]))
+sum by (namespace, pod) (rate(container_cpu_usage_seconds_total{namespace="<ns>",container!="",container!="POD"}[5m]))
 /
-sum by (pod) (kube_pod_container_resource_limits{namespace="<ns>",resource="cpu"})
+sum by (namespace, pod) (kube_pod_container_resource_limits{namespace="<ns>",resource="cpu",container!="",container!="POD"})
 ```
 
 ```text
@@ -95,7 +95,8 @@ Page when burn > 14.4 over 1h AND > 14.4 over 5m (see `sre-slo-alerting`).
 ## Logs
 
 ```logql
-sum by (level) (count_over_time({app="<svc>"} |= "error" [5m]))
+sum by (level) (count_over_time({app="<svc>"} |~ "(?i)error" | logfmt [5m]))
+# Loki 3.x: use detected_level if the stream has no level label
 ```
 
 ```dql

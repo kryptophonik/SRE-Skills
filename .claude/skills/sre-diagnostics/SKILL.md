@@ -42,7 +42,7 @@ For tool-specific queries see `observability-query-cookbook`, `dynatrace-sre`, `
 - Loki:
 
   ```bash
-  logcli query '{service="api"} |= "error"'
+  LOKI_ADDR=<loki-url> logcli query --since=1h --limit=100 '{app="<svc>"} |~ "(?i)error"'
   ```
 - Elasticsearch: Kibana Discover
 - Cloud: CloudWatch Logs Insights, Log Analytics
@@ -54,17 +54,18 @@ For tool-specific queries see `observability-query-cookbook`, `dynatrace-sre`, `
 - Error ratio:
 
   ```promql
-  sum(rate(http_requests_total{status=~"5.."}[5m])) / sum(rate(http_requests_total[5m]))
+  sum by (job) (rate(http_requests_total{job="<svc>",<status_label>=~"5.."}[5m]))
+  / sum by (job) (rate(http_requests_total{job="<svc>"}[5m]))
   ```
 - Latency p95:
 
   ```promql
-  histogram_quantile(0.95, sum by (le) (rate(http_request_duration_seconds_bucket[5m])))
+  histogram_quantile(0.95, sum by (job, le) (rate(http_request_duration_seconds_bucket{job="<svc>"}[5m])))
   ```
-- Saturation:
+- Saturation (memory used ratio):
 
   ```promql
-  node_memory_MemAvailable_bytes
+  1 - node_memory_MemAvailable_bytes{instance="<host:port>"} / node_memory_MemTotal_bytes{instance="<host:port>"}
   ```
 
 ### Datadog

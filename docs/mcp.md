@@ -8,7 +8,7 @@ Add a server with `claude mcp add` or a project `.mcp.json`. Keep tokens in envi
 |---|---|---|---|
 | Dynatrace | **Recommended:** Dynatrace for AI skills + `dtctl` locally, or the Dynatrace Remote MCP Server. Local `@dynatrace-oss/dynatrace-mcp-server` is **DEPRECATED** (final release 2.1.2). | https://github.com/Dynatrace/dynatrace-for-ai · https://docs.dynatrace.com/docs/dynatrace-intelligence/dynatrace-mcp · deprecated: https://github.com/dynatrace-oss/dynatrace-mcp | Grant only the read scopes listed below. `send_slack_message`, `send_email`, `send_event`, `create_dynatrace_notebook` need approval; writing documents needs `document:documents:write`, which stays omitted in read-only config. |
 | Kubernetes | kubernetes-mcp-server | https://github.com/containers/kubernetes-mcp-server | Current releases dropped runtime CLI flags such as `--read-only`: set `read_only = true` in a TOML file passed with `--config`, deny Secrets with `[[denied_resources]]`, and **pin the version**. Bind a `view`-based Role/ClusterRole (no `secrets`, `pods/exec`, `pods/portforward`, `pods/attach`). Add Claude Code deny rules for write tools (below). |
-| Grafana / Prometheus / Loki | mcp-grafana | https://github.com/grafana/mcp-grafana | `--disable-write`; service account with Viewer role. Add `--enable-query` only if datasource credentials are read-only. |
+| Grafana / Prometheus / Loki | mcp-grafana | https://github.com/grafana/mcp-grafana | Pin `mcp-grafana==<version>`; `--disable-write --disable-admin` (optionally `--disable-query`); service account with Viewer or custom read role and a token expiry. Keep `--enable-query` off: raw SQL datasource queries can write. |
 | Datadog | Datadog MCP server (remote) — endpoint `https://mcp.<site>/api/unstable/mcp-server/mcp`; also Claude Code plugin `datadog@claude-plugins-official`. GovCloud unsupported. | https://docs.datadoghq.com/bits_ai/mcp_server/setup/ | **Writes are on by default** (Standard role has `mcp_write`). Enforce read-only: custom role with only `mcp_read`, org-level MCP Write Access off, or `?omit_tools=` for write tools (e.g. `create_datadog_monitor`, `create/edit_datadog_notebook`; verify names in your tool list). Default toolset `core`; narrow with `?toolsets=`, avoid `all`. Auth: OAuth > PAT/SAT bearer > API+app keys (app-key scopes `metrics_read`, `monitors_read`, `logs_read_data`, `apm_read`). Never echo keys; use env substitution. |
 | PagerDuty | PagerDuty hosted MCP (`https://mcp.pagerduty.com/mcp`; EU `https://mcp.eu.pagerduty.com/mcp`) | https://support.pagerduty.com/main/docs/pagerduty-mcp-server · archived local (deprecated): https://github.com/PagerDuty/pagerduty-mcp-server | The hosted server **exposes write tools** (`manage_incidents`, `manage_schedules`, `manage_status_pages`, `manage_teams`) and **cannot filter them**: use a scoped OAuth client or a read-only user, and add Claude Code deny rules for `mcp__pagerduty__manage_*`. Auth: OAuth (no Dynamic Client Registration — fixed `clientId` + `callbackPort`) or header `Authorization: Token token=...`. Archived local server (`uvx pagerduty-mcp`, `PAGERDUTY_USER_API_KEY`) is read-only unless `--enable-write-tools`. |
 | Opsgenie | No official MCP server found (unverified) | — | Use the REST API with a read-only API key (`pagerduty-opsgenie` skill). End of sale June 4, 2025; unmigrated data deleted April 5, 2027. |
@@ -127,8 +127,8 @@ Genuine config example. Replace placeholders; keep secrets in env vars.
   "mcpServers": {
     "kubernetes": { "command": "npx", "args": ["-y", "kubernetes-mcp-server@<pinned-version>", "--config", "/path/to/k8s-mcp.toml"] },
     "grafana": {
-      "command": "uvx", "args": ["mcp-grafana", "--disable-write"],
-      "env": { "GRAFANA_URL": "https://grafana.example.com", "GRAFANA_SERVICE_ACCOUNT_TOKEN": "${GRAFANA_SA_TOKEN}" }
+      "command": "uvx", "args": ["mcp-grafana==<version>", "--disable-write", "--disable-admin"],
+      "env": { "GRAFANA_URL": "https://grafana.example.com", "GRAFANA_SERVICE_ACCOUNT_TOKEN_FILE": "/path/to/grafana-sa-token" }
     },
     "dynatrace": {
       "command": "npx", "args": ["-y", "@dynatrace-oss/dynatrace-mcp-server@latest"],
@@ -145,6 +145,13 @@ Genuine config example. Replace placeholders; keep secrets in env vars.
   }
 }
 ```
+
+Grafana notes:
+- Pin the version (`mcp-grafana==<version>`); add `--disable-query` if the agent must not query datasources at all.
+- Prefer `GRAFANA_SERVICE_ACCOUNT_TOKEN_FILE` over an inline `GRAFANA_SERVICE_ACCOUNT_TOKEN`. `GRAFANA_API_KEY` is deprecated (API keys were replaced by service account tokens).
+- Role: Viewer or a custom read-only role, never Editor. Set an expiry on the token.
+- Keep `--enable-query` (raw SQL) off by default: SQL datasources can execute writes.
+
 
 The `dynatrace` and `aws-api` entries use deprecated servers (prefer the official AWS MCP Server for AWS); prefer Dynatrace for AI + `dtctl` or the Remote MCP Server. Check each server's README for current auth options (OAuth vs. tokens) and env var names before use; they change often.
 

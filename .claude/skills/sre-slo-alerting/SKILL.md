@@ -61,8 +61,8 @@ State the purpose of this SLO (e.g., "Ensure checkout is available and fast for 
   - Page: [e.g., 2% budget burn in 1h]
   - Ticket: [e.g., 10% budget burn in 24h]
 - **Action Policy:**
-  - If budget > 0%: Feature development continues.
-  - If budget < 25%: Heightened review of all changes.
+  - If budget >= 25%: Feature development continues.
+  - If budget is between 0% and 25%: Heightened review of all changes.
   - If budget <= 0%: Freeze feature releases, focus on reliability.
 
 ## 5. Exclusions
@@ -94,38 +94,36 @@ State the purpose of this SLO (e.g., "Ensure checkout is available and fast for 
 - **Pager:** Requires immediate human intervention (user impact occurring now).
 - **Ticket:** Needs attention within business hours (potential future impact).
 
-## Burn rate strategies
+## Burn rate strategies (multiwindow, multi-burn-rate)
 
-### Fast burn (critical)
+Alert only when both the long and the short window exceed `N * (1 - <slo>)`. The short window confirms the burn is still happening.
 
-- **Window:** 1 hour (with 5m short window)
-- **Burn Rate:** 14.4 (burns 2% of budget in 1h)
-- **Action:** Page immediate
+| Tier | Burn rate | Long / short window | Budget used (30d) | Action |
+|---|---|---|---|---|
+| Fast | 14.4x | 1h / 5m | 2% in 1h | Page |
+| Medium | 6x | 6h / 30m | 5% in 6h | Page |
+| Slow | 3x | 1d / 2h | 10% in 1d | Ticket |
+| Very slow | 1x | 3d / 6h | 10% in 3d | Ticket |
 
-### Slow burn (critical/warning)
-
-- **Window:** 6 hours (with 30m short window)
-- **Burn Rate:** 6 (burns 5% of a 30-day budget in 6h)
-- **Action:** Page or high-priority ticket
-
-### Very slow burn (warning)
-
-- **Window:** 3 days (with 6h short window)
-- **Burn Rate:** 1.0 (burns 10% of budget in 3 days; 100% over 30 days)
-- **Action:** Ticket / Slack notification
+- Build the 1d and 3d windows from recording rules, not raw queries.
+- `for:` is only a noise filter; `for: 0m` is valid because the short window already de-noises.
+- Full Prometheus rule file (promtool-validated): `prometheus-grafana`.
 
 ## Alert definition template
 
 ```markdown
-# Alert: [Alert Name]
+# Alert: [Service] error budget burn
 
 ## 1. Description
-What is happening and what is the impact?
+SLO [<slo>, e.g. 99.9%] over [30d] is burning budget. Impact: [user-facing symptom].
 
-## 2. Trigger Conditions
-- **Query:** [e.g., sum(rate(errors_total[5m])) / sum(rate(requests_total[5m])) > 0.01]
-- **Duration:** [e.g., 2 minutes]
-- **Severity:** [e.g., Critical/Page]
+## 2. Trigger Conditions (all four tiers; threshold = N * (1 - <slo>))
+- **Page:** (ratio_1h > 14.4*(1-<slo>) AND ratio_5m > 14.4*(1-<slo>))
+        OR (ratio_6h > 6*(1-<slo>) AND ratio_30m > 6*(1-<slo>))
+- **Ticket:** (ratio_1d > 3*(1-<slo>) AND ratio_2h > 3*(1-<slo>))
+        OR (ratio_3d > 1*(1-<slo>) AND ratio_6h > 1*(1-<slo>))
+- **Ratios:** recording rules `job:slo_errors_per_request:ratio_rate<window>` with `job="<svc>"`
+- **for:** 0m (or a short noise filter only)
 
 ## 3. Runbook Link
 [Link to sre-runbook-templates output]
@@ -141,7 +139,7 @@ What is happening and what is the impact?
 - Inhibit: Silence dependent alerts when the root cause is already alerting.
 - Group: Batch similar alerts together (e.g., by service or region).
 - Deduplicate: Ensure multiple paths to the same alert are merged.
-- Tune: Use histograms and p99 instead of averages to avoid noise from outliers.
+- Tune: For latency, use histogram percentiles (p95/p99) rather than averages.
 
 ## Output
 
