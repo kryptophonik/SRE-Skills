@@ -1,23 +1,13 @@
 ---
 name: sre-incident-communication
-description: "Drafts incident announcements, status updates, resolution notices, and executive summaries with severity-based cadence. Drafts only; never posts without explicit approval. Use when an incident update or stakeholder message is needed."
+description: "Drafts incident announcements, status updates, resolution notices and executive summaries with severity-based cadence. Drafts only; posting to Slack, status pages, PagerDuty/Opsgenie or email requires explicit approval. Use when an incident update or stakeholder message is needed."
 ---
 
 # SRE Incident Communication Templates
 
-## Safety gates (REQUIRED — read before anything else)
-
-These gates apply to every step in this skill. Never skip or reorder them.
-
-1. **Diagnose read-only first.** Use only read commands (`get`, `describe`, `logs`, `history`, dashboards, queries). Change nothing.
-2. **Propose with risk and reversibility.** For each proposed action, state: exact command/change, target (env, cluster, namespace, service), risk (low/med/high), reversible (yes/no), expected effect, and rollback plan.
-3. **Wait for explicit human approval.** Do NOT run any prod-changing command or send/post any external message until a human explicitly approves that specific action. Silence, "looks fine", or approval of a different action is not approval.
-4. **Act.** Run exactly what was approved — nothing more. Prefer dry-run/diff output first.
-5. **Verify.** Confirm error rate, latency, and saturation returned to baseline / within SLO; watch 5-15 min.
-6. **Stop and escalate if worse.** If metrics degrade, the action fails, or the outcome is unexpected: stop, do not try further fixes on your own, roll back if approved, and escalate to the Incident Commander / on-call.
+## Safety gates (REQUIRED)
+Follow [sre-safety-gates](../sre-safety-gates/SKILL.md) for every step. In short: read-only diagnosis -> propose with risk/reversibility -> **explicit human approval** before any prod change, MCP write, or external post -> act -> verify -> stop and escalate if worse.
 **Draft-only rule:** This skill produces drafts. Never post to Slack, status pages, email, or any external channel until a human explicitly approves the exact text and destination. Present each draft with: channel, audience, and text.
-
-Drafts standardized internal and external incident communications (announcements, status updates, resolution, executive summaries). Use when an incident update or stakeholder message is needed. Drafts only.
 
 ## Communication channels
 

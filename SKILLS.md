@@ -1,42 +1,60 @@
 # SRE Skill Pack — Index and Routing (single source of truth)
 
-This file replaces the old `manifest.md` and `router.md`. Each skill lives at
-`.claude/skills/<name>/SKILL.md`; its frontmatter `description` is what Claude Code
-actually uses to pick a skill. **The routing table below is guidance for humans and
-for keeping descriptions consistent — it is not executed.** When you change a
-skill's scope, update its `description` and this table together.
+Each skill lives at `.claude/skills/<name>/SKILL.md`. Claude Code picks skills from each frontmatter `description`. **This table is guidance for humans and for keeping descriptions consistent — it is not executed.** Change a skill's scope and this table together.
 
-Version: `2.0.0`
+Version: `3.0.0`
 
-## Skills, dependencies, and routing
+## Shared rules
 
-Rules are listed most-specific first; the first matching row wins.
+- [sre-safety-gates](.claude/skills/sre-safety-gates/SKILL.md) applies to every skill: read-only first -> propose with risk/reversibility -> explicit approval before prod changes, MCP writes, or external posts -> act -> verify -> stop and escalate if worse.
+- State assumptions; mark unknowns `[TBD]`. Tie advice to SLIs/SLOs. Every skill ends with its `Output` deliverable.
+- MCP servers and read-only setup: [docs/mcp.md](docs/mcp.md).
 
-| # | Intent / example phrases | Skill | Uses |
-|---|---|---|---|
-| 1 | "incident update", "status update", "stakeholder comms", "executive summary" | `sre-incident-communication` | — |
-| 2 | "postmortem", "incident review", "RCA", "retrospective" | `sre-postmortem-templates` | — |
-| 3 | "production readiness", "PRR", "launch checklist", "go live" | `sre-production-readiness` | — |
-| 4 | "define SLO", "error budget", "availability/latency target" | `sre-slo-templates` | — |
-| 5 | "write/update runbook", "runbook for <alert>" | `sre-runbook-templates` | — |
-| 6 | "design/review alerts", "alert fatigue", "burn-rate alert", "paging policy" | `sre-alerting-templates` | — |
-| 7 | "chaos experiment", "fault injection", "game day" | `sre-chaos-engineering` | `sre-tools-catalog` |
-| 8 | "debug/diagnose/investigate incident", "high 5xx/latency", "outage", "roll back deployment", "walk me through runbook" | `sre-engineer` | `sre-debugging-tools`, `sre-performance-tools`, `sre-remediation-actions`, `sre-runbook-templates`, `sre-incident-communication`, `sre-postmortem-templates`, `sre-chaos-engineering` |
-| 9 | "which observability/monitoring tools", "compare Prometheus vs …" | `sre-tools-catalog` | — |
-| 10 | "design observability", "reliability review", "SRE strategy" | `sre-architect` | `sre-tools-catalog`, `sre-slo-templates`, `sre-alerting-templates`, `sre-runbook-templates`, `sre-postmortem-templates`, `sre-chaos-engineering`, `sre-production-readiness`, `sre-engineer` |
-| — | No clear match | Ask a clarifying question; default to `sre-architect` for design, `sre-engineer` for live problems | |
+## Routing (most specific first)
 
-Reference skills (`sre-debugging-tools`, `sre-performance-tools`, `sre-remediation-actions`)
-are normally loaded by `sre-engineer` rather than triggered directly.
+| Intent | Skill | Invocation |
+|---|---|---|
+| Incident declared/suspected, roles, severity, IC handoff | `incident-command` | auto |
+| Suspected compromise, leaked key, suspicious access | `security-incident-triage` | auto |
+| Debug a live issue, high 5xx/latency, remediate, run a runbook | `sre-engineer` | auto |
+| Kubernetes workload unhealthy | `k8s-triage` | auto |
+| Investigation and profiling detail | `sre-diagnostics` | auto |
+| Incident update / status page / exec summary drafts | `sre-incident-communication` | auto |
+| Postmortem / RCA | `sre-postmortem-templates` | auto |
+| Shift change summary | `oncall-handoff` | auto |
+| Deploy, migration, infra change safety | `change-safety` | auto |
+| SLOs, error budgets, alert rules, alert fatigue | `sre-slo-alerting` | auto |
+| Write/update a runbook | `sre-runbook-templates` | auto |
+| Production readiness / launch | `sre-production-readiness` | auto |
+| Capacity, headroom, load tests | `capacity-planning` | auto |
+| Backup restore / DR drill | `dr-backup-test` | auto |
+| Dependencies, blast radius | `dependency-mapping` | auto |
+| Toil review | `toil-review` | auto |
+| Cloud or observability cost | `cloud-cost-review` | auto |
+| A correct query in any monitoring tool | `observability-query-cookbook` | auto |
+| Chaos experiment / game day | `sre-chaos-engineering` | **manual only** (`/sre-chaos-engineering`) |
+| Design, reliability review, on-call program | `sre-architect` | auto |
 
-Deliberately **not** used as triggers (too broad): bare "fix", "scale", "restart",
-"tools", "logs", "metrics", "experiment", "performance", "incident".
+### Tool adapters (load with the process skill)
 
-## Global rules (all skills)
+| Tool | Skill |
+|---|---|
+| Dynatrace | `dynatrace-sre` |
+| Prometheus, Alertmanager, Loki, Grafana | `prometheus-grafana` |
+| Datadog | `datadog` |
+| PagerDuty, Opsgenie | `pagerduty-opsgenie` |
+| Terraform | `terraform` |
+| AWS / Azure / GCP | `aws` / `azure` / `gcp` |
+| Kubernetes | `k8s-triage` |
 
-- **Safety gates:** read-only diagnosis -> propose with risk/reversibility -> explicit human
-  approval before any prod-changing command or external post -> act -> verify -> stop and escalate if worse.
-- State assumptions when context is missing; mark unknowns `[TBD]`.
-- Tie recommendations to SLIs/SLOs; include validation (synthetic, chaos, load).
-- Avoid vendor bias; optimize for on-call humans; blameless postmortems.
-- Every skill ends with the deliverable defined in its `output` section.
+### Reference skills (Claude-only, `user-invocable: false`)
+
+`sre-safety-gates`, `sre-remediation-actions`, `sre-tools-catalog`.
+
+Not used as triggers (too broad): bare "fix", "scale", "restart", "tools", "logs", "metrics", "experiment", "performance".
+
+## Changes from 2.x
+
+- Merged `sre-debugging-tools` + `sre-performance-tools` -> `sre-diagnostics`; `sre-slo-templates` + `sre-alerting-templates` -> `sre-slo-alerting`.
+- Safety gates moved to one shared skill.
+- Added 11 generic skills and 8 tool adapters.

@@ -1,23 +1,14 @@
 ---
 name: sre-remediation-actions
-description: "Gated recovery procedures (rollback, scale, restart, failover) labeled with risk and reversibility, with evidence capture and dry-run first. Use when choosing or executing an incident remediation; every prod change needs explicit human approval."
+description: "Reference of gated recovery procedures (rollback, scale, restart, failover) labeled with risk and reversibility, with evidence capture and dry-run first. Loaded by sre-engineer when choosing or executing a remediation via kubectl, systemctl, terraform or cloud CLIs; every prod change needs explicit human approval."
+user-invocable: false
 ---
 
 # SRE Remediation Actions
 
-## Safety gates (REQUIRED — read before anything else)
-
-These gates apply to every step in this skill. Never skip or reorder them.
-
-1. **Diagnose read-only first.** Use only read commands (`get`, `describe`, `logs`, `history`, dashboards, queries). Change nothing.
-2. **Propose with risk and reversibility.** For each proposed action, state: exact command/change, target (env, cluster, namespace, service), risk (low/med/high), reversible (yes/no), expected effect, and rollback plan.
-3. **Wait for explicit human approval.** Do NOT run any prod-changing command or send/post any external message until a human explicitly approves that specific action. Silence, "looks fine", or approval of a different action is not approval.
-4. **Act.** Run exactly what was approved — nothing more. Prefer dry-run/diff output first.
-5. **Verify.** Confirm error rate, latency, and saturation returned to baseline / within SLO; watch 5-15 min.
-6. **Stop and escalate if worse.** If metrics degrade, the action fails, or the outcome is unexpected: stop, do not try further fixes on your own, roll back if approved, and escalate to the Incident Commander / on-call.
+## Safety gates (REQUIRED)
+Follow [sre-safety-gates](../sre-safety-gates/SKILL.md) for every step. In short: read-only diagnosis -> propose with risk/reversibility -> **explicit human approval** before any prod change, MCP write, or external post -> act -> verify -> stop and escalate if worse.
 **Legend:** `risk` = low / med / high blast radius. `reversible` = yes / no (can be cleanly undone without data loss).
-
-Recovery procedures, rollback commands, scaling actions, and common remediation patterns for incident response. Every action is gated: propose -> explicit approval -> act -> verify.
 
 ## Remediation hierarchy
 

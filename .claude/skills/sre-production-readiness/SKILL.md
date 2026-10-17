@@ -1,6 +1,6 @@
 ---
 name: sre-production-readiness
-description: "Runs a production readiness review (PRR) / launch checklist and produces a pass/fail verdict. Use before a new service or major change goes live."
+description: "Runs a production readiness review (PRR) / launch checklist and produces a pass/fail verdict with evidence. Use before a new service or major change goes live."
 ---
 
 # SRE Production Readiness Review (PRR)
@@ -52,7 +52,7 @@ Brief description of the service and its criticality.
 - **Criticality:** [What happens if this service fails?]
 
 ## 3. Observability & SLOs
-- **SLO Link:** [Link to sre-slo-templates output]
+- **SLO Link:** [Link to sre-slo-alerting output]
 - **Dashboard Link:** [URL]
 
 ## 4. Scaling & Capacity

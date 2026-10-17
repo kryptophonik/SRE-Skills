@@ -1,6 +1,7 @@
 ---
 name: sre-tools-catalog
-description: "Recommends SRE tooling (metrics, logs, traces, alerting, on-call, chaos) with trade-offs. Use when choosing or comparing observability/reliability tools. Not for debugging a specific incident."
+description: "Reference catalog of SRE tooling (metrics, logs, traces, alerting, on-call, SLO, chaos, load testing) with trade-offs and last-reviewed date. Loaded when choosing or comparing tools."
+user-invocable: false
 ---
 
 # SRE Tools Catalog

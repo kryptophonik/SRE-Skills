@@ -1,6 +1,6 @@
 ---
 name: sre-runbook-templates
-description: "Writes or reviews runbooks using a full template (owner, scope, diagnosis, decision points, gated actions with rollback, verification, escalation). Use when creating or updating a runbook."
+description: "Writes or reviews runbooks using a full template (owner, scope, diagnosis, decision points, gated actions with rollback, verification, escalation, last reviewed). Use when creating or updating a runbook; pulls commands from k8s-triage and the tool adapters."
 ---
 
 # Runbook Templates

@@ -31,34 +31,28 @@ Whether you're designing observability for a new service, defining SLOs, fixing 
 
 ```
 .claude/skills/
-├── sre-architect/            (strategic persona)
-│   └── uses: tools-catalog, slo, alerting, runbook, postmortem, chaos, production-readiness
-├── sre-engineer/             (tactical persona, approval-gated)
-│   └── uses: debugging-tools, performance-tools, remediation-actions, runbook,
-│             incident-communication, postmortem, chaos
-└── sre-*/SKILL.md            (13 skills total; see SKILLS.md for routing)
+├── sre-safety-gates/            shared approval gates (reference)
+├── Process skills               incident-command, sre-engineer, k8s-triage, sre-diagnostics,
+│                                sre-incident-communication, sre-postmortem-templates, oncall-handoff,
+│                                change-safety, sre-slo-alerting, sre-runbook-templates,
+│                                sre-production-readiness, capacity-planning, dr-backup-test,
+│                                dependency-mapping, toil-review, cloud-cost-review,
+│                                security-incident-triage, observability-query-cookbook,
+│                                sre-chaos-engineering (manual), sre-architect
+├── Tool adapters                dynatrace-sre, prometheus-grafana, datadog, pagerduty-opsgenie,
+│                                terraform, aws, azure, gcp
+└── References                   sre-remediation-actions, sre-tools-catalog
 ```
 
 ---
 
 ## Components
 
-| File | Purpose |
-|------|---------|
-| **SKILLS.md** | Index, dependencies, and routing guidance (single source of truth) |
-| **.claude/skills/sre-architect/SKILL.md** | Strategic SRE architect persona and workflows |
-| **.claude/skills/sre-engineer/SKILL.md** | Tactical SRE engineer persona and workflows |
-| **.claude/skills/sre-tools-catalog/SKILL.md** | Tooling recommendations across all SRE domains |
-| **.claude/skills/sre-slo-templates/SKILL.md** | SLO templates and error budget models |
-| **.claude/skills/sre-alerting-templates/SKILL.md** | Alerting templates and taxonomy |
-| **.claude/skills/sre-runbook-templates/SKILL.md** | Runbook skeletons for incidents |
-| **.claude/skills/sre-postmortem-templates/SKILL.md** | Blameless postmortem templates and facilitation |
-| **.claude/skills/sre-chaos-engineering/SKILL.md** | Chaos engineering workflows and experiments |
-| **.claude/skills/sre-debugging-tools/SKILL.md** | Debugging workflows, log analysis, trace queries |
-| **.claude/skills/sre-performance-tools/SKILL.md** | Profiling tools and tuning guidance |
-| **.claude/skills/sre-remediation-actions/SKILL.md** | Recovery procedures and remediation patterns |
-| **.claude/skills/sre-production-readiness/SKILL.md** | PRR checklists and templates |
-| **.claude/skills/sre-incident-communication/SKILL.md** | Stakeholder comms templates |
+| Path | Purpose |
+|---|---|
+| `SKILLS.md` | Index and routing guidance (single source of truth) |
+| `.claude/skills/*/SKILL.md` | 31 skills: process, tool adapters, references |
+| `docs/mcp.md` | Verified MCP servers and read-only configuration (start every server read-only) |
 
 ---
 
@@ -70,7 +64,7 @@ This repo ships them under `.claude/skills/`.
 ### Use in this repo / a project
 
 Clone the repo (or copy `.claude/skills/` into your project). Starting Claude Code in
-that directory loads all `sre-*` skills automatically.
+that directory loads all skills automatically.
 
 ```bash
 git clone https://github.com/kryptophonik/claude-sre.git
@@ -82,13 +76,13 @@ cd claude-sre && claude
 ```bash
 git clone https://github.com/kryptophonik/claude-sre.git
 mkdir -p ~/.claude/skills
-cp -r claude-sre/.claude/skills/sre-* ~/.claude/skills/
+cp -r claude-sre/.claude/skills/* ~/.claude/skills/
 ```
 
 ### Verify installation
 
-In Claude Code, ask `What skills are available?` or type `/` and look for the `sre-*`
-skills. Invoke one directly with its name, e.g. `/sre-slo-templates`.
+In Claude Code, ask `What skills are available?` or type `/` and look for the SRE
+skills. Invoke one directly with its name, e.g. `/sre-slo-alerting`.
 
 ---
 
@@ -186,4 +180,4 @@ Contributions welcome! Please open an issue or submit a pull request.
 
 ## Version
 
-2.0.0
+3.0.0
