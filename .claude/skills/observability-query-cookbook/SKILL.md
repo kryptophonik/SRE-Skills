@@ -21,6 +21,7 @@ sum(rate(http_requests_total{job="<svc>"}[5m]))
 
 ```text
 # Datadog (APM)
+# span name varies by integration: trace.<span_name>.errors / .hits
 sum:trace.http.request.errors{service:<svc>}.as_count() / sum:trace.http.request.hits{service:<svc>}.as_count()
 ```
 
@@ -56,7 +57,9 @@ sum by (pod) (kube_pod_container_resource_limits{namespace="<ns>",resource="cpu"
 
 ```text
 # Datadog
+# kubernetes.cpu.usage.total is in nanocores; compare to kubernetes.cpu.limits (cores) after unit conversion
 avg:kubernetes.cpu.usage.total{kube_namespace:<ns>} by {pod_name}
+avg:kubernetes.cpu.limits{kube_namespace:<ns>} by {pod_name}
 ```
 
 ```dql
@@ -80,6 +83,11 @@ timeseries { used = sum(dt.kubernetes.container.cpu_usage), lim = sum(dt.kuberne
 ```dql
 timeseries { total = sum(dt.service.request.count, scalar: true), failed = sum(dt.service.request.failure_count, scalar: true) }, by: { dt.smartscape.service }, from: now()-1h
 | fieldsAdd burn = (failed / total) / (1 - 0.999)
+```
+
+```text
+# Datadog SLO monitor query
+burn_rate("<slo_id>").over("1h").long_window("1h").short_window("5m") > 14.4
 ```
 
 Page when burn > 14.4 over 1h AND > 14.4 over 5m (see `sre-slo-alerting`).

@@ -72,17 +72,18 @@ For tool-specific queries see `observability-query-cookbook`, `dynatrace-sre`, `
 - Errors:
 
   ```text
-  sum:trace.errors{env:prod}
+  sum:trace.<span_name>.errors{env:prod,service:<svc>}.as_count()
   ```
 - Latency:
 
   ```text
-  avg:trace.duration{env:prod}
+  p95:trace.<span_name>{env:prod,service:<svc>}
   ```
 - Saturation:
 
   ```text
-  system.mem.available
+  avg:system.mem.usable{env:prod} by {host}
+  # or system.mem.pct_usable
   ```
 
 ## Trace analysis
@@ -97,7 +98,7 @@ For tool-specific queries see `observability-query-cookbook`, `dynatrace-sre`, `
 
 - Jaeger: UI search and trace inspection
 - Tempo: TraceQL queries
-- Datadog: Trace search
+- Datadog: Trace search, e.g. `service:<svc> env:prod status:error @duration:>1s` via `POST /api/v2/spans/events/search` (read-only; see `datadog`)
 
 ## Correlation checks
 

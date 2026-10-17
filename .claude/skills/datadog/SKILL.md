@@ -1,32 +1,54 @@
 ---
 name: datadog
-description: "Datadog adapter: metric, APM and log queries, monitors, SLOs, incidents and events. Uses the Datadog MCP server when available, otherwise the Datadog API with read-only application keys. Use when data or monitors live in Datadog. Process from sre-engineer, sre-slo-alerting, incident-command."
+description: "Datadog adapter: metric, APM and log queries, monitors, SLOs, incidents and events. Uses the Datadog MCP server (read-only role) when available, otherwise the Datadog API with read-scoped application keys and DD_SITE. Use when data or monitors live in Datadog. Process from sre-engineer, sre-slo-alerting, incident-command."
 ---
 
 # Datadog
 
 ## Safety gates (REQUIRED)
 
-Follow [sre-safety-gates](../sre-safety-gates/SKILL.md): read-only first; explicit approval before any prod change, MCP write, or external post. Creating/muting monitors, downtimes, and incident updates are writes.
+Follow [sre-safety-gates](../sre-safety-gates/SKILL.md): read-only first; explicit approval before any prod change, MCP write, or external post.
 
 Process skills: `sre-engineer`, `sre-diagnostics`, `sre-slo-alerting`, `incident-command`. More queries: `observability-query-cookbook`.
 
+**Unverified per org — confirm before use:** span names, tag keys (`env`, `service`), your Datadog site, and MCP write tool names.
+
 ## Access
 
-- **MCP:** Datadog managed MCP server (`https://mcp.datadoghq.com/v1/mcp`, or your site's endpoint, e.g. `mcp.datadoghq.eu`). Prefer a user/role with read-only permissions.
-- **API fallback:** `DD_API_KEY` + an application key scoped to read (`DD_APP_KEY`); use your site, e.g. `api.datadoghq.com`.
+- **Site:** set `DD_SITE` (e.g. `datadoghq.com`, `datadoghq.eu`, `us3.datadoghq.com`) to avoid querying the wrong region. API base: `https://api.${DD_SITE:-datadoghq.com}`.
+- **MCP:** `https://mcp.<site>/api/unstable/mcp-server/mcp` (e.g. `https://mcp.datadoghq.com/api/unstable/mcp-server/mcp`). GovCloud is not supported. Default toolset is `core`; narrow with `?toolsets=` and `?omit_tools=`; avoid `toolsets=all`.
+- **Auth preference:** OAuth > personal/service access token (bearer) > API key + application key.
+- **Never echo keys.** Use env vars (`$DD_API_KEY`, `$DD_APP_KEY`) and env substitution in `.mcp.json`.
+
+## Read-only enforcement (MCP writes are ON by default)
+
+The Standard role includes `mcp_write`. Enforce read-only by at least one of:
+
+1. A custom role with only `mcp_read` for the MCP identity.
+2. Turn off **MCP Write Access** at the org level.
+3. `omit_tools` for write tools (e.g. `create_datadog_monitor`, `create_datadog_notebook`, `edit_datadog_notebook` — names unverified, check the tool list).
+
+Application keys: scope to `metrics_read`, `monitors_read`, `logs_read_data`, `apm_read`.
+
+## Writes that need approval
+
+`POST /api/v1/monitor` (create/update monitors), downtimes, mute/unmute, SLO create/update, incident create/update, events post, MCP write tools.
+
+Logs and spans **search** use POST but are read-only.
 
 ## Query syntax
 
-Metrics: `<aggregation>:<metric>{<tag filters>} by {<group>}`
+APM trace metrics are named `trace.<SPAN_NAME>.<suffix>`; the span name depends on the integration (`servlet.request`, `rack.request`, `flask.request`, `http.request`, …). Find yours in APM service page.
 
 ```text
 avg:system.cpu.user{env:prod} by {host}
-sum:trace.http.request.errors{service:<svc>,env:prod}.as_count()
-sum:trace.http.request.hits{service:<svc>,env:prod}.as_count()
-p95:trace.http.request{service:<svc>,env:prod}
+sum:trace.<span_name>.errors{env:prod,service:<svc>}.as_count()
+sum:trace.<span_name>.hits{env:prod,service:<svc>}.as_count()
+p95:trace.<span_name>{env:prod,service:<svc>}
 avg:kubernetes.memory.usage{kube_namespace:<ns>} by {pod_name}
 ```
+
+p95 requires the **distribution** trace metric (`trace.<span_name>`). The legacy `trace.<span_name>.duration` has no percentiles.
 
 Logs search:
 
@@ -38,30 +60,37 @@ service:<svc> env:prod status:error
 ## Read-only API calls
 
 ```bash
+DD_API="https://api.${DD_SITE:-datadoghq.com}"
+H=(-H "DD-API-KEY: $DD_API_KEY" -H "DD-APPLICATION-KEY: $DD_APP_KEY")
 # Metric query (last hour)
-curl -sG "https://api.datadoghq.com/api/v1/query" \
-  -H "DD-API-KEY: $DD_API_KEY" -H "DD-APPLICATION-KEY: $DD_APP_KEY" \
+curl -sG "$DD_API/api/v1/query" "${H[@]}" \
   --data-urlencode "from=$(($(date +%s)-3600))" --data-urlencode "to=$(date +%s)" \
-  --data-urlencode "query=sum:trace.http.request.errors{service:<svc>}.as_count()"
+  --data-urlencode "query=sum:trace.<span_name>.errors{env:prod,service:<svc>}.as_count()"
 # Monitors currently alerting
-curl -sG "https://api.datadoghq.com/api/v1/monitor" \
-  -H "DD-API-KEY: $DD_API_KEY" -H "DD-APPLICATION-KEY: $DD_APP_KEY" \
-  --data-urlencode "monitor_tags=service:<svc>" --data-urlencode "group_states=alert"
-# Log search (v2)
-curl -s -X POST "https://api.datadoghq.com/api/v2/logs/events/search" \
-  -H "DD-API-KEY: $DD_API_KEY" -H "DD-APPLICATION-KEY: $DD_APP_KEY" -H "Content-Type: application/json" \
+curl -sG "$DD_API/api/v1/monitor/search" "${H[@]}" \
+  --data-urlencode 'query=status:alert tag:"service:<svc>"'
+# Log search (v2, read-only POST)
+curl -s -X POST "$DD_API/api/v2/logs/events/search" "${H[@]}" -H "Content-Type: application/json" \
   -d '{"filter":{"query":"service:<svc> status:error","from":"now-15m","to":"now"},"page":{"limit":50}}'
+# Span search (v2, read-only POST)
+curl -s -X POST "$DD_API/api/v2/spans/events/search" "${H[@]}" -H "Content-Type: application/json" \
+  -d '{"data":{"type":"search_request","attributes":{"filter":{"query":"service:<svc> env:prod status:error @duration:>1s","from":"now-15m","to":"now"},"page":{"limit":25}}}}'
 ```
+
+## Rate limits and cost
+
+- Check `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset` headers; on `429` back off until reset.
+- Use short time windows and small `page.limit`; avoid `toolsets=all` in MCP.
 
 ## Monitor definition (for review; create only after approval)
 
 ```text
-Query:  sum(last_5m):sum:trace.http.request.errors{service:<svc>}.as_count() / sum:trace.http.request.hits{service:<svc>}.as_count() > 0.01
+Query:  sum(last_5m):sum:trace.http.request.errors{service:<svc>,env:prod}.as_count() / sum:trace.http.request.hits{service:<svc>,env:prod}.as_count() > 0.01
 Message must include: impact, runbook link, @pagerduty-<service> or @opsgenie-<team> handle
 ```
 
-Prefer SLO burn-rate alerts on a Datadog SLO over raw threshold monitors (`sre-slo-alerting`).
+Prefer SLO burn-rate alerts on a Datadog SLO over raw threshold monitors (`sre-slo-alerting`, `observability-query-cookbook`).
 
 ## Output
 
-- Queries used, results, and any proposed monitor/downtime change with risk and approval status
+- Queries used (with site and time window), results, and any proposed monitor/downtime/SLO change with risk and approval status

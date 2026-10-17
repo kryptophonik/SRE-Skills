@@ -9,7 +9,7 @@ Add a server with `claude mcp add` or a project `.mcp.json`. Keep tokens in envi
 | Dynatrace | **Recommended:** Dynatrace for AI skills + `dtctl` locally, or the Dynatrace Remote MCP Server. Local `@dynatrace-oss/dynatrace-mcp-server` is **DEPRECATED** (final release 2.1.2). | https://github.com/Dynatrace/dynatrace-for-ai · https://docs.dynatrace.com/docs/dynatrace-intelligence/dynatrace-mcp · deprecated: https://github.com/dynatrace-oss/dynatrace-mcp | Grant only the read scopes listed below. `send_slack_message`, `send_email`, `send_event`, `create_dynatrace_notebook` need approval; writing documents needs `document:documents:write`, which stays omitted in read-only config. |
 | Kubernetes | kubernetes-mcp-server | https://github.com/containers/kubernetes-mcp-server | `--read-only` (or `read_only = true` in TOML). Bind a read-only ServiceAccount (`view` ClusterRole). |
 | Grafana / Prometheus / Loki | mcp-grafana | https://github.com/grafana/mcp-grafana | `--disable-write`; service account with Viewer role. Add `--enable-query` only if datasource credentials are read-only. |
-| Datadog | Datadog managed MCP server | https://github.com/datadog-labs/mcp-server (endpoint `https://mcp.datadoghq.com/v1/mcp`, or your site, e.g. `.eu`) | Authenticate as a user/role with read-only permissions. |
+| Datadog | Datadog MCP server (remote) — endpoint `https://mcp.<site>/api/unstable/mcp-server/mcp`; also Claude Code plugin `datadog@claude-plugins-official`. GovCloud unsupported. | https://docs.datadoghq.com/bits_ai/mcp_server/setup/ | **Writes are on by default** (Standard role has `mcp_write`). Enforce read-only: custom role with only `mcp_read`, org-level MCP Write Access off, or `?omit_tools=` for write tools (e.g. `create_datadog_monitor`, `create/edit_datadog_notebook`; names unverified). Default toolset `core`; narrow with `?toolsets=`, avoid `all`. Auth: OAuth > PAT/SAT bearer > API+app keys (app-key scopes `metrics_read`, `monitors_read`, `logs_read_data`, `apm_read`). Never echo keys; use env substitution. |
 | PagerDuty | PagerDuty remote MCP (`https://mcp.pagerduty.com/mcp`) | https://support.pagerduty.com/main/docs/pagerduty-mcp-server · archived local: https://github.com/PagerDuty/pagerduty-mcp-server | Local server is read-only unless started with `--enable-write-tools` (do not add it). Remote: use a read-only user/OAuth scope. |
 | Opsgenie | No official MCP server found | — | Use the REST API with a read-only API key (`pagerduty-opsgenie` skill). Opsgenie support ends 2027-04-05. |
 | Terraform | HashiCorp Terraform MCP server | https://github.com/hashicorp/terraform-mcp-server | Registry lookups are read-only. Leave HCP Terraform token unset, or use a read-only team token; run/workspace actions are writes. (awslabs and Azure Terraform MCP servers are deprecated.) |
@@ -38,6 +38,12 @@ Read-only scopes to grant:
 
 Scopes to omit in read-only config: `storage:events:write`, `email:emails:send`, `document:documents:write`, `app-settings:objects:read`.
 
+## Datadog setup details
+
+- Use the endpoint for your site (`mcp.datadoghq.eu`, `mcp.us3.datadoghq.com`, …); set `DD_SITE` for API calls to avoid the wrong region.
+- Writes needing approval: `POST /api/v1/monitor`, downtimes, mute/unmute, SLO create/update, incidents, events. Logs/spans search POSTs are read-only.
+- Rate limits: watch `X-RateLimit-*` headers; back off on `429`. Cost: short windows, small `page.limit`.
+
 ## Example `.mcp.json` (read-only)
 
 Genuine config example. Replace placeholders; keep secrets in env vars.
@@ -54,7 +60,7 @@ Genuine config example. Replace placeholders; keep secrets in env vars.
       "command": "npx", "args": ["-y", "@dynatrace-oss/dynatrace-mcp-server@latest"],
       "env": { "DT_ENVIRONMENT": "https://<env-id>.apps.dynatrace.com", "DT_PLATFORM_TOKEN": "${DT_PLATFORM_TOKEN}", "DT_GRAIL_QUERY_BUDGET_GB": "50" }
     },
-    "datadog": { "type": "http", "url": "https://mcp.datadoghq.com/v1/mcp" },
+    "datadog": { "type": "http", "url": "https://mcp.datadoghq.com/api/unstable/mcp-server/mcp" },
     "pagerduty": { "type": "http", "url": "https://mcp.pagerduty.com/mcp" },
     "aws-api": {
       "command": "uvx", "args": ["awslabs.aws-api-mcp-server@latest"],
