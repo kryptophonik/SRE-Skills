@@ -9,7 +9,16 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 3. TLS/certificate expiry checks.
 4. Codex plugin packaging, once it's verified against the docs.
 
-## [3.0.0] - Unreleased
+## [3.0.1] - 2026-10-17
+
+### Changed
+- README: skills table for all 34 skills, per-tool quick-start commands, the safety-gate flowchart, and an example 5xx walkthrough.
+
+### Fixed
+- `pd_audit_schedules.sh` computes its UTC +14 day window with python3. GNU `date -d` fails on macOS `/bin/bash` 3.2.
+- `og_export.sh` still only GETs and creates `--out` mode 700; its test reads that mode without GNU `stat -c`.
+
+## [3.0.0] - 2026-10-16
 
 ### Added
 - A shared `sre-safety-gates` skill and an inline four-line gate block in every skill.
@@ -26,7 +35,6 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 - Every skill name now has the `sre-` prefix. Descriptions are ≤250 characters and lead with the trigger.
 - Unified placeholders (`<ns>`, `<env>`, `<ctx>`…), IC terminology, postmortem timing ("within 48 h of resolution") and SEV cadence.
 - Merged `sre-debugging-tools` + `sre-performance-tools` into `sre-diagnostics`, and `sre-slo-templates` + `sre-alerting-templates` into `sre-slo-alerting`.
-- README: skills table for all 34 skills, per-tool quick-start commands, the safety-gate flowchart, and an example 5xx walkthrough.
 - Moved the MCP setup to `sre-safety-gates/references/mcp.md`.
 - Datadog: MCP endpoint `https://mcp.<site>/v1/mcp`; burn rate `.over()` uses the SLO window; corrected the CPU-limit unit note.
 - PagerDuty/Opsgenie paginators: `MAX_PAGES` cap and 429 backoff. All scripts are bash 3.2-compatible (tested with 3.2.57). Script paths in skills and references are relative to the skill folder, with no `${CLAUDE_SKILL_DIR}`. The Terraform tests need terraform 1.16+.
@@ -56,6 +64,3 @@ Pre-release 3.0 names without the prefix map one-to-one by adding `sre-` (for ex
 
 ### Removed
 - The 2.x per-skill safety sections, replaced by the shared gates. No `.mcp.json` is shipped.
-
-### Fixed
-- PagerDuty schedule audit computes its UTC +14 day window with python3 (`date -d` is GNU-only and fails on macOS bash 3.2). Opsgenie export still creates `--out` mode 700; the test reads that mode without GNU `stat -c`.
