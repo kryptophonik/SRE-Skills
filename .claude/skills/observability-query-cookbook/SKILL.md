@@ -63,7 +63,7 @@ avg:kubernetes.cpu.limits{kube_namespace:<ns>} by {pod_name}
 ```
 
 ```dql
-// unverified on tenant: check Kubernetes metric keys with verify_dql
+// verify Kubernetes metric keys in your environment (verify_dql)
 timeseries { used = sum(dt.kubernetes.container.cpu_usage), lim = sum(dt.kubernetes.container.limits_cpu) }, by: { k8s.pod.name }, filter: k8s.namespace.name == "<ns>"
 | fieldsAdd cpu_pct = if(lim[] > 0, used[] * 100.0 / lim[])
 | sort arrayMax(cpu_pct) desc

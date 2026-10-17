@@ -9,7 +9,7 @@ description: "Dynatrace adapter for SRE work: DQL for problems, logs, metrics an
 
 Follow [sre-safety-gates](../sre-safety-gates/SKILL.md): read-only first; explicit approval before any prod change, MCP write, or external post. Read-only by default. MCP tools that write or notify (`send_slack_message`, `send_email`, `send_event`, `create_dynatrace_notebook`) need approval. Writing documents/notebooks also needs the `document:documents:write` scope, which read-only setups omit.
 
-Process skills: `incident-command`, `sre-engineer`, `sre-diagnostics`, `sre-slo-alerting`, `dependency-mapping`. Health-certification dashboards: use the separate Dynatrace health-cert skill.
+Process skills: `incident-command`, `sre-engineer`, `sre-diagnostics`, `sre-slo-alerting`, `dependency-mapping`.
 
 ## Access
 
@@ -89,9 +89,9 @@ smartscapeNodes "SERVICE"
 | fields id, name
 ```
 
-Check field names in your tenant first with `smartscapeNodes "SERVICE" | limit 1`. Classic fallback: `fetch dt.entity.service | filter contains(entity.name, "<name>") | fields id, entity.name`.
+Verify field names in your environment first with `smartscapeNodes "SERVICE" | limit 1`. Classic fallback: `fetch dt.entity.service | filter contains(entity.name, "<name>") | fields id, entity.name`.
 
-Metric and field names vary by tenant and Grail version; check with `verify_dql` or Notebook autocomplete.
+Metric and field names vary by environment and Grail version; check with `verify_dql` or Notebook autocomplete.
 
 ## Output
 

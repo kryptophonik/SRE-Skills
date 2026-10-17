@@ -11,7 +11,7 @@ Follow [sre-safety-gates](../sre-safety-gates/SKILL.md): read-only first; explic
 
 Process skills: `sre-engineer`, `sre-diagnostics`, `sre-slo-alerting`, `incident-command`. More queries: `observability-query-cookbook`.
 
-**Unverified per org — confirm before use:** span names, tag keys (`env`, `service`), your Datadog site, and MCP write tool names.
+**Verify in your environment before use:** span names, tag keys (`env`, `service`), your Datadog site, and MCP write tool names.
 
 ## Access
 
@@ -26,7 +26,7 @@ The Standard role includes `mcp_write`. Enforce read-only by at least one of:
 
 1. A custom role with only `mcp_read` for the MCP identity.
 2. Turn off **MCP Write Access** at the org level.
-3. `omit_tools` for write tools (e.g. `create_datadog_monitor`, `create_datadog_notebook`, `edit_datadog_notebook` — names unverified, check the tool list).
+3. `omit_tools` for write tools (e.g. `create_datadog_monitor`, `create_datadog_notebook`, `edit_datadog_notebook` — verify names in your tool list).
 
 Application keys: scope to `metrics_read`, `monitors_read`, `logs_read_data`, `apm_read`.
 
