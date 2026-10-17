@@ -7,13 +7,18 @@ description: "Use when data lives in Dynatrace: DQL for problems, logs, metrics 
 
 ## Safety gates (REQUIRED)
 
-Follow [sre-safety-gates](../sre-safety-gates/SKILL.md): read-only first; explicit approval before any prod change, MCP write, or external post. Read-only by default. MCP tools that write or notify (`send_slack_message`, `send_email`, `send_event`, `create_dynatrace_notebook`) need approval. Writing documents/notebooks also needs the `document:documents:write` scope, which read-only setups omit.
+1. Read-only diagnosis first.
+2. Propose each change with risk (low/med/high) and reversibility.
+3. Wait for explicit human approval before any prod-changing command, MCP write tool, or external post.
+4. Act only as approved, verify, and stop and escalate if anything gets worse.
+
+Full rules: [sre-safety-gates](../sre-safety-gates/SKILL.md). Read-only MCP setup: [sre-safety-gates/references/mcp.md](../sre-safety-gates/references/mcp.md).
 
 Process skills: `sre-incident-command`, `sre-engineer`, `sre-diagnostics`, `sre-slo-alerting`, `sre-dependency-mapping`.
 
 ## Access
 
-- **MCP (preferred):** Dynatrace MCP server — tools such as `list_problems`, `execute_dql`, `verify_dql`, `find_entity_by_name`, `get_kubernetes_events`. Run `verify_dql` before `execute_dql` on new queries. The local `dynatrace-oss` server is deprecated (final 2.1.2); prefer Dynatrace for AI + `dtctl` or the Dynatrace Remote MCP Server (see `docs/mcp.md`).
+- **MCP (preferred):** Dynatrace MCP server — tools such as `list_problems`, `execute_dql`, `verify_dql`, `find_entity_by_name`, `get_kubernetes_events`. Run `verify_dql` before `execute_dql` on new queries. The local `dynatrace-oss` server is deprecated (final 2.1.2); prefer Dynatrace for AI + `dtctl` or the Dynatrace Remote MCP Server (see `sre-safety-gates/references/mcp.md`).
 - **Fallback:** paste DQL into a Notebook; give the user the query.
 - Always bound the timeframe (`from: now()-2h`) to limit Grail scan cost.
 

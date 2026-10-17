@@ -7,7 +7,12 @@ description: "Use when metrics, logs or alerts live in Prometheus, Alertmanager,
 
 ## Safety gates (REQUIRED)
 
-Follow [sre-safety-gates](../sre-safety-gates/SKILL.md): read-only first; explicit approval before any prod change, MCP write, or external post.
+1. Read-only diagnosis first.
+2. Propose each change with risk (low/med/high) and reversibility.
+3. Wait for explicit human approval before any prod-changing command, MCP write tool, or external post.
+4. Act only as approved, verify, and stop and escalate if anything gets worse.
+
+Full rules: [sre-safety-gates](../sre-safety-gates/SKILL.md). Read-only MCP setup: [sre-safety-gates/references/mcp.md](../sre-safety-gates/references/mcp.md).
 
 Process skills: `sre-slo-alerting`, `sre-engineer`, `sre-diagnostics`. More queries: `sre-observability-query-cookbook`.
 
@@ -21,7 +26,7 @@ Process skills: `sre-slo-alerting`, `sre-engineer`, `sre-diagnostics`. More quer
 
 ## Access
 
-- **MCP:** Grafana MCP server, pinned, with `--disable-write` (see `docs/mcp.md`).
+- **MCP:** Grafana MCP server, pinned, with `--disable-write` (see `sre-safety-gates/references/mcp.md`).
 - **CLI fallback:** `promtool`, `amtool`, `logcli`, or the Prometheus HTTP API.
 
 ## Read-only commands

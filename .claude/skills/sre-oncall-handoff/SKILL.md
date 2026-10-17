@@ -7,7 +7,12 @@ description: "Use at shift change or when asked for an on-call summary: open inc
 
 ## Safety gates (REQUIRED)
 
-Follow [sre-safety-gates](../sre-safety-gates/SKILL.md): read-only first; explicit approval before any prod change, MCP write, or external post. This skill is read-only. Posting the handoff to Slack or a ticket needs approval.
+1. Read-only diagnosis first.
+2. Propose each change with risk (low/med/high) and reversibility.
+3. Wait for explicit human approval before any prod-changing command, MCP write tool, or external post.
+4. Act only as approved, verify, and stop and escalate if anything gets worse.
+
+Full rules: [sre-safety-gates](../sre-safety-gates/SKILL.md). Read-only MCP setup: [sre-safety-gates/references/mcp.md](../sre-safety-gates/references/mcp.md).
 
 ## Workflow
 

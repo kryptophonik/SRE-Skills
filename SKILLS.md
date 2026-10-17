@@ -8,7 +8,7 @@ Version: `3.0.0`
 
 - [sre-safety-gates](.claude/skills/sre-safety-gates/SKILL.md) applies to every skill: read-only first -> propose with risk/reversibility -> explicit approval before prod changes, MCP writes, or external posts -> act -> verify -> stop and escalate if worse.
 - State assumptions; mark unknowns `[TBD]`. Tie advice to SLIs/SLOs. Every skill ends with its `Output` deliverable.
-- MCP servers and read-only setup: [docs/mcp.md](docs/mcp.md).
+- MCP servers and read-only setup: [.claude/skills/sre-safety-gates/references/mcp.md](.claude/skills/sre-safety-gates/references/mcp.md).
 
 ## Placeholder vocabulary
 

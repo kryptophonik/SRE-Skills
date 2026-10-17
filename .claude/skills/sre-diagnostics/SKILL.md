@@ -5,6 +5,15 @@ description: "Use to investigate a live issue read-only: logs/metrics/traces que
 
 # SRE Diagnostics
 
+## Safety gates (REQUIRED)
+
+1. Read-only diagnosis first.
+2. Propose each change with risk (low/med/high) and reversibility.
+3. Wait for explicit human approval before any prod-changing command, MCP write tool, or external post.
+4. Act only as approved, verify, and stop and escalate if anything gets worse.
+
+Full rules: [sre-safety-gates](../sre-safety-gates/SKILL.md). Read-only MCP setup: [sre-safety-gates/references/mcp.md](../sre-safety-gates/references/mcp.md).
+
 Structured, read-only debugging and performance investigation. Follows [sre-safety-gates](../sre-safety-gates/SKILL.md): profiling or capturing on prod needs approval.
 
 For tool-specific queries see `sre-observability-query-cookbook`, `sre-dynatrace`, `sre-prometheus-grafana`, `sre-datadog`, and `sre-k8s-triage`.

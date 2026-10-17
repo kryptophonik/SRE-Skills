@@ -7,7 +7,12 @@ description: "Use when a security compromise is suspected: leaked credentials, s
 
 ## Safety gates (REQUIRED)
 
-Follow [sre-safety-gates](../sre-safety-gates/SKILL.md): read-only first; explicit approval before any prod change, MCP write, or external post.
+1. Read-only diagnosis first.
+2. Propose each change with risk (low/med/high) and reversibility.
+3. Wait for explicit human approval before any prod-changing command, MCP write tool, or external post.
+4. Act only as approved, verify, and stop and escalate if anything gets worse.
+
+Full rules: [sre-safety-gates](../sre-safety-gates/SKILL.md). Read-only MCP setup: [sre-safety-gates/references/mcp.md](../sre-safety-gates/references/mcp.md).
 
 **Hand off early.** Notify the security team / security on-call as soon as compromise is plausible. They own the investigation; SRE supports.
 

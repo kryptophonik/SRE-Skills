@@ -7,7 +7,12 @@ description: "Use when testing backups or DR readiness: backup-restore and failo
 
 ## Safety gates (REQUIRED)
 
-Follow [sre-safety-gates](../sre-safety-gates/SKILL.md): read-only first; explicit approval before any prod change, MCP write, or external post.
+1. Read-only diagnosis first.
+2. Propose each change with risk (low/med/high) and reversibility.
+3. Wait for explicit human approval before any prod-changing command, MCP write tool, or external post.
+4. Act only as approved, verify, and stop and escalate if anything gets worse.
+
+Full rules: [sre-safety-gates](../sre-safety-gates/SKILL.md). Read-only MCP setup: [sre-safety-gates/references/mcp.md](../sre-safety-gates/references/mcp.md).
 
 Never restore over a live resource. Always restore to a **new, isolated** target (new resource group / account / project, isolated network). On Azure, restore `--target-resource-group` must be a new drill RG; ASR uses **test failover** into an isolated VNet only.
 

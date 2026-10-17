@@ -5,6 +5,15 @@ description: "Use before a new service or major change goes live: run a producti
 
 # SRE Production Readiness Review (PRR)
 
+## Safety gates (REQUIRED)
+
+1. Read-only diagnosis first.
+2. Propose each change with risk (low/med/high) and reversibility.
+3. Wait for explicit human approval before any prod-changing command, MCP write tool, or external post.
+4. Act only as approved, verify, and stop and escalate if anything gets worse.
+
+Full rules: [sre-safety-gates](../sre-safety-gates/SKILL.md). Read-only MCP setup: [sre-safety-gates/references/mcp.md](../sre-safety-gates/references/mcp.md).
+
 Comprehensive checklist and template for ensuring services are ready for production-grade traffic and on-call support.
 
 ## PRR checklist

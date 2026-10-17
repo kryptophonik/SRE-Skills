@@ -5,6 +5,15 @@ description: "Use for SRE design and planning: observability architecture, relia
 
 # SRE Architect
 
+## Safety gates (REQUIRED)
+
+1. Read-only diagnosis first.
+2. Propose each change with risk (low/med/high) and reversibility.
+3. Wait for explicit human approval before any prod-changing command, MCP write tool, or external post.
+4. Act only as approved, verify, and stop and escalate if anything gets worse.
+
+Full rules: [sre-safety-gates](../sre-safety-gates/SKILL.md). Read-only MCP setup: [sre-safety-gates/references/mcp.md](../sre-safety-gates/references/mcp.md).
+
 Strategic, read-only design and review. Keep it short: frame the problem, route to the specialist skill, assemble the result.
 
 ## Principles

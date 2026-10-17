@@ -7,7 +7,12 @@ description: "Use when you need a correct query for golden signals, RED/USE, sat
 
 ## Safety gates (REQUIRED)
 
-Follow [sre-safety-gates](../sre-safety-gates/SKILL.md): read-only first; explicit approval before any prod change, MCP write, or external post. Queries are read-only, but heavy queries can load the backend: bound the time range.
+1. Read-only diagnosis first.
+2. Propose each change with risk (low/med/high) and reversibility.
+3. Wait for explicit human approval before any prod-changing command, MCP write tool, or external post.
+4. Act only as approved, verify, and stop and escalate if anything gets worse.
+
+Full rules: [sre-safety-gates](../sre-safety-gates/SKILL.md). Read-only MCP setup: [sre-safety-gates/references/mcp.md](../sre-safety-gates/references/mcp.md).
 
 Adjust metric and label names to your environment. Dynatrace queries use Smartscape forms (`dt.smartscape.*`, `getNodeName()`); classic fallback is `dt.entity.*` with `entityName()`. Reviewed against Dynatrace dynatrace-for-ai skills. For tool-specific depth see `sre-prometheus-grafana`, `sre-dynatrace`, `sre-datadog`.
 

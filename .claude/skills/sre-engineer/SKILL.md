@@ -8,7 +8,13 @@ description: "Use for a concrete live problem: diagnosing an incident or alert, 
 Related: `sre-incident-command` (roles, severity), `sre-k8s-triage`, `sre-diagnostics`, `sre-remediation-actions`, and tool adapters (`sre-dynatrace`, `sre-prometheus-grafana`, `sre-datadog`, `sre-aws`, `sre-azure`, `sre-gcp`, `sre-terraform`, `sre-pagerduty-opsgenie`).
 
 ## Safety gates (REQUIRED)
-Follow [sre-safety-gates](../sre-safety-gates/SKILL.md) for every step. In short: read-only diagnosis -> propose with risk/reversibility -> **explicit human approval** before any prod change, MCP write, or external post -> act -> verify -> stop and escalate if worse.
+
+1. Read-only diagnosis first.
+2. Propose each change with risk (low/med/high) and reversibility.
+3. Wait for explicit human approval before any prod-changing command, MCP write tool, or external post.
+4. Act only as approved, verify, and stop and escalate if anything gets worse.
+
+Full rules: [sre-safety-gates](../sre-safety-gates/SKILL.md). Read-only MCP setup: [sre-safety-gates/references/mcp.md](../sre-safety-gates/references/mcp.md).
 **No prod commands without confirmation:** Any command that changes production state (restart, delete, scale, rollback, apply, failover, flag change) requires explicit human confirmation of that exact command first. Read-only commands may run freely.
 
 ## Persona

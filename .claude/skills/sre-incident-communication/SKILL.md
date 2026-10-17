@@ -6,7 +6,13 @@ description: "Use when an incident update or stakeholder message is needed: anno
 # SRE Incident Communication Templates
 
 ## Safety gates (REQUIRED)
-Follow [sre-safety-gates](../sre-safety-gates/SKILL.md) for every step. In short: read-only diagnosis -> propose with risk/reversibility -> **explicit human approval** before any prod change, MCP write, or external post -> act -> verify -> stop and escalate if worse.
+
+1. Read-only diagnosis first.
+2. Propose each change with risk (low/med/high) and reversibility.
+3. Wait for explicit human approval before any prod-changing command, MCP write tool, or external post.
+4. Act only as approved, verify, and stop and escalate if anything gets worse.
+
+Full rules: [sre-safety-gates](../sre-safety-gates/SKILL.md). Read-only MCP setup: [sre-safety-gates/references/mcp.md](../sre-safety-gates/references/mcp.md).
 **Draft-only rule:** This skill produces drafts. Never post to Slack, status pages, email, or any external channel until a human explicitly approves the exact text and destination. Present each draft with: channel, audience, and text.
 
 ## Communication channels

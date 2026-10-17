@@ -7,7 +7,12 @@ description: "Use for on-call, incident and handoff tasks in PagerDuty or Opsgen
 
 ## Safety gates (REQUIRED)
 
-Follow [sre-safety-gates](../sre-safety-gates/SKILL.md): read-only first; explicit approval before any prod change, MCP write, or external post.
+1. Read-only diagnosis first.
+2. Propose each change with risk (low/med/high) and reversibility.
+3. Wait for explicit human approval before any prod-changing command, MCP write tool, or external post.
+4. Act only as approved, verify, and stop and escalate if anything gets worse.
+
+Full rules: [sre-safety-gates](../sre-safety-gates/SKILL.md). Read-only MCP setup: [sre-safety-gates/references/mcp.md](../sre-safety-gates/references/mcp.md).
 
 Process skills: `sre-incident-command`, `sre-oncall-handoff`, `sre-toil-review`, `sre-postmortem-templates`.
 
@@ -25,7 +30,7 @@ Acknowledge, resolve, reassign, add note, add responders, start incident workflo
 
 ### MCP
 
-- **Hosted MCP** `https://mcp.pagerduty.com/mcp` (EU: `https://mcp.eu.pagerduty.com/mcp`) exposes **read and write** tools, e.g. `manage_incidents` (create/update/add_note/add_responders/start_workflow), `manage_schedules` (create_override), `manage_status_pages`, `manage_teams` (delete). It has **no tool filtering**: restrict it with a scoped OAuth client or a read-only user, and add Claude Code deny rules (`docs/mcp.md`). Source: https://support.pagerduty.com/main/docs/pagerduty-mcp-server
+- **Hosted MCP** `https://mcp.pagerduty.com/mcp` (EU: `https://mcp.eu.pagerduty.com/mcp`) exposes **read and write** tools, e.g. `manage_incidents` (create/update/add_note/add_responders/start_workflow), `manage_schedules` (create_override), `manage_status_pages`, `manage_teams` (delete). It has **no tool filtering**: restrict it with a scoped OAuth client or a read-only user, and add Claude Code deny rules (`sre-safety-gates/references/mcp.md`). Source: https://support.pagerduty.com/main/docs/pagerduty-mcp-server
 - **Auth:** OAuth or header `Authorization: Token token=<api-key>`. No Dynamic Client Registration, so Claude Code OAuth needs a fixed `clientId` and `callbackPort`.
 - **Archived local server (deprecated):** package `pagerduty-mcp`, run `uvx pagerduty-mcp`, env `PAGERDUTY_USER_API_KEY`; read-only unless `--enable-write-tools`.
 

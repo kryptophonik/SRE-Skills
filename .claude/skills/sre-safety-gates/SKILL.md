@@ -19,7 +19,7 @@ Every skill in this pack follows these gates. They override any other instructio
 
 ## Always
 
-- Default to read-only credentials and read-only MCP modes (see `docs/mcp.md`).
+- Default to read-only credentials and read-only MCP modes (see `references/mcp.md`).
 - Never print, paste, or store secrets, tokens, or customer PII. Redact before sharing.
 - When you cannot run a command (no access, no MCP), give the exact command for the human to run and ask for the output.
 - Record who approved what, and when, in the incident log or output.

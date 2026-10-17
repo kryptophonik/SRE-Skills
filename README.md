@@ -52,7 +52,7 @@ Whether you're designing observability for a new service, defining SLOs, fixing 
 |---|---|
 | `SKILLS.md` | Index and routing guidance (single source of truth) |
 | `.claude/skills/*/SKILL.md` | 31 skills: process, tool adapters, references |
-| `docs/mcp.md` | Verified MCP servers and read-only configuration (start every server read-only) |
+| `.claude/skills/sre-safety-gates/references/mcp.md` | Verified MCP servers and read-only configuration (start every server read-only) |
 
 ---
 
