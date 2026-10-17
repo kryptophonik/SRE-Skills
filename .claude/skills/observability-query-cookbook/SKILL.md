@@ -49,8 +49,8 @@ timeseries p95_us = percentile(dt.service.request.response_time, 95), rollup: av
 ## Saturation
 
 ```promql
-# CPU used by container vs. limit
-sum by (pod) (rate(container_cpu_usage_seconds_total{namespace="<ns>"}[5m]))
+# CPU used by container vs. limit (container!="" drops pod-level cgroup series that double-count; pods without limits drop out)
+sum by (pod) (rate(container_cpu_usage_seconds_total{namespace="<ns>",container!="",container!="POD"}[5m]))
 /
 sum by (pod) (kube_pod_container_resource_limits{namespace="<ns>",resource="cpu"})
 ```

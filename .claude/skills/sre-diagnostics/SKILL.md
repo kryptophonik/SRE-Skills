@@ -119,10 +119,10 @@ For tool-specific queries see `observability-query-cookbook`, `dynatrace-sre`, `
 ### Kubernetes
 
 ```bash
-kubectl logs -f deployment/app -n prod
-kubectl describe pod <pod-name>
-kubectl get events -n prod --sort-by='.lastTimestamp'
-kubectl top pod -n prod
+kubectl --context <ctx> -n prod logs -l app.kubernetes.io/name=<app> --prefix --all-containers --since=15m --tail=500
+kubectl --context <ctx> -n prod describe pod <pod-name>
+kubectl --context <ctx> -n prod events --types=Warning
+kubectl --context <ctx> -n prod top pod   # needs metrics-server
 ```
 
 ### System

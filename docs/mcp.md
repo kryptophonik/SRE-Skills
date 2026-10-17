@@ -7,7 +7,7 @@ Add a server with `claude mcp add` or a project `.mcp.json`. Keep tokens in envi
 | Tool | Server | Repo / docs | Read-only setting |
 |---|---|---|---|
 | Dynatrace | **Recommended:** Dynatrace for AI skills + `dtctl` locally, or the Dynatrace Remote MCP Server. Local `@dynatrace-oss/dynatrace-mcp-server` is **DEPRECATED** (final release 2.1.2). | https://github.com/Dynatrace/dynatrace-for-ai · https://docs.dynatrace.com/docs/dynatrace-intelligence/dynatrace-mcp · deprecated: https://github.com/dynatrace-oss/dynatrace-mcp | Grant only the read scopes listed below. `send_slack_message`, `send_email`, `send_event`, `create_dynatrace_notebook` need approval; writing documents needs `document:documents:write`, which stays omitted in read-only config. |
-| Kubernetes | kubernetes-mcp-server | https://github.com/containers/kubernetes-mcp-server | `--read-only` (or `read_only = true` in TOML). Bind a read-only ServiceAccount (`view` ClusterRole). |
+| Kubernetes | kubernetes-mcp-server | https://github.com/containers/kubernetes-mcp-server | Current releases dropped runtime CLI flags such as `--read-only`: set `read_only = true` in a TOML file passed with `--config`, deny Secrets with `[[denied_resources]]`, and **pin the version**. Bind a `view`-based Role/ClusterRole (no `secrets`, `pods/exec`, `pods/portforward`, `pods/attach`). Add Claude Code deny rules for write tools (below). |
 | Grafana / Prometheus / Loki | mcp-grafana | https://github.com/grafana/mcp-grafana | `--disable-write`; service account with Viewer role. Add `--enable-query` only if datasource credentials are read-only. |
 | Datadog | Datadog MCP server (remote) — endpoint `https://mcp.<site>/api/unstable/mcp-server/mcp`; also Claude Code plugin `datadog@claude-plugins-official`. GovCloud unsupported. | https://docs.datadoghq.com/bits_ai/mcp_server/setup/ | **Writes are on by default** (Standard role has `mcp_write`). Enforce read-only: custom role with only `mcp_read`, org-level MCP Write Access off, or `?omit_tools=` for write tools (e.g. `create_datadog_monitor`, `create/edit_datadog_notebook`; names unverified). Default toolset `core`; narrow with `?toolsets=`, avoid `all`. Auth: OAuth > PAT/SAT bearer > API+app keys (app-key scopes `metrics_read`, `monitors_read`, `logs_read_data`, `apm_read`). Never echo keys; use env substitution. |
 | PagerDuty | PagerDuty remote MCP (`https://mcp.pagerduty.com/mcp`) | https://support.pagerduty.com/main/docs/pagerduty-mcp-server · archived local: https://github.com/PagerDuty/pagerduty-mcp-server | Local server is read-only unless started with `--enable-write-tools` (do not add it). Remote: use a read-only user/OAuth scope. |
@@ -44,6 +44,38 @@ Scopes to omit in read-only config: `storage:events:write`, `email:emails:send`,
 - Writes needing approval: `POST /api/v1/monitor`, downtimes, mute/unmute, SLO create/update, incidents, events. Logs/spans search POSTs are read-only.
 - Rate limits: watch `X-RateLimit-*` headers; back off on `429`. Cost: short windows, small `page.limit`.
 
+## Kubernetes setup details
+
+`k8s-mcp.toml` (genuine config example):
+
+```toml
+read_only = true
+
+[[denied_resources]]
+group = ""
+version = "v1"
+kind = "Secret"
+```
+
+Claude Code deny rules (in `.claude/settings.json` `permissions.deny`; verify exact tool names with `/mcp`):
+
+```json
+{
+  "permissions": {
+    "deny": [
+      "mcp__kubernetes__resources_delete",
+      "mcp__kubernetes__resources_create_or_update",
+      "mcp__kubernetes__resources_scale",
+      "mcp__kubernetes__pods_exec",
+      "mcp__kubernetes__pods_delete",
+      "mcp__kubernetes__pods_run",
+      "mcp__kubernetes__helm_install",
+      "mcp__kubernetes__helm_uninstall"
+    ]
+  }
+}
+```
+
 ## Example `.mcp.json` (read-only)
 
 Genuine config example. Replace placeholders; keep secrets in env vars.
@@ -51,7 +83,7 @@ Genuine config example. Replace placeholders; keep secrets in env vars.
 ```json
 {
   "mcpServers": {
-    "kubernetes": { "command": "npx", "args": ["-y", "kubernetes-mcp-server@latest", "--read-only"] },
+    "kubernetes": { "command": "npx", "args": ["-y", "kubernetes-mcp-server@<pinned-version>", "--config", "/path/to/k8s-mcp.toml"] },
     "grafana": {
       "command": "uvx", "args": ["mcp-grafana", "--disable-write"],
       "env": { "GRAFANA_URL": "https://grafana.example.com", "GRAFANA_SERVICE_ACCOUNT_TOKEN": "${GRAFANA_SA_TOKEN}" }
@@ -76,6 +108,6 @@ The `dynatrace` entry uses the deprecated local server; prefer Dynatrace for AI 
 
 ## Extra guardrails
 
-- Deny write tools in Claude Code permissions as a second layer (e.g. `"deny": ["mcp__kubernetes__resources_delete"]`); names come from `/mcp`.
+- Deny write tools in Claude Code permissions as a second layer (see Kubernetes example above); tool names come from `/mcp`.
 - Separate prod and non-prod servers/credentials; name them clearly (`kubernetes-prod`).
 - Audit: most vendors log API calls; tag the MCP identity so its actions are traceable.

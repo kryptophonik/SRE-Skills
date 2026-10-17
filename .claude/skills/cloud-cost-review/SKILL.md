@@ -37,7 +37,7 @@ az disk list --subscription <subscription-id> --query "[?diskState=='Unattached'
 gcloud compute disks list --filter="-users:*"
 gcloud recommender recommendations list --project=<project> --location=<zone> --recommender=google.compute.instance.MachineTypeRecommender
 # Kubernetes requests vs usage
-kubectl top pods -A --sort-by=cpu
+kubectl --context <ctx> top pods -A --sort-by=cpu
 ```
 
 ## Output

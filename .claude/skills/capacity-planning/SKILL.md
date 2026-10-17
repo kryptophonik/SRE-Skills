@@ -28,8 +28,8 @@ Follow [sre-safety-gates](../sre-safety-gates/SKILL.md): read-only first; explic
 ## Read-only checks
 
 ```bash
-kubectl top nodes
-kubectl get hpa -A
+kubectl --context <ctx> top nodes
+kubectl --context <ctx> get hpa -A
 aws service-quotas list-service-quotas --service-code ec2
 az vm list-usage --location <region> --subscription <subscription-id> -o table
 gcloud compute regions describe <region> --format="table(quotas.metric,quotas.limit,quotas.usage)"

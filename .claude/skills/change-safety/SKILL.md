@@ -43,9 +43,9 @@ Total 5–7 low, 8–11 med (peer review + canary), 12–15 high (approval from 
 ## Useful read-only commands
 
 ```bash
-kubectl rollout status deployment/<name> -n <ns>
-kubectl rollout history deployment/<name> -n <ns>
-kubectl argo rollouts get rollout <name> -n <ns>   # Argo Rollouts plugin
+kubectl --context <ctx> -n <ns> rollout status deployment/<name> --timeout=60s
+kubectl --context <ctx> -n <ns> rollout history deployment/<name>
+kubectl argo rollouts --context <ctx> -n <ns> get rollout <name>   # Argo Rollouts plugin
 terraform plan -out=tfplan && terraform show tfplan
 ```
 

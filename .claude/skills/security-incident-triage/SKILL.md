@@ -38,7 +38,7 @@ az monitor activity-log list --resource-group <rg> --subscription <subscription-
 # GCP: admin activity audit log
 gcloud logging read 'logName:"cloudaudit.googleapis.com%2Factivity"' --freshness=1d --limit=50
 # Kubernetes: who can do what
-kubectl auth can-i --list --as=<user> -n <ns>
+kubectl --context <ctx> -n <ns> auth can-i --list --as=<user>
 ```
 
 ## Containment actions (WRITE — security + IC approval)
@@ -47,7 +47,7 @@ kubectl auth can-i --list --as=<user> -n <ns>
 |---|---|---|
 | Deactivate AWS access key: `aws iam update-access-key --access-key-id <id> --status Inactive --user-name <user>` | med | yes |
 | Isolate pod: apply deny-all NetworkPolicy selecting the pod | med | yes |
-| Cordon node: `kubectl cordon <node>` | low | yes |
+| Cordon node: `kubectl --context <ctx> cordon <node>` | low | yes |
 | Rotate secret in secret manager and redeploy consumers | med | partial |
 
 ## Output

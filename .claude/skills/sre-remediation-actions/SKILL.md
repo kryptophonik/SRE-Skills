@@ -6,6 +6,8 @@ user-invocable: false
 
 # SRE Remediation Actions
 
+All `kubectl`/`helm` commands here also take `--context <ctx>` (`--kube-context <ctx>` for helm); never rely on the current context. Never `delete --force --grace-period=0`, `delete --all`, or patch away finalizers without SRE approval.
+
 ## Safety gates (REQUIRED)
 Follow [sre-safety-gates](../sre-safety-gates/SKILL.md) for every step. In short: read-only diagnosis -> propose with risk/reversibility -> **explicit human approval** before any prod change, MCP write, or external post -> act -> verify -> stop and escalate if worse.
 **Legend:** `risk` = low / med / high blast radius. `reversible` = yes / no (can be cleanly undone without data loss).
@@ -30,9 +32,9 @@ Follow [sre-safety-gates](../sre-safety-gates/SKILL.md) for every step. In short
 ```bash
 kubectl rollout history deployment/<name> -n <namespace>
 kubectl describe deployment/<name> -n <namespace>
-kubectl get events -n <namespace> --sort-by=.lastTimestamp
-kubectl logs <pod> -n <namespace> --all-containers --timestamps > <pod>.log
-kubectl logs <pod> -n <namespace> --previous > <pod>.prev.log
+kubectl events -n <namespace> --types=Warning
+kubectl logs <pod> -n <namespace> --all-containers --timestamps > <pod>.log   # may contain secrets/PII: keep out of repos, redact
+kubectl logs <pod> -n <namespace> --all-containers --previous > <pod>.prev.log   # errors if no previous instance; harmless
 ```
 
 ### JVM or runtime
@@ -58,9 +60,10 @@ journalctl -u <service> --since '-1h' > <service>.log
 ## Dry run first
 
 ```bash
-kubectl apply --dry-run=server -f <file> && kubectl diff -f <file>
+kubectl diff -f <file>; kubectl apply --dry-run=server -f <file>   # diff exits 1 when there are differences, so do not chain with &&; server dry-run still calls admission webhooks
 terraform plan  # review diff before any apply
-helm diff upgrade <release> <chart> (helm-diff plugin) / helm upgrade --dry-run
+helm diff upgrade <release> <chart> (helm-diff plugin) / helm upgrade --dry-run=server (Helm >= 3.13)
+helm history <release> -n <namespace>
 ```
 
 ## Common actions
@@ -95,7 +98,8 @@ helm diff upgrade <release> <chart> (helm-diff plugin) / helm upgrade --dry-run
 | Action | Risk | Reversible | Note |
 |---|---|---|---|
 | `kubectl rollout history deployment/<name> -n <namespace>` | low | yes | Read-only; confirm target revision first |
-| `kubectl rollout undo deployment/<name> -n <namespace>` | med | yes | Check history; schema/data migrations may make this unsafe |
+| `kubectl rollout undo deployment/<name> -n <namespace>` | med | yes | Check history; schema/data migrations may make this unsafe; uses ReplicaSet history (`revisionHistoryLimit`); GitOps (Argo/Flux) reverts it unless sync is paused or Git is reverted |
+| `helm rollback <release> <revision> -n <namespace>` | med | yes | Check `helm history` first; GitOps caveat applies |
 | `kubectl rollout undo deployment/<name> -n <namespace> --to-revision=<n>` | med | yes |  |
 
 #### Cloud
@@ -123,8 +127,8 @@ helm diff upgrade <release> <chart> (helm-diff plugin) / helm upgrade --dry-run
 
 | Action | Risk | Reversible | Note |
 |---|---|---|---|
-| `kubectl scale deployment/<name> --replicas=<n> -n <namespace>` | low | yes | Note current replica count first; HPA may override |
-| `kubectl autoscale deployment/<name> --min=<min> --max=<max> -n <namespace>` | low | yes |  |
+| `kubectl scale deployment/<name> --replicas=<n> -n <namespace>` | low | yes | Note current replica count first; HPA overrides; GitOps reverts |
+| `kubectl autoscale deployment/<name> --min=<min> --max=<max> -n <namespace>` | low | yes | Creates an HPA; conflicts with an existing HPA or GitOps. Revert: `kubectl delete hpa <name> -n <namespace>` |
 
 #### Cloud
 
