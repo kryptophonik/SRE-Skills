@@ -10,8 +10,8 @@ Add a server with `claude mcp add` or a project `.mcp.json`. Keep tokens in envi
 | Kubernetes | kubernetes-mcp-server | https://github.com/containers/kubernetes-mcp-server | Current releases dropped runtime CLI flags such as `--read-only`: set `read_only = true` in a TOML file passed with `--config`, deny Secrets with `[[denied_resources]]`, and **pin the version**. Bind a `view`-based Role/ClusterRole (no `secrets`, `pods/exec`, `pods/portforward`, `pods/attach`). Add Claude Code deny rules for write tools (below). |
 | Grafana / Prometheus / Loki | mcp-grafana | https://github.com/grafana/mcp-grafana | `--disable-write`; service account with Viewer role. Add `--enable-query` only if datasource credentials are read-only. |
 | Datadog | Datadog MCP server (remote) — endpoint `https://mcp.<site>/api/unstable/mcp-server/mcp`; also Claude Code plugin `datadog@claude-plugins-official`. GovCloud unsupported. | https://docs.datadoghq.com/bits_ai/mcp_server/setup/ | **Writes are on by default** (Standard role has `mcp_write`). Enforce read-only: custom role with only `mcp_read`, org-level MCP Write Access off, or `?omit_tools=` for write tools (e.g. `create_datadog_monitor`, `create/edit_datadog_notebook`; verify names in your tool list). Default toolset `core`; narrow with `?toolsets=`, avoid `all`. Auth: OAuth > PAT/SAT bearer > API+app keys (app-key scopes `metrics_read`, `monitors_read`, `logs_read_data`, `apm_read`). Never echo keys; use env substitution. |
-| PagerDuty | PagerDuty remote MCP (`https://mcp.pagerduty.com/mcp`) | https://support.pagerduty.com/main/docs/pagerduty-mcp-server · archived local: https://github.com/PagerDuty/pagerduty-mcp-server | Local server is read-only unless started with `--enable-write-tools` (do not add it). Remote: use a read-only user/OAuth scope. |
-| Opsgenie | No official MCP server found | — | Use the REST API with a read-only API key (`pagerduty-opsgenie` skill). Opsgenie support ends 2027-04-05. |
+| PagerDuty | PagerDuty hosted MCP (`https://mcp.pagerduty.com/mcp`; EU `https://mcp.eu.pagerduty.com/mcp`) | https://support.pagerduty.com/main/docs/pagerduty-mcp-server · archived local (deprecated): https://github.com/PagerDuty/pagerduty-mcp-server | The hosted server **exposes write tools** (`manage_incidents`, `manage_schedules`, `manage_status_pages`, `manage_teams`) and **cannot filter them**: use a scoped OAuth client or a read-only user, and add Claude Code deny rules for `mcp__pagerduty__manage_*`. Auth: OAuth (no Dynamic Client Registration — fixed `clientId` + `callbackPort`) or header `Authorization: Token token=...`. Archived local server (`uvx pagerduty-mcp`, `PAGERDUTY_USER_API_KEY`) is read-only unless `--enable-write-tools`. |
+| Opsgenie | No official MCP server found (unverified) | — | Use the REST API with a read-only API key (`pagerduty-opsgenie` skill). End of sale June 4, 2025; unmigrated data deleted April 5, 2027. |
 | Terraform | HashiCorp Terraform MCP server | https://github.com/hashicorp/terraform-mcp-server | Pin the image version and set `--toolsets=registry` (docs say the default is all toolsets; tool names change between versions). Registry lookups are read-only. With `TFE_TOKEN` set, `create_run` (defaults to plan_and_apply) and the workspace, variable, varset, team and tag tools **write**, even with `ENABLE_TF_OPERATIONS` off; plan/state read tools can expose secrets. **Never set `ENABLE_TF_OPERATIONS=true`** (enables apply, destroy, force-unlock, auto_approve). The server may send Terraform data to the LLM. (awslabs and Azure Terraform MCP servers are deprecated.) |
 | AWS | **Recommended:** official AWS MCP Server. `awslabs` `aws-api-mcp-server` is **DEPRECATED** (superseded; see its MIGRATION.md). | https://docs.aws.amazon.com/agent-toolkit/latest/userguide/mcp-server.html · deprecated: https://github.com/awslabs/mcp (`src/aws-api-mcp-server`) | If still using aws-api-mcp-server: pin the version, `READ_OPERATIONS_ONLY=true`, `REQUIRE_MUTATION_CONSENT=true` (needs an elicitation-capable client), `AWS_API_MCP_PROFILE_NAME=<read-only-profile>`, `AWS_REGION=<region>`, optionally `AWS_API_MCP_ALLOW_UNRESTRICTED_LOCAL_FILE_ACCESS=no-access` and `AWS_API_MCP_TELEMETRY=false`. IAM: `ReadOnlyAccess` + `ce:GetCostAndUsage` + `health:Describe*`, with explicit Deny on `secretsmanager:GetSecretValue`, `ssm:GetParameter*`, `s3:GetObject`, `kms:Decrypt`. **Warnings:** read operations can still return credentials or sensitive data; do not point it at untrusted data such as CloudWatch logs (prompt injection risk). |
 | Azure | Azure MCP Server (`@azure/mcp`) | https://github.com/microsoft/mcp (`servers/Azure.Mcp.Server`) | Pin the version (`@azure/mcp@3.0.0`; new majors add write tools), start with `server start --read-only`, and limit tools with repeatable `--namespace` (e.g. `monitor`, `aks`, resource health — check names with `npx -y @azure/mcp@3.0.0 tools list`). Optionally `AZURE_MCP_COLLECT_TELEMETRY=false`. Roles: Reader, Log Analytics Reader, Cost Management Reader, AKS Cluster User Role (cluster scope); never Contributor/Owner. `--read-only` is defense in depth, not a guarantee. |
@@ -57,12 +57,13 @@ version = "v1"
 kind = "Secret"
 ```
 
-Claude Code deny rules for Kubernetes and Terraform (in `.claude/settings.json` `permissions.deny`; the `mcp__<server-name>__` prefix depends on your server name; verify exact tool names with `/mcp`):
+Claude Code deny rules for PagerDuty, Kubernetes and Terraform (in `.claude/settings.json` `permissions.deny`; the `mcp__<server-name>__` prefix depends on your server name; verify exact tool names with `/mcp`):
 
 ```json
 {
   "permissions": {
     "deny": [
+      "mcp__pagerduty__manage_*",
       "mcp__kubernetes__resources_delete",
       "mcp__kubernetes__resources_create_or_update",
       "mcp__kubernetes__resources_scale",
@@ -108,6 +109,13 @@ gcloud MCP read-only allowlist (`config.json`, passed with `-c`; use `allow` or 
 }
 ```
 
+## PagerDuty setup details
+
+Two auth options for the hosted MCP entry:
+
+- **OAuth** (scoped client): `"oauth": { "clientId": "<client-id>", "callbackPort": 8080 }`, added with `claude mcp add-json pagerduty '<json>' --client-secret` so the secret is prompted, not stored in the file.
+- **Token header** (shown below): `"headers": { "Authorization": "Token token=${PAGERDUTY_API_KEY}" }` with a read-only user's key.
+
 ## Example `.mcp.json` (read-only)
 
 Genuine config example. Replace placeholders; keep secrets in env vars.
@@ -125,7 +133,7 @@ Genuine config example. Replace placeholders; keep secrets in env vars.
       "env": { "DT_ENVIRONMENT": "https://<env-id>.apps.dynatrace.com", "DT_PLATFORM_TOKEN": "${DT_PLATFORM_TOKEN}", "DT_GRAIL_QUERY_BUDGET_GB": "50" }
     },
     "datadog": { "type": "http", "url": "https://mcp.datadoghq.com/api/unstable/mcp-server/mcp" },
-    "pagerduty": { "type": "http", "url": "https://mcp.pagerduty.com/mcp" },
+    "pagerduty": { "type": "http", "url": "https://mcp.pagerduty.com/mcp", "headers": { "Authorization": "Token token=${PAGERDUTY_API_KEY}" } },
     "aws-api": {
       "command": "uvx", "args": ["awslabs.aws-api-mcp-server@<pinned-version>"],
       "env": { "AWS_REGION": "<region>", "AWS_API_MCP_PROFILE_NAME": "<read-only-profile>", "READ_OPERATIONS_ONLY": "true", "REQUIRE_MUTATION_CONSENT": "true", "AWS_API_MCP_ALLOW_UNRESTRICTED_LOCAL_FILE_ACCESS": "no-access", "AWS_API_MCP_TELEMETRY": "false" }

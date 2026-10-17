@@ -13,7 +13,7 @@ Toil = manual, repetitive, automatable, reactive work that scales with service s
 
 ## Workflow
 
-1. **Collect** 4–12 weeks: pages, tickets, runbook executions, manual deploys/requests (`pagerduty-opsgenie`, ticket system, handoff notes).
+1. **Collect** 4–12 weeks: pages, tickets, runbook executions, manual deploys/requests (`pagerduty-opsgenie` with paginated fetches, ticket system, handoff notes).
 2. **Group** into tasks (e.g., "restart stuck consumer", "grant DB access").
 3. **Score** each task.
 4. **Pick** top items; choose fix type: eliminate (fix root cause), automate, self-service, or tune alert.

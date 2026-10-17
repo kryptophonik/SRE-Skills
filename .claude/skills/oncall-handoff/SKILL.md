@@ -13,7 +13,7 @@ Follow [sre-safety-gates](../sre-safety-gates/SKILL.md): read-only first; explic
 
 1. Set the window (default: last shift, e.g. 12 h or 7 d for weekly rotations).
 2. Collect, read-only:
-   - Incidents and alerts: `pagerduty-opsgenie`.
+   - Incidents and alerts: `pagerduty-opsgenie`. Count pages with its paginated fetch (`limit=100`, loop on `offset` while `more=true`; Opsgenie `limit`≤100 + `offset`) — the default page of 25 undercounts.
    - Open problems: `dynatrace-sre`; firing alerts: `prometheus-grafana`, `datadog`.
    - Deploys and changes: CI/CD history, `change-safety` log, Terraform runs.
 3. Group alerts by service; flag noisy (fired 3+ times, no action) and missing-runbook alerts.
