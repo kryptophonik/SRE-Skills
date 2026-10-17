@@ -1,0 +1,36 @@
+name: validate
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Generated outputs are up to date
+        run: python3 scripts/build-targets.py --check
+      - name: Pack structure, frontmatter, links, JSON/YAML/TOML
+        run: |
+          pip install pyyaml
+          python3 scripts/validate.py
+      - name: Shell syntax and shellcheck
+        run: |
+          find .claude -name '*.sh' -print0 | xargs -0 -n1 bash -n
+          find .claude -name '*.sh' -print0 | xargs -0 shellcheck -S warning
+      - name: PagerDuty/Opsgenie script tests
+        run: bash .claude/skills/sre-pagerduty-opsgenie/scripts/tests/run_tests.sh
+      - name: Install promtool
+        run: |
+          curl -sSfL https://github.com/prometheus/prometheus/releases/download/v3.5.0/prometheus-3.5.0.linux-amd64.tar.gz | tar xz -C /tmp
+          echo "PROMTOOL=/tmp/prometheus-3.5.0.linux-amd64/promtool" >> "$GITHUB_ENV"
+      - name: Burn-rate rule generator tests
+        run: bash .claude/skills/sre-prometheus-grafana/scripts/test-gen-burn-rate-rules.sh
+      - name: PromQL snippets
+        run: |
+          PATH=/tmp/prometheus-3.5.0.linux-amd64:$PATH python3 .claude/skills/sre-prometheus-grafana/scripts/validate-promql-snippets.py \
+            $(grep -rl --include='*.md' '```promql' .claude)
