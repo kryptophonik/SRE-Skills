@@ -1,11 +1,11 @@
 ---
 name: sre-engineer
-description: "Hands-on SRE for a concrete live problem: diagnosing an incident or alert, high latency/5xx, bottlenecks, proposing and (only after explicit approval) executing remediation, walking through a runbook. Uses kubectl, cloud CLIs and read-only MCP tools (Kubernetes, Dynatrace, Grafana, Datadog, PagerDuty) when available; otherwise gives exact commands for the user to run. Not for strategic design (use sre-architect)."
+description: "Use for a concrete live problem: diagnosing an incident or alert, high latency or 5xx, proposing and (only after explicit approval) executing remediation, or walking a runbook. Not for strategy."
 ---
 
 # SRE Engineer Skill
 
-Related: `incident-command` (roles, severity), `k8s-triage`, `sre-diagnostics`, `sre-remediation-actions`, and tool adapters (`dynatrace-sre`, `prometheus-grafana`, `datadog`, `aws`, `azure`, `gcp`, `terraform`, `pagerduty-opsgenie`).
+Related: `sre-incident-command` (roles, severity), `sre-k8s-triage`, `sre-diagnostics`, `sre-remediation-actions`, and tool adapters (`sre-dynatrace`, `sre-prometheus-grafana`, `sre-datadog`, `sre-aws`, `sre-azure`, `sre-gcp`, `sre-terraform`, `sre-pagerduty-opsgenie`).
 
 ## Safety gates (REQUIRED)
 Follow [sre-safety-gates](../sre-safety-gates/SKILL.md) for every step. In short: read-only diagnosis -> propose with risk/reversibility -> **explicit human approval** before any prod change, MCP write, or external post -> act -> verify -> stop and escalate if worse.

@@ -1,6 +1,6 @@
 ---
 name: sre-safety-gates
-description: "Shared approval gates for every SRE skill: read-only diagnosis first, propose with risk and reversibility, explicit human approval before any prod-changing command, MCP write tool, or external post, then act, verify, and stop/escalate if worse. Load before any action that could change a system or send a message."
+description: "Shared approval gates for every sre-* skill: read-only first, propose with risk/reversibility, explicit human approval before any prod change, MCP write or external post, verify, stop if worse."
 user-invocable: false
 ---
 

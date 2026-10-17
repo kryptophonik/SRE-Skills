@@ -10,28 +10,36 @@ Version: `3.0.0`
 - State assumptions; mark unknowns `[TBD]`. Tie advice to SLIs/SLOs. Every skill ends with its `Output` deliverable.
 - MCP servers and read-only setup: [docs/mcp.md](docs/mcp.md).
 
+## Placeholder vocabulary
+
+Use these exact placeholders in every skill: `<ctx>` (kube context), `<ns>` (namespace), `<svc>` (service), `<env>`, `<cluster>`, `<profile>` and `<region>` (AWS), `<subscription-id>` and `<rg>` (Azure), `<PROJECT_ID>`, `<REGION>`, `<ZONE>` (GCP, upper-case to match Google docs), `<env-id>` (Dynatrace), `$DD_SITE` (Datadog). HTTP status label in PromQL examples is `code`; rename to `status` where your metrics use that.
+
+## Naming
+
+Every skill is prefixed `sre-` so it does not collide with or shadow other packs' skills (personal skills override project skills with the same name). Check for collisions with `/skills`.
+
 ## Routing (most specific first)
 
 | Intent | Skill | Invocation |
 |---|---|---|
-| Incident declared/suspected, roles, severity, IC handoff | `incident-command` | auto |
-| Suspected compromise, leaked key, suspicious access | `security-incident-triage` | auto |
+| Incident declared/suspected, roles, severity, IC handoff | `sre-incident-command` | auto |
+| Suspected compromise, leaked key, suspicious access | `sre-security-incident-triage` | auto |
 | Debug a live issue, high 5xx/latency, remediate, run a runbook | `sre-engineer` | auto |
-| Kubernetes workload unhealthy | `k8s-triage` | auto |
+| Kubernetes workload unhealthy | `sre-k8s-triage` | auto |
 | Investigation and profiling detail | `sre-diagnostics` | auto |
 | Incident update / status page / exec summary drafts | `sre-incident-communication` | auto |
 | Postmortem / RCA | `sre-postmortem-templates` | auto |
-| Shift change summary | `oncall-handoff` | auto |
-| Deploy, migration, infra change safety | `change-safety` | auto |
+| Shift change summary | `sre-oncall-handoff` | auto |
+| Deploy, migration, infra change safety | `sre-change-safety` | auto |
 | SLOs, error budgets, alert rules, alert fatigue | `sre-slo-alerting` | auto |
 | Write/update a runbook | `sre-runbook-templates` | auto |
 | Production readiness / launch | `sre-production-readiness` | auto |
-| Capacity, headroom, load tests | `capacity-planning` | auto |
-| Backup restore / DR drill | `dr-backup-test` | auto |
-| Dependencies, blast radius | `dependency-mapping` | auto |
-| Toil review | `toil-review` | auto |
-| Cloud or observability cost | `cloud-cost-review` | auto |
-| A correct query in any monitoring tool | `observability-query-cookbook` | auto |
+| Capacity, headroom, load tests | `sre-capacity-planning` | auto |
+| Backup restore / DR drill | `sre-dr-backup-test` | auto |
+| Dependencies, blast radius | `sre-dependency-mapping` | auto |
+| Toil review | `sre-toil-review` | auto |
+| Cloud or observability cost | `sre-cloud-cost-review` | auto |
+| A correct query in any monitoring tool | `sre-observability-query-cookbook` | auto |
 | Chaos experiment / game day | `sre-chaos-engineering` | **manual only** (`/sre-chaos-engineering`) |
 | Design, reliability review, on-call program | `sre-architect` | auto |
 
@@ -39,13 +47,13 @@ Version: `3.0.0`
 
 | Tool | Skill |
 |---|---|
-| Dynatrace | `dynatrace-sre` |
-| Prometheus, Alertmanager, Loki, Grafana | `prometheus-grafana` |
-| Datadog | `datadog` |
-| PagerDuty, Opsgenie | `pagerduty-opsgenie` |
-| Terraform | `terraform` |
-| AWS / Azure / GCP | `aws` / `azure` / `gcp` |
-| Kubernetes | `k8s-triage` |
+| Dynatrace | `sre-dynatrace` |
+| Prometheus, Alertmanager, Loki, Grafana | `sre-prometheus-grafana` |
+| Datadog | `sre-datadog` |
+| PagerDuty, Opsgenie | `sre-pagerduty-opsgenie` |
+| Terraform | `sre-terraform` |
+| AWS / Azure / GCP | `sre-aws` / `sre-azure` / `sre-gcp` |
+| Kubernetes | `sre-k8s-triage` |
 
 ### Reference skills (Claude-only, `user-invocable: false`)
 

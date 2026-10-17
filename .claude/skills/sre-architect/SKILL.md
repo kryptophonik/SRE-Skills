@@ -1,6 +1,6 @@
 ---
 name: sre-architect
-description: "Strategic SRE design and review: observability architecture, reliability review of a system, SRE program and on-call design. Routes specific asks to the right skill (SLOs, PRR, chaos, capacity, DR, dependencies, cost). Use for planning and design questions. Do not use for live incidents (use incident-command / sre-engineer)."
+description: "Use for SRE design and planning: observability architecture, reliability reviews, SRE program and on-call design. Routes specific asks to other sre-* skills. Not for live incidents (use sre-incident-command / sre-engineer)."
 ---
 
 # SRE Architect
@@ -23,14 +23,14 @@ Strategic, read-only design and review. Keep it short: frame the problem, route 
 | Production readiness / launch | `sre-production-readiness` |
 | Runbook writing | `sre-runbook-templates` |
 | Chaos program or experiment | manual only: tell the user to run `/sre-chaos-engineering` |
-| Capacity / headroom / load tests | `capacity-planning` |
-| Backup and DR drills | `dr-backup-test` |
-| Upstream/downstream, blast radius | `dependency-mapping` |
-| Deploy safety, change management | `change-safety` |
-| Toil reduction | `toil-review` |
-| Cloud or observability spend | `cloud-cost-review` |
+| Capacity / headroom / load tests | `sre-capacity-planning` |
+| Backup and DR drills | `sre-dr-backup-test` |
+| Upstream/downstream, blast radius | `sre-dependency-mapping` |
+| Deploy safety, change management | `sre-change-safety` |
+| Toil reduction | `sre-toil-review` |
+| Cloud or observability spend | `sre-cloud-cost-review` |
 | Tool selection | `sre-tools-catalog` |
-| Live incident | `incident-command`, `sre-engineer` |
+| Live incident | `sre-incident-command`, `sre-engineer` |
 
 ## Workflows
 
@@ -46,7 +46,7 @@ Strategic, read-only design and review. Keep it short: frame the problem, route 
 
 ### Reliability review
 
-1. Map dependencies and single points of failure (`dependency-mapping`).
+1. Map dependencies and single points of failure (`sre-dependency-mapping`).
 2. Check SLO coverage and error budget status.
 3. Review alert quality (actionable, linked runbooks, noise).
 4. Review change safety, capacity headroom, and DR readiness.
@@ -57,8 +57,8 @@ Strategic, read-only design and review. Keep it short: frame the problem, route 
 
 1. Define rotations, escalation policies, and severity levels.
 2. Set paging rules (page only on user impact; ticket otherwise).
-3. Add handoff (`oncall-handoff`) and incident roles (`incident-command`).
-4. Track load: pages per shift, off-hours pages, toil (`toil-review`).
+3. Add handoff (`sre-oncall-handoff`) and incident roles (`sre-incident-command`).
+4. Track load: pages per shift, off-hours pages, toil (`sre-toil-review`).
 
 ## Output
 

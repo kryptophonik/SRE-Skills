@@ -1,13 +1,13 @@
 ---
 name: sre-diagnostics
-description: "Read-only investigation and performance diagnosis for a live issue: quick checks, logs/metrics/traces queries, correlation, hypothesis testing, profiling (perf, pprof, py-spy, strace) and bottleneck identification. Runs kubectl/promtool/CLI read commands or MCP query tools (Dynatrace, Grafana, Datadog, Kubernetes) when available; otherwise gives the exact commands for the user to run. Use while diagnosing with sre-engineer."
+description: "Use to investigate a live issue read-only: logs/metrics/traces queries, correlation, hypothesis testing, profiling and bottleneck identification. Gives exact commands when tools are unavailable."
 ---
 
 # SRE Diagnostics
 
 Structured, read-only debugging and performance investigation. Follows [sre-safety-gates](../sre-safety-gates/SKILL.md): profiling or capturing on prod needs approval.
 
-For tool-specific queries see `observability-query-cookbook`, `dynatrace-sre`, `prometheus-grafana`, `datadog`, and `k8s-triage`.
+For tool-specific queries see `sre-observability-query-cookbook`, `sre-dynatrace`, `sre-prometheus-grafana`, `sre-datadog`, and `sre-k8s-triage`.
 
 ## Part 1 — Debugging
 
@@ -100,7 +100,7 @@ For tool-specific queries see `observability-query-cookbook`, `dynatrace-sre`, `
 
 - Jaeger: UI search and trace inspection
 - Tempo: TraceQL queries
-- Datadog: Trace search, e.g. `service:<svc> env:<env> status:error @duration:>1s` via `POST /api/v2/spans/events/search` (read-only; see `datadog`)
+- Datadog: Trace search, e.g. `service:<svc> env:<env> status:error @duration:>1s` via `POST /api/v2/spans/events/search` (read-only; see `sre-datadog`)
 
 ## Correlation checks
 

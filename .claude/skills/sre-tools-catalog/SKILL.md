@@ -1,6 +1,6 @@
 ---
 name: sre-tools-catalog
-description: "Reference catalog of SRE tooling (metrics, logs, traces, alerting, on-call, SLO, chaos, load testing) with trade-offs and last-reviewed date. Loaded when choosing or comparing tools."
+description: "Reference catalog of SRE tooling (metrics, logs, traces, alerting, on-call, SLO, chaos, feature flags, load testing) with trade-offs and a last-reviewed date. Loaded when comparing tools."
 user-invocable: false
 ---
 

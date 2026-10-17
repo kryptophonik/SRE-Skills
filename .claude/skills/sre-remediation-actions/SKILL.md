@@ -1,6 +1,6 @@
 ---
 name: sre-remediation-actions
-description: "Reference of gated recovery procedures (rollback, scale, restart, failover) labeled with risk and reversibility, with evidence capture and dry-run first. Loaded by sre-engineer when choosing or executing a remediation via kubectl, systemctl, terraform or cloud CLIs; every prod change needs explicit human approval."
+description: "Reference of gated recovery procedures (rollback, scale, restart, failover) with risk/reversibility labels, evidence capture and dry-run first. Loaded by sre-engineer before any remediation."
 user-invocable: false
 ---
 
@@ -114,7 +114,7 @@ helm history --kube-context <ctx> <release> -n <ns>
 
 | Action | Risk | Reversible | Note |
 |---|---|---|---|
-| `git revert <commit>` -> `terraform plan -input=false -out=<plan-file>` -> `terraform show -no-color <plan-file>` -> explicit approval -> `terraform apply <plan-file>` (plain `apply` re-plans instead of applying the reviewed plan; see `terraform`) | high | partial | There is no 'terraform rollback'. Destroy/replace actions in the plan may be irreversible. |
+| `git revert <commit>` -> `terraform plan -input=false -out=<plan-file>` -> `terraform show -no-color <plan-file>` -> explicit approval -> `terraform apply <plan-file>` (plain `apply` re-plans instead of applying the reviewed plan; see `sre-terraform`) | high | partial | There is no 'terraform rollback'. Destroy/replace actions in the plan may be irreversible. |
 
 #### Database
 

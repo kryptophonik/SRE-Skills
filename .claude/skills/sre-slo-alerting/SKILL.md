@@ -1,6 +1,6 @@
 ---
 name: sre-slo-alerting
-description: "Defines SLIs, SLOs and error budget policy, then derives multi-window burn-rate alerts, alert taxonomy and alert-fatigue reduction. Use when creating or revising SLOs, error budgets, alert rules or paging policy. Not for responding to a firing alert (use sre-engineer). Writes rule files for Prometheus, Dynatrace SLOs or Datadog monitors via prometheus-grafana, dynatrace-sre or datadog; creating them in a live system needs approval."
+description: "Use when creating or revising SLIs, SLOs, error budget policy, burn-rate alerts or paging policy, and for alert-fatigue reduction. Not for responding to a firing alert (use sre-engineer)."
 ---
 
 # SLOs and Alerting
@@ -107,7 +107,7 @@ Alert only when both the long and the short window exceed `N * (1 - <slo>)`. The
 
 - Build the 1d and 3d windows from recording rules, not raw queries.
 - `for:` is only a noise filter; `for: 0m` is valid because the short window already de-noises.
-- Full Prometheus rule file (promtool-validated): `prometheus-grafana`.
+- Full Prometheus rule file (promtool-validated): `sre-prometheus-grafana`.
 
 ## Alert definition template
 

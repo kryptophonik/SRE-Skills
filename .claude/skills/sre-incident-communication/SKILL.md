@@ -1,6 +1,6 @@
 ---
 name: sre-incident-communication
-description: "Drafts incident announcements, status updates, resolution notices and executive summaries with severity-based cadence. Drafts only; posting to Slack, status pages, PagerDuty/Opsgenie or email requires explicit approval. Use when an incident update or stakeholder message is needed."
+description: "Use when an incident update or stakeholder message is needed: announcements, status updates, resolution notices, executive summaries with severity cadence. Drafts only until approved."
 ---
 
 # SRE Incident Communication Templates

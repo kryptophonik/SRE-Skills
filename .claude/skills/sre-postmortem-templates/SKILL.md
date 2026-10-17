@@ -1,6 +1,6 @@
 ---
 name: sre-postmortem-templates
-description: "Drafts and facilitates blameless postmortems / incident reviews / RCAs, building the timeline from PagerDuty/Opsgenie, Dynatrace/Grafana/Datadog and deploy history when available. Use after an incident is resolved. Not for active incidents."
+description: "Use after an incident is resolved to draft or facilitate a blameless postmortem / incident review / RCA with a timeline from paging, monitoring and deploy history. Not for active incidents."
 ---
 
 # Postmortem Templates

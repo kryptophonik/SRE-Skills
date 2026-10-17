@@ -1,6 +1,6 @@
 ---
 name: sre-production-readiness
-description: "Runs a production readiness review (PRR) / launch checklist and produces a pass/fail verdict with evidence. Use before a new service or major change goes live."
+description: "Use before a new service or major change goes live: run a production readiness review (PRR) / launch checklist and produce a pass/fail verdict with evidence."
 ---
 
 # SRE Production Readiness Review (PRR)

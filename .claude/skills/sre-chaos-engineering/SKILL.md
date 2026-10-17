@@ -1,6 +1,6 @@
 ---
 name: sre-chaos-engineering
-description: "Designs and runs controlled chaos / fault-injection experiments and game days with hard no-go rules, approval and abort criteria. Uses Chaos Mesh, Gremlin, AWS FIS or similar only after approval; otherwise produces the plan. Manual invocation only. Not for live incident response."
+description: "Use to design or run a chaos / fault-injection experiment or game day, with hard no-go rules, approval and abort criteria. Manual invocation only. Not for live incident response."
 disable-model-invocation: true
 ---
 
