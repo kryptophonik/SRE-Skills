@@ -254,9 +254,75 @@ Verify after `rollout status` succeeds: `kubectl --context <ctx> -n <ns> get <ki
 - Check connection pool exhaustion
 - Review slow queries (EXPLAIN, profiling)
 - Check for locks/blocking queries
-- Restart connection pooler
+- Connection pooler (PgBouncer) problems: see "Restart a connection pooler" below. Restarting is not the first move.
 - Failover to replica only as last resort (high risk)
 - Scale database resources
+
+#### Restart a connection pooler
+
+**Risk: high. Reversible: no** (it drops every client connection through that pooler; in-flight transactions roll back). Do it after a rollback of the change that caused the problem, not before.
+
+Evidence first (read-only). PgBouncer admin console, with the password in `PGPASSFILE`:
+
+```bash
+psql -h <pooler-host> -p 6432 -U <pgbouncer-admin-user> pgbouncer -c 'SHOW POOLS;'
+psql -h <pooler-host> -p 6432 -U <pgbouncer-admin-user> pgbouncer -c 'SHOW STATS;'
+psql -h <db-host> -U <readonly-user> -d <db> -c "SELECT state, count(*) FROM pg_stat_activity GROUP BY state ORDER BY 2 DESC;"
+psql -h <db-host> -U <readonly-user> -d <db> -c "SHOW max_connections;"
+```
+
+Watch `cl_waiting` (clients queued for a server connection) and `maxwait` (seconds the oldest has waited). Record the output in the incident timeline.
+
+Try these first, in order:
+
+1. If `idle in transaction` sessions hold the slots, fix the app first, then clear them. `pg_cancel_backend` does nothing to these sessions (they have no running query), so the choices are terminating them or setting a timeout. Preview who would be hit:
+
+   ```sql
+   SELECT pid, usename, application_name, now() - state_change AS idle_for
+   FROM pg_stat_activity
+   WHERE state = 'idle in transaction' AND usename = '<app_role>'
+   ORDER BY idle_for DESC LIMIT 20;
+   ```
+
+   **Gate: approval required.**
+
+   ```sql
+   SELECT pg_terminate_backend(pid) FROM pg_stat_activity
+   WHERE state = 'idle in transaction' AND usename = '<app_role>'
+     AND now() - state_change > interval '5 minutes';
+   -- or, as a config change for that role (applies to new sessions only):
+   ALTER ROLE <app_role> SET idle_in_transaction_session_timeout = '60s';
+   ```
+
+2. If the pool is simply too small for current load and the database has headroom below `max_connections`, raise the pool size in `pgbouncer.ini` and reload it. `RELOAD` applies the new config without dropping clients.
+
+   **Gate: approval required.**
+
+   ```bash
+   psql -h <pooler-host> -p 6432 -U <pgbouncer-admin-user> pgbouncer -c 'RELOAD;'
+   ```
+
+3. To drain a pooler without dropping clients, `PAUSE` waits for in-flight transactions to finish and holds new ones; `RESUME` lets them through again. Keep the pause short: queued clients wait the whole time.
+
+   **Gate: approval required.**
+
+   ```bash
+   psql -h <pooler-host> -p 6432 -U <pgbouncer-admin-user> pgbouncer -c 'PAUSE;'
+   psql -h <pooler-host> -p 6432 -U <pgbouncer-admin-user> pgbouncer -c 'RESUME;'
+   ```
+
+Only if those fail, restart, **one pooler instance at a time** when there are several, waiting for each to pass verification before the next. PgBouncer 1.23 and later can do a rolling restart with `so_reuseport` across several processes, which avoids a full outage ([PgBouncer usage](https://www.pgbouncer.org/usage.html)).
+
+**Gate: approval required.**
+
+```bash
+sudo systemctl restart pgbouncer
+# or, on Kubernetes:
+kubectl --context <ctx> -n <ns> rollout restart deployment/<pgbouncer>
+kubectl --context <ctx> -n <ns> rollout status deployment/<pgbouncer> --timeout=300s
+```
+
+Verify: the app error rate falls back toward baseline, `SHOW POOLS;` shows `cl_waiting` at or near 0, and the database connection count from `pg_stat_activity` stays below `max_connections`. If errors don't fall, stop and escalate; don't restart again.
 
 ## Communication
 

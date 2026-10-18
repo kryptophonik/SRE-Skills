@@ -27,7 +27,7 @@ When unsure, pick the higher severity; downgrade later.
 
 ## Roles
 
-- **Incident Commander (IC):** owns decisions, severity, and approvals. A human. Never self-appoint.
+- **Incident Commander (IC):** owns decisions, severity, and approvals. Always a human, never the assistant. If the paged responder is alone, they are the IC: they say so in the incident channel ("I'm IC until handoff"), page a second person for any SEV-1 or SEV-2, and hand off command when that person joins. When someone else is already responding, nobody self-appoints: agree on the IC first.
 - **Ops lead:** runs diagnosis and remediation (`sre-engineer`).
 - **Comms lead:** drafts and sends updates (`sre-incident-communication`).
 - **Scribe:** keeps the timeline (this skill can act as scribe).
