@@ -76,3 +76,49 @@ cases:
     prompt: "Give me a regex that matches US zip codes."
     expect: [none]
     forbid: []
+  # 3am dry run (connection exhaustion on checkout). Database cases are added with
+  # sre-database-triage; negatives 22 and 23 then forbid it.
+  - id: dr-ic-solo
+    prompt: "3am, I'm the only one on call, checkout 5xx at 14%. Go."
+    expect: [sre-incident-command, sre-engineer]
+    forbid: [sre-k8s-safe-remediation, sre-chaos-engineering]
+  - id: dr-rollback-during-sev
+    prompt: "we're in a SEV-1 on checkout, roll back v2.14.0"
+    expect: [sre-engineer, sre-change-safety, sre-k8s-triage]
+    forbid: [sre-k8s-safe-remediation]
+  - id: dr-safe-remediation-handoff
+    prompt: "/sre-k8s-safe-remediation roll back deployment checkout-api in prod-use1 ns checkout"
+    expect: [sre-k8s-safe-remediation]
+    forbid: [sre-chaos-engineering]
+  - id: dr-gitops-rollback
+    prompt: "the deployment is managed by Argo CD, how do I roll it back safely?"
+    expect: [sre-change-safety, sre-k8s-triage]
+    forbid: [sre-k8s-safe-remediation]
+  - id: dr-status-page
+    prompt: "draft the status page update for the checkout incident"
+    expect: [sre-incident-communication]
+    forbid: [sre-postmortem-templates, sre-incident-command]
+  - id: dr-comms-output
+    prompt: "give me the next internal update for SEV-1 checkout"
+    expect: [sre-incident-communication]
+    forbid: []
+  - id: dr-comms-send
+    prompt: "post that update to #inc-checkout"
+    expect: [sre-incident-communication]
+    forbid: []
+  - id: dr-recent-changes
+    prompt: "what changed on checkout in the last 2 hours?"
+    expect: [sre-diagnostics, sre-change-safety]
+    forbid: [sre-k8s-safe-remediation]
+  - id: dr-postmortem-db
+    prompt: "write the postmortem for last night's checkout outage, the DB ran out of connections"
+    expect: [sre-postmortem-templates]
+    forbid: [sre-incident-command, sre-k8s-safe-remediation]
+  - id: negative-sql-howto
+    prompt: "write a SQL query that finds duplicate emails in a users table"
+    expect: [none]
+    forbid: []
+  - id: negative-schema-design
+    prompt: "design a Postgres schema for an orders app"
+    expect: [none, sre-engineer]
+    forbid: []
