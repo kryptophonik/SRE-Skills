@@ -60,7 +60,9 @@ case "$o" in *"CRIT "*"bundle.pem#2"*) [ $r = 1 ] && ok "--chain finds expiring 
 sport=$(freeport)
 openssl s_server -quiet -accept "127.0.0.1:$sport" -cert "$tmp/leaf.pem" -key "$tmp/leaf.key" -cert_chain "$tmp/ca.pem" -www >/dev/null 2>&1 & spid=$!
 for _ in $(seq 50); do (exec 3<>"/dev/tcp/127.0.0.1/$sport") 2>/dev/null && break; sleep 0.1; done
-o=$(bash "$s/cert-expiry.sh" --timeout 5 "127.0.0.1:$sport"); r=$?; case "$o" in OK*"CN = localhost"*|OK*"CN=localhost"*) ok "host:port handshake";; *) ko "handshake: $r $o";; esac
-o=$(bash "$s/cert-expiry.sh" --timeout 5 --chain "127.0.0.1:$sport"); case "$o" in *CRIT*"#2"*) ok "--chain over the wire";; *) ko "chain wire: $o";; esac
+if (exec 3<>"/dev/tcp/127.0.0.1/$sport") 2>/dev/null; then
+  o=$(bash "$s/cert-expiry.sh" --timeout 5 "127.0.0.1:$sport"); r=$?; case "$o" in OK*"CN = localhost"*|OK*"CN=localhost"*) ok "host:port handshake";; *) ko "handshake: $r $o";; esac
+  o=$(bash "$s/cert-expiry.sh" --timeout 5 --chain "127.0.0.1:$sport"); case "$o" in *CRIT*"#2"*) ok "--chain over the wire";; *) ko "chain wire: $o";; esac
+else echo "SKIP live handshake: openssl s_server did not start (LibreSSL lacks -cert_chain)"; fi
 o=$(bash "$s/domain-expiry.sh" missing.invalid); case "$o" in *http-404*) ok "RDAP status in reason";; *) ko "rdap status: $o";; esac
 echo "$pass passed, $fail failed"; [ $fail = 0 ]
