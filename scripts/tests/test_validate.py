@@ -12,7 +12,7 @@ BAD = {  # each line must be flagged
   'psql postgres://app:hunter2@db:5432/app': 'connection URI',
   'redis-cli -u redis://:hunter2@cache:6379': 'connection URI',
   'SELECT * FROM information_schema.innodb_lock_waits;': 'removed in MySQL 8.0',
-  'SELECT pg_terminate_backend(123);': 'approval/gate',
+  'SELECT pg_terminate_backend(123);': 'exact marker',
   'scripts/x.sh --since 1h': 'call scripts as',
   '$S/pd_oncall.sh': 'not through $S',
   'kubectl --context c -n n events --types=Warning': 'no limit flag',
@@ -46,6 +46,10 @@ try:
   open(os.path.join(d, 'zz-fixture.md'), 'w').write('**Gate: approval required.**\n\n```sql\nSELECT pg_cancel_backend(123);\n```\n')
   out = subprocess.run([sys.executable, 'scripts/validate.py'], cwd=r, capture_output=True, text=True).stdout
   if 'zz-fixture.md' in out: print('GATED BLOCK REJECTED', out); fails += 1
+  for loose in ('Needs approval first.', 'This is gated.', 'Gate: approval required.'):
+    open(os.path.join(d, 'zz-fixture.md'), 'w').write(f'{loose}\n\n```sql\nSELECT pg_cancel_backend(123);\n```\n')
+    out = subprocess.run([sys.executable, 'scripts/validate.py'], cwd=r, capture_output=True, text=True).stdout
+    if 'zz-fixture.md' not in out: print('LOOSE GATE NOTE ACCEPTED', loose); fails += 1
   os.remove(os.path.join(d, 'zz-fixture.md'))
   dc = os.path.join(r, '.claude/skills/sre-engineer/references/destructive-commands.md')
   open(dc, 'w').write('```bash\nredis-cli FLUSHALL\nredis-cli KEYS *\n```\n')

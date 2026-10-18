@@ -75,8 +75,8 @@ for p in glob.glob('.claude/skills/**/*.md', recursive=True):
       errors.append(f'{p}:{n}: kubectl events has no limit flag; pipe it to | tail -n 50')
     for rx, why in FORBIDDEN:
       if rx.search(t) and not ('innodb_lock_waits' in why and re.search(r'mariadb', ctx + t, re.I)): errors.append(f'{p}:{n}: {why}')
-    if fence and GATED.search(t) and not re.search(r'approv|gate', ctx, re.I):
-      errors.append(f'{p}:{n}: state-changing command needs an approval/gate note in its block or the 8 lines above it')
+    if fence and GATED.search(t) and '**Gate: approval required.**' not in ctx:
+      errors.append(f'{p}:{n}: state-changing command needs the exact marker **Gate: approval required.** in its block or the 8 lines above it')
 for p in glob.glob('.claude/skills/**/scripts/**/*', recursive=True):
   if not os.path.isfile(p) or '/tests/' in p: continue
   for n, line in enumerate(open(p, errors='replace'), 1):
