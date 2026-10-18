@@ -316,7 +316,7 @@ Try these first, in order:
    psql -h <pooler-host> -p 6432 -U <pgbouncer-admin-user> pgbouncer -c 'RELOAD;'
    ```
 
-3. To drain one database on a pooler without dropping clients, use `PAUSE <db>;`: it waits for every server connection to be released and holds new queries; `RESUME <db>;` lets them through again. A single idle-in-transaction session makes `PAUSE` hang with every client queued behind it, so clear those first (step 1). Never run a bare `PAUSE;`: it holds every database on that pooler. Before pausing, open a second admin session with the `RESUME` line ready to paste. Keep the pause short. In `pool_mode = session` a server connection is released only when its client disconnects, so `PAUSE` can hang until every client leaves; there, prefer the timeout or terminate steps, or a restart.
+3. To drain one database on a pooler without dropping clients, use `PAUSE <db>;`: it waits for every server connection to be released and holds new queries; `RESUME <db>;` lets them through again. A single idle-in-transaction session makes `PAUSE` hang with every client queued behind it, so clear those first (step 1). Never run a bare `PAUSE;`: it holds every database on that pooler. Before pausing, open a second admin session with the `RESUME` line ready to paste. Keep the pause short. `PAUSE` is only practical with `pool_mode = transaction`. In session pooling it waits until every client disconnects and can hang indefinitely; use `RECONNECT <db>` below instead.
 
    **Gate: approval required.**
 
@@ -331,6 +331,13 @@ Try these first, in order:
    ```bash
    psql -h <pooler-host> -p 6432 -U <pgbouncer-admin-user> pgbouncer -c 'RESUME <db>;'
    ```
+
+Session pooling only: `RECONNECT <db>;` asks PgBouncer to replace that database's server connections. It doesn't block or stop traffic, but each server connection is closed only once it's released, which in session mode means when its client disconnects. It takes effect gradually as clients reconnect, not straight away, so no change in the first minutes is expected and isn't a reason to escalate. `KILL <db>` drops every client at once and is in [destructive-commands.md](../sre-database-triage/references/destructive-commands.md), not here.
+
+**Gate: approval required.**
+```bash
+psql -h <pooler-host> -p 6432 -U <pgbouncer-admin-user> pgbouncer -c 'RECONNECT <db>;'
+```
 
 Only if those fail, restart, **one pooler instance at a time** when there are several, waiting for each to pass verification before the next. PgBouncer 1.23 and later can do a rolling restart with `so_reuseport` across several processes, which avoids a full outage ([PgBouncer usage](https://www.pgbouncer.org/usage.html)).
 
