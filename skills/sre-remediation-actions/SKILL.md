@@ -199,6 +199,8 @@ Verify after `rollout status` succeeds: `kubectl --context <ctx> -n <ns> get <ki
 
 #### Database
 
+For managed databases (RDS/Aurora, Cloud SQL, Azure, ElastiCache/MemoryDB), use the per-platform gated failover blocks in `sre-database-triage` (each reference's "Managed services" section).
+
 | Action | Risk | Reversible | Note |
 |---|---|---|---|
 | Promote read replica to primary | high | no | Split-brain/data-loss risk; check replication lag first |

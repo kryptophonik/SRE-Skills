@@ -32,7 +32,7 @@ For tool-specific queries see `sre-observability-query-cookbook`, `sre-dynatrace
 
 ### Recent changes
 
-- Review recent deployments (last 1-2 hours)
+- Review recent deployments (last 1-2 hours); the read-only commands are in `sre-change-safety` ("Useful read-only commands")
 - Check config changes
 - Review infrastructure changes
 - Check DNS/routing changes
@@ -308,9 +308,10 @@ ALTER TABLE <table> ADD INDEX <index_name> (<column>), ALGORITHM=INPLACE, LOCK=N
 Then check (read-only). A failed `CREATE INDEX CONCURRENTLY` leaves an `INVALID` index that is ignored by queries but still slows every write:
 
 ```sql
--- PostgreSQL 12+: build progress, then any invalid indexes left behind
-SELECT pid, phase, blocks_done, blocks_total FROM pg_stat_progress_create_index;
-SELECT indexrelid::regclass AS invalid_index, indrelid::regclass AS on_table FROM pg_index WHERE NOT indisvalid;
+-- PostgreSQL 12+: build progress, then any invalid indexes left behind.
+-- Run each through bash ../sre-database-triage/scripts/db-ro.sh pg -- "<query>" for timeouts and capped output.
+SELECT pid, phase, blocks_done, blocks_total FROM pg_stat_progress_create_index LIMIT 20;
+SELECT indexrelid::regclass AS invalid_index, indrelid::regclass AS on_table FROM pg_index WHERE NOT indisvalid LIMIT 20;
 ```
 
 Dropping the invalid index before a retry is a separate write:
