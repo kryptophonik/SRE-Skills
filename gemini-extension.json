@@ -1,6 +1,6 @@
 {
   "name": "sre",
-  "version": "3.0.1",
-  "description": "Generic SRE skills with shared approval gates: incident command, diagnosis, gated remediation, SLOs, DR, capacity, cost, and read-only adapters for Kubernetes, AWS, Azure, GCP, Terraform, Dynatrace, Prometheus/Grafana, Datadog and PagerDuty/Opsgenie.",
+  "version": "3.1.0",
+  "description": "Generic SRE skills with shared approval gates: incident command, diagnosis, database triage (Postgres, MySQL, Redis), certificate and domain expiry audits, gated remediation, SLOs, DR, capacity, cost, and read-only adapters for Kubernetes, AWS, Azure, GCP, Terraform, Dynatrace, Prometheus/Grafana, Datadog and PagerDuty/Opsgenie.",
   "contextFileName": "GEMINI.md"
 }

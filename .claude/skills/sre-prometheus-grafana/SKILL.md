@@ -124,8 +124,8 @@ Deploy through Git, not by hand; never `/-/reload` from this skill.
 
 ## Bundled scripts and references
 
-- Generate SLO burn-rate rules: `python3 scripts/gen-burn-rate-rules.py --help` (or `/sre-slo-burn-rate-rules`). Self-test: `PROMTOOL=<path> scripts/test-gen-burn-rate-rules.sh`.
-- Syntax-check every PromQL code block in Markdown: `scripts/validate-promql-snippets.py --promtool <path> <files>`.
+- Generate SLO burn-rate rules: `python3 scripts/gen-burn-rate-rules.py --help` (or `/sre-slo-burn-rate-rules`). Self-test: `PROMTOOL=<path> bash scripts/test-gen-burn-rate-rules.sh`.
+- Syntax-check every PromQL code block in Markdown: `python3 scripts/validate-promql-snippets.py --promtool <path> <files>`.
 - Tested example + unit test: [references/slo-burn-rate.rules.yml](references/slo-burn-rate.rules.yml), [references/slo-burn-rate.test.yml](references/slo-burn-rate.test.yml)
 - [references/promql-cheatsheet.md](references/promql-cheatsheet.md) · [references/logql-cheatsheet.md](references/logql-cheatsheet.md) · [references/safe-operations.md](references/safe-operations.md)
 

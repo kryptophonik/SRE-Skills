@@ -1,9 +1,11 @@
 ---
 name: sre-slo-burn-rate-rules
-description: "Use when asked to create or fix Prometheus SLO burn-rate alerts: generate 4-tier multiwindow rules from an SLO target and counter selectors, then lint and unit-test with promtool. Files for review only; never deploys."
+description: "Use when authoring or fixing Prometheus SLO burn-rate alert rules: generate 4-tier multiwindow rules from an SLO target and counters, then promtool lint and test. Files only, never deploys. Not for responding to a firing alert (use sre-engineer)."
 ---
 
 # SLO burn-rate rules
+
+For authoring rule files only. Not for responding to a firing alert: that is `sre-engineer`, using [Responding to a firing burn-rate alert](../sre-slo-alerting/SKILL.md#responding-to-a-firing-burn-rate-alert-reference) in `sre-slo-alerting`. Don't generate or test rules during an incident.
 
 ## Safety gates (REQUIRED)
 

@@ -7,11 +7,11 @@ Any write goes through [../azure/references/write-command-risk.md](write-command
 `<sub-id>`, `<rg>`, `<cluster>`, `<workspace-guid>`. Ask for any that are missing. Never assume the default subscription.
 
 ## Steps
-1. Confirm the subscription: `scripts/az-ro.sh --subscription <sub-id> account show -o table`
-2. Control plane and pools: `scripts/aks-triage.sh --subscription <sub-id> --resource-group <rg> --cluster <cluster>`
+1. Confirm the subscription: `bash scripts/az-ro.sh --subscription <sub-id> account show -o table`
+2. Control plane and pools: `bash scripts/aks-triage.sh --subscription <sub-id> --resource-group <rg> --cluster <cluster>`
    - Container Insights is `addonProfiles.omsagent` (the CLI addon name is `monitoring`); Managed Prometheus is `azureMonitorProfile.metrics.enabled`.
    - `provisioningState` other than Succeeded, `powerState` Stopped, or pools at `maxCount` mean you should look closer.
-3. Platform health and recent changes: `scripts/health-snapshot.sh --subscription <sub-id> --resource-group <rg>`. Also run it for the node resource group (`MC_*`).
+3. Platform health and recent changes: `bash scripts/health-snapshot.sh --subscription <sub-id> --resource-group <rg>`. Also run it for the node resource group (`MC_*`).
 4. Workload errors (ContainerLogV2 queries): see [../azure/references/kql-cheatsheet.md](kql-cheatsheet.md).
 5. kubectl (optional) needs the AKS Cluster User Role and Kubernetes `view`.
    - `az aks get-credentials` is **not** run by the guard. If the user approves it, write to a separate file with `--file ./kubeconfig-<cluster>`, never use `--admin`, and stick to `kubectl get/describe/logs/top`.

@@ -101,11 +101,10 @@ Prefer SLO burn-rate alerts on a Datadog SLO over raw threshold monitors (`sre-s
 Env: `DD_API_KEY`, `DD_APP_KEY` (read-scoped), `DD_SITE` (default `datadoghq.com`). Keys go to curl on stdin; 429s retry; result sizes are capped.
 
 ```bash
-S=scripts   # relative to this skill folder (the one containing SKILL.md)
-$S/dd_query.sh 'avg:system.cpu.user{env:<env>} by {host}' 60
-$S/dd_logs_search.sh 'service:<svc> env:<env> status:error' 15 50
-$S/dd_spans_search.sh 'service:<svc> env:<env> status:error' 15 50
-$S/dd_monitors_alerting.sh 'tag:"service:<svc>"' 30
+bash scripts/dd_query.sh 'avg:system.cpu.user{env:<env>} by {host}' 60
+bash scripts/dd_logs_search.sh 'service:<svc> env:<env> status:error' 15 50
+bash scripts/dd_spans_search.sh 'service:<svc> env:<env> status:error' 15 50
+bash scripts/dd_monitors_alerting.sh 'tag:"service:<svc>"' 30
 ```
 
 - [references/query-cheatsheet.md](references/query-cheatsheet.md) · [references/api-endpoints.md](references/api-endpoints.md) · [references/app-key-scopes.md](references/app-key-scopes.md) · [references/mcp-read-only.md](references/mcp-read-only.md)

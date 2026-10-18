@@ -64,8 +64,8 @@ gcloud monitoring policies list --project=<PROJECT_ID> --format="table(displayNa
 ## Bundled scripts and references
 
 ```bash
-PROJECT_ID=<PROJECT_ID> scripts/preflight.sh            # always first; stop if it fails
-scripts/triage-snapshot.sh <PROJECT_ID> <REGION> 1h 50  # read-only bundle; refuses non-read verbs
+PROJECT_ID=<PROJECT_ID> bash scripts/preflight.sh            # always first; stop if it fails
+bash scripts/triage-snapshot.sh <PROJECT_ID> <REGION> 1h 50  # read-only bundle; refuses non-read verbs
 ```
 
 - [references/iam-readonly-roles.md](references/iam-readonly-roles.md) · [references/logging-queries.md](references/logging-queries.md) · [references/gcloud-mcp.md](references/gcloud-mcp.md) · [references/gcloud-mcp-readonly-allowlist.json](references/gcloud-mcp-readonly-allowlist.json) (the single maintained allowlist)

@@ -4,10 +4,46 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ## Planned
 
-1. **Database/datastore triage** (`sre-database-triage`): Postgres/MySQL/Redis locks, replication lag, connection exhaustion, slow queries. Read-only, with the gate block.
-2. Queue/stream triage (Kafka, SQS, Pub/Sub lag and backlog).
-3. TLS/certificate expiry checks.
-4. Codex plugin packaging, once it's verified against the docs.
+1. Queue/stream triage (Kafka, SQS, Pub/Sub lag and backlog).
+2. Codex plugin packaging, once it's verified against the docs.
+
+## [3.1.0] - 2026-10-18
+
+### Removed (breaking)
+- `sre-architect` and `sre-tools-catalog` are no longer separate skills. Their content now lives in `sre-engineer` as [references/architecture.md](.claude/skills/sre-engineer/references/architecture.md) and [references/tools-catalog.md](.claude/skills/sre-engineer/references/tools-catalog.md), and `sre-engineer` loads them when an architecture or tooling question comes up.
+- **Migrating:** plugin and extension installs update in place. For a copy install, follow [docs/install/upgrading.md](docs/install/upgrading.md): delete the two old folders, copy the skills again, and replace `/sre-architect` or `/sre-tools-catalog` with `/sre-engineer`.
+
+### Added
+- `sre-database-triage`: read-only triage for PostgreSQL, MySQL/MariaDB and Redis (locks, connections, replication lag, slow queries, memory and eviction), self-hosted and managed (RDS/Aurora, Cloud SQL, Azure, ElastiCache/MemoryDB, Memorystore). It bundles `db-ro.sh`, `db-snapshot.sh` (a redacted evidence bundle) and a test suite, and every state-changing step is its own gated block.
+- `sre-expiry-audit`: read-only TLS certificate (`cert-expiry.sh`, with `--chain` and IPv6) and domain (`domain-expiry.sh`, RDAP) expiry checks with offline tests, plus cloud certificate and secret expiry.
+- `sre-incident-communication`: an external status-page template with no names, bridge links or internal causes, and an Output section with severity and impact fields.
+- `sre-postmortem-templates`: databases as an evidence source, and TTD, TTA and TTM (time to detect, acknowledge and mitigate) fields.
+- `sre-aws`: gated Aurora and Multi-AZ DB cluster failover blocks, with the replica lag check first, the RDS for MySQL case (no target flag) and the Global Database commands called out.
+- Trigger evals (`evals/triggers.yaml`), a model-graded runner (`evals/run_triggers.py`) and a nightly workflow (`.github/workflows/trigger-evals.yml`). There are 41 cases, including the eight cold-test pages and 21 cases from a simulated 3am incident; 10 are negatives.
+- Validator fixture tests (`scripts/tests/test_validate.py`).
+- Upgrade steps for copy installs ([docs/install/upgrading.md](docs/install/upgrading.md)).
+
+### Changed
+- Install docs: clone first, `mkdir -p` before copying, no pinned Gemini ref, gates with `gh skill`, append to an existing AGENTS.md instead of overwriting it, and verify steps.
+- Bundled scripts are always called as `bash scripts/<name>.sh` or `python3 scripts/<name>.py` (Datadog, PagerDuty, AWS and Azure skills included).
+- Cold-test fixes: a restart safety check and gated restart forms, burn-rate routing, bounded `kubectl events`, one Terraform plan path, the postmortem timeline, and database advice in diagnostics. `CREATE/DROP INDEX CONCURRENTLY` runs outside any migration-tool transaction.
+- `sre-change-safety`: during an active SEV, impact-reducing changes (rollback to last known-good, flag off, scale up) may go ahead once the IC or the lone responder approves, logged in the timeline.
+- `sre-incident-command` and `sre-engineer`: a lone paged responder is IC until handoff and pages a second person for SEV-1/2. The assistant is never IC, and the comms lead is a human who approves and sends.
+- `sre-remediation-actions`: connection-pooler guidance (stats-user evidence, scoped `PAUSE`/`RESUME` with the session-pooling caveat, separate gated terminate, timeout and restart blocks) and a risk/reversibility table for database actions.
+- `sre-k8s-safe-remediation`: reuses a pinned target and a recent snapshot, adds the GitOps revert path, and pauses auto-sync before a bare undo.
+- `sre-dr-backup-test`: every restore, cleanup and test failover is its own gated block.
+- Validator:
+  - catches inline Redis passwords, passwords in connection URIs, scripts called through `$S`, and unbounded `kubectl events`;
+  - checks the README table and database safety patterns;
+  - requires the exact `**Gate: approval required.**` line directly above each block with a state-changing database or failover command.
+  - fails on `rm -rf` with an unguarded variable (use `${VAR:?msg}`).
+
+### Fixed
+- `sre-terraform`: the plan cleanup no longer runs `rm -rf "$(dirname "$P")"`, which became `rm -rf .` in a new shell. It now removes the plan file and its empty folder, and fails if `$P` isn't set.
+
+### Known gaps
+- The InnoDB status size cap on a busy server hasn't been checked live.
+- Managed-service commands, real TLS endpoints, Valkey and real MySQL replica values were checked against current docs, not live services.
 
 ## [3.0.1] - 2026-10-17
 

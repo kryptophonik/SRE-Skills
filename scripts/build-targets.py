@@ -25,8 +25,8 @@ SRC = os.path.join(ROOT, ".claude", "skills")
 PACK = {
     "name": "sre",
     "displayName": "SRE skill pack",
-    "version": "3.0.1",  # single source of truth for the pack version
-    "description": "Generic SRE skills with shared approval gates: incident command, diagnosis, gated remediation, SLOs, DR, capacity, cost, and read-only adapters for Kubernetes, AWS, Azure, GCP, Terraform, Dynatrace, Prometheus/Grafana, Datadog and PagerDuty/Opsgenie.",
+    "version": "3.1.0",  # single source of truth for the pack version
+    "description": "Generic SRE skills with shared approval gates: incident command, diagnosis, database triage (Postgres, MySQL, Redis), certificate and domain expiry audits, gated remediation, SLOs, DR, capacity, cost, and read-only adapters for Kubernetes, AWS, Azure, GCP, Terraform, Dynatrace, Prometheus/Grafana, Datadog and PagerDuty/Opsgenie.",
     "author": {"name": "Mike May", "email": "mike48229@gmail.com"},
     "repository": "https://github.com/kryptophonik/claude-sre",
     "license": "MIT",
@@ -85,7 +85,7 @@ This repository is a generic SRE skill pack. Each skill is a folder with a `SKIL
 
 {gate_block()}
 
-Never run a write command, call an MCP write tool, or post an external message without explicit human approval in this conversation. Skills marked "manual only" must be started by the user (for example `/sre-chaos-engineering`); never run their steps on your own.
+Never run a write command, call an MCP write tool, or post an external message without explicit human approval in this conversation. Skills marked "manual only" must be started by the user (for example `/sre-chaos-engineering`, or `/sre:sre-chaos-engineering` in a Claude Code plugin install); never run their steps on your own.
 {PATHS_NOTE}
 {extra}
 ## Skills

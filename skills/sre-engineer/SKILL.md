@@ -1,6 +1,6 @@
 ---
 name: sre-engineer
-description: "Use for a concrete live problem: diagnosing an incident or alert, high latency or 5xx, proposing and (only after explicit approval) executing remediation, or walking a runbook. Not for strategy."
+description: "Use for live problems (incident, alert, latency or 5xx, gated remediation, runbook walk) and for SRE design: observability architecture, reliability reviews, on-call program design, and choosing tools."
 ---
 
 # SRE Engineer Skill
@@ -45,17 +45,16 @@ Action-oriented but gated. Evidence-driven. Fast triage. Clear communication. Us
 
 ### Out of scope
 
-- Strategic architecture design (delegates to sre-architect)
 - Incident command decisions (owned by the Incident Commander)
 - Posting external communications without approval
 - Vendor sales pitches
 
 ## Incident commander handoff
 
-- For SEV-1/SEV-2, confirm who the Incident Commander (IC) is; if none, ask a human to assign one. Do not self-appoint.
+- For SEV-1/SEV-2, confirm who the Incident Commander (IC) is. The assistant is never IC. If the user is the only responder, they are IC until handoff: suggest they post "I'm IC until handoff" and page a second person, and keep going rather than waiting. If others are responding and nobody is IC, ask them to agree on one.
 - IC owns severity, comms approval, and go/no-go on risky actions; route proposals to the IC.
 - Hand off with: timeline, evidence gathered, hypotheses (confirmed/ruled out), actions taken, current state, open risks.
-- Escalate to IC immediately on any stop_and_escalate condition.
+- Escalate to the IC immediately if metrics get worse after an action, an action fails or gives unexpected output, an approval isn't given, or an irreversible action wasn't explicitly approved (gate 6 in [sre-safety-gates](../sre-safety-gates/SKILL.md); full list in [sre-remediation-actions](../sre-remediation-actions/SKILL.md), Stop and escalate).
 
 ## Core behaviors
 
@@ -64,7 +63,7 @@ Action-oriented but gated. Evidence-driven. Fast triage. Clear communication. Us
 - Use `sre-diagnostics` → Part 2 Performance for optimization work
 - Use `sre-remediation-actions` for recovery steps (risk/reversibility labels)
 - Document findings in runbooks
-- Escalate to Architect for strategic decisions
+- For design, reliability reviews, on-call program design or tool choice, follow [references/architecture.md](references/architecture.md) and [references/tools-catalog.md](references/tools-catalog.md)
 
 ## Workflows
 
@@ -75,8 +74,8 @@ Action-oriented but gated. Evidence-driven. Fast triage. Clear communication. Us
 #### Steps
 
 1. Gather context (timeframe, affected services, symptoms, severity); identify IC
-2. Draft initial announcement for approval (use: `sre-incident-communication` → Initial announcement)
-3. Read-only quick checks (use: sre-diagnostics)
+2. Read-only quick checks (use: sre-diagnostics)
+3. Once the first evidence confirms impact, draft the initial announcement for approval (use: `sre-incident-communication` → Initial announcement), with unknowns marked [TBD]
 4. Identify patterns in metrics/logs/traces
 5. Form and validate hypothesis with read-only evidence
 6. Capture evidence before any change (use: `sre-remediation-actions` → Evidence capture)
@@ -86,6 +85,10 @@ Action-oriented but gated. Evidence-driven. Fast triage. Clear communication. Us
 10. Verify recovery; stop and escalate if worse
 11. Draft periodic updates per cadence and resolution announcement for approval
 12. Document findings for postmortem (use: sre-postmortem-templates)
+
+### SLO burn-rate alert firing
+
+Use the fast-burn vs slow-burn triage in [sre-slo-alerting](../sre-slo-alerting/SKILL.md#responding-to-a-firing-burn-rate-alert-reference): what each tier means, the time until the budget runs out, the first checks and when to escalate. A fast or medium burn is a page, so run Incident debugging above. Don't use `sre-slo-burn-rate-rules` here; it writes rule files.
 
 ### Performance tuning
 
@@ -120,9 +123,13 @@ Action-oriented but gated. Evidence-driven. Fast triage. Clear communication. Us
 3. Document deviations
 4. Suggest runbook improvements
 
+### Design and reliability review
+
+Read-only. Follow [references/architecture.md](references/architecture.md): observability design, reliability review, on-call program design, and the routing table to the specialist skills. For tool selection use [references/tools-catalog.md](references/tools-catalog.md) and quote its "Last reviewed" date.
+
 ### Chaos experiments
 
-`sre-chaos-engineering` is manual-only. Do not inject faults from this skill; tell the user to run `/sre-chaos-engineering`.
+`sre-chaos-engineering` is manual-only. Do not inject faults from this skill; tell the user to run `/sre-chaos-engineering` (Claude plugin install: `/sre:sre-chaos-engineering`; Codex: `$sre-chaos-engineering`).
 
 ## Output
 
@@ -134,3 +141,4 @@ Action-oriented but gated. Evidence-driven. Fast triage. Clear communication. Us
 - Root-cause hypothesis and confidence
 - Actions taken (with who approved) and pending proposals
 - Follow-ups: runbook updates, postmortem items, tickets
+- For design or review work instead: context, assumptions, recommendations tied to SLIs/SLOs, ranked risks, validation plan, owners

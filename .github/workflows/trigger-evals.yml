@@ -1,0 +1,28 @@
+name: trigger-evals
+# Model-graded skill routing checks. Nightly and on demand only, never per commit:
+# results vary run to run and each run costs API calls. Skips cleanly without a key.
+on:
+  schedule:
+    - cron: "17 6 * * *"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  triggers:
+    runs-on: ubuntu-latest
+    env:
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      EVAL_MODEL: ${{ vars.EVAL_MODEL }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Run trigger evals
+        run: |
+          if [ -z "$ANTHROPIC_API_KEY" ] || [ -z "$EVAL_MODEL" ]; then
+            echo "::notice::ANTHROPIC_API_KEY secret or EVAL_MODEL variable not set; skipping."
+            exit 0
+          fi
+          pip install pyyaml
+          python3 evals/run_triggers.py --threshold 0.85

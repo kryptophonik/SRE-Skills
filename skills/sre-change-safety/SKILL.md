@@ -30,7 +30,7 @@ Total 5–7 low, 8–11 med (peer review + canary), 12–15 high (approval from 
 
 - Change freeze in effect without an approved exception.
 - Error budget exhausted for the affected service (only reliability fixes go out).
-- Active SEV-1/SEV-2 on the same service or shared dependency.
+- Active SEV-1/SEV-2 on the same service or shared dependency. Exception: changes that reduce that incident's impact (roll back or revert to the last known-good version, turn a feature flag off, scale up) may go ahead once the IC, or the single responder acting as IC, approves them; log each one in the incident timeline. Anything new still waits until the incident is resolved.
 - No tested rollback plan, or irreversible step without backup.
 - No owner watching during and after rollout.
 

@@ -1,0 +1,181 @@
+# Trigger evals: does each prompt load the right skill, and never a forbidden one?
+#
+# expect: skills that are acceptable answers (any one is a pass). Use [none] when no
+#         sre-* skill should load (a negative case).
+# forbid: skills that must NOT load for this prompt. Manual-only skills
+#         (sre-chaos-engineering, sre-k8s-safe-remediation) belong in forbid for any
+#         prompt the user did not start with the slash command.
+#
+# scripts/validate.py checks every name here exists (runs on each commit).
+# evals/run_triggers.py runs the prompts against a model (nightly / manual).
+# Aim for about 25% negative cases.
+cases:
+  - id: seed-5xx
+    prompt: "Checkout is throwing 5xx since the 14:10 deploy. What do I look at first?"
+    expect: [sre-engineer, sre-incident-command, sre-diagnostics]
+    forbid: [sre-k8s-safe-remediation, sre-chaos-engineering]
+  - id: seed-design
+    prompt: "Help me design observability for a new payments service: what SLIs and dashboards?"
+    expect: [sre-engineer, sre-slo-alerting]
+    forbid: [sre-incident-command]
+  - id: seed-tool-choice
+    prompt: "Should we use Loki or OpenSearch for logs? We run Grafana already."
+    expect: [sre-engineer]
+  - id: seed-k8s-restart-ask
+    prompt: "The api pods are crashlooping, just restart the deployment."
+    expect: [sre-k8s-triage, sre-engineer]
+    forbid: [sre-k8s-safe-remediation]
+  - id: seed-chaos-ask
+    prompt: "Kill a random pod in staging to see what happens."
+    expect: [none, sre-engineer]
+    forbid: [sre-chaos-engineering, sre-k8s-safe-remediation]
+  - id: seed-negative-recipe
+    prompt: "Write me a Python function that reverses a string."
+    expect: [none]
+    forbid: []
+  # Cold-test pages (baseline on v3.0.1, 2026-10-17). P3 and P7 are the acceptance
+  # tests for sre-database-triage and sre-expiry-audit.
+  - id: page-p1-5xx-alert
+    prompt: "PagerDuty: [FIRING] checkout-api 5xx rate 14% > 2% for 10m"
+    expect: [sre-engineer, sre-incident-command, sre-diagnostics]
+    forbid: [sre-slo-alerting, sre-oncall-audit, sre-postmortem-templates, sre-k8s-safe-remediation]
+  - id: page-p2-crashloop-after-deploy
+    prompt: "pods in payments ns crashlooping since the 2:40 deploy, what do i do"
+    expect: [sre-k8s-triage]
+    forbid: [sre-k8s-safe-remediation, sre-chaos-engineering]
+  - id: page-p3-p99-db
+    prompt: "p99 latency on orders doubled, no deploys, db?"
+    expect: [sre-engineer, sre-diagnostics, sre-database-triage]
+    forbid: [sre-change-safety, sre-capacity-planning]
+  - id: page-p4-restart-ingress
+    prompt: "is it safe to restart the ingress controller pods? customers are erroring"
+    expect: [sre-engineer, sre-k8s-triage]
+    forbid: [sre-k8s-safe-remediation, sre-chaos-engineering]
+  - id: page-p5-fast-burn
+    prompt: "SLO burn rate alert fast-burn on login service"
+    expect: [sre-engineer, sre-observability-query-cookbook, sre-prometheus-grafana]
+    forbid: [sre-slo-burn-rate-rules, sre-slo-alerting]
+  - id: page-p6-tf-destroy-rds
+    prompt: "terraform plan shows it wants to destroy the prod RDS instance??"
+    expect: [sre-terraform]
+    forbid: [sre-cloud-cost-review]
+  - id: page-p7-cert-expiry
+    prompt: "which of our certs expire this month"
+    expect: [sre-expiry-audit]
+    forbid: [sre-oncall-handoff, sre-production-readiness, sre-security-incident-triage]
+  - id: page-p8-postmortem
+    prompt: "write up the postmortem for last night's checkout outage"
+    expect: [sre-postmortem-templates]
+    forbid: [sre-incident-command]
+  - id: negative-networking-question
+    prompt: "What's the difference between TCP and UDP? Explain like I'm new."
+    expect: [none]
+    forbid: []
+  - id: negative-regex
+    prompt: "Give me a regex that matches US zip codes."
+    expect: [none]
+    forbid: []
+  # 3am dry run (connection exhaustion on checkout).
+  - id: dr-ic-solo
+    prompt: "3am, I'm the only one on call, checkout 5xx at 14%. Go."
+    expect: [sre-incident-command, sre-engineer]
+    forbid: [sre-k8s-safe-remediation, sre-chaos-engineering]
+  - id: dr-rollback-during-sev
+    prompt: "we're in a SEV-1 on checkout, roll back v2.14.0"
+    expect: [sre-engineer, sre-change-safety, sre-k8s-triage]
+    forbid: [sre-k8s-safe-remediation]
+  # dr-safe-remediation-handoff is not a trigger case: sre-k8s-safe-remediation sets
+  # disable-model-invocation, so only a user's slash command loads it, and the model is never offered it.
+  - id: dr-gitops-rollback
+    prompt: "the deployment is managed by Argo CD, how do I roll it back safely?"
+    expect: [sre-change-safety, sre-k8s-triage]
+    forbid: [sre-k8s-safe-remediation]
+  - id: dr-status-page
+    prompt: "draft the status page update for the checkout incident"
+    expect: [sre-incident-communication]
+    forbid: [sre-postmortem-templates, sre-incident-command]
+  - id: dr-comms-output
+    prompt: "give me the next internal update for SEV-1 checkout"
+    expect: [sre-incident-communication]
+    forbid: []
+  - id: dr-comms-send
+    prompt: "post that update to #inc-checkout"
+    expect: [sre-incident-communication]
+    forbid: []
+  - id: dr-recent-changes
+    prompt: "what changed on checkout in the last 2 hours?"
+    expect: [sre-diagnostics, sre-change-safety]
+    forbid: [sre-k8s-safe-remediation]
+  - id: dr-postmortem-db
+    prompt: "write the postmortem for last night's checkout outage, the DB ran out of connections"
+    expect: [sre-postmortem-templates]
+    forbid: [sre-incident-command, sre-k8s-safe-remediation]
+  - id: negative-sql-howto
+    prompt: "write a SQL query that finds duplicate emails in a users table"
+    expect: [none]
+    forbid: [sre-database-triage]
+  - id: negative-schema-design
+    prompt: "design a Postgres schema for an orders app"
+    expect: [none, sre-engineer]
+    forbid: [sre-database-triage]
+  - id: dr-db-conn-exhaustion
+    prompt: "checkout 5xx, logs say: remaining connection slots are reserved"
+    expect: [sre-database-triage, sre-engineer]
+    forbid: [sre-k8s-safe-remediation, sre-capacity-planning, sre-chaos-engineering]
+  - id: dr-db-cant-connect
+    prompt: "can't even connect to the prod postgres, too many clients, it's Aurora"
+    expect: [sre-database-triage, sre-aws]
+    forbid: [sre-k8s-safe-remediation]
+  - id: dr-kill-idle
+    prompt: "just kill all the idle in transaction connections on prod postgres"
+    expect: [sre-database-triage]
+    forbid: [sre-k8s-safe-remediation, sre-chaos-engineering]
+  - id: dr-snapshot-retry
+    prompt: "the db snapshot script says items_failed 16, what now?"
+    expect: [sre-database-triage]
+    forbid: []
+  - id: dr-restart-pooler
+    prompt: "should I restart pgbouncer? checkout can't get DB connections"
+    expect: [sre-database-triage, sre-engineer]
+    forbid: [sre-k8s-safe-remediation]
+  - id: dr-explain-analyze
+    prompt: "run explain analyze on the slow checkout query in prod"
+    expect: [sre-database-triage]
+    forbid: [sre-chaos-engineering]
+  - id: dr-db-failover
+    prompt: "fail over the checkout database to the replica now"
+    expect: [sre-database-triage, sre-engineer, sre-aws]
+    forbid: [sre-dr-backup-test, sre-chaos-engineering]
+  - id: dr-verify-dependency
+    prompt: "rollback finished, is the database recovered?"
+    expect: [sre-database-triage, sre-engineer]
+    forbid: [sre-k8s-safe-remediation]
+  - id: dr-diag-sql-bounded
+    prompt: "is my CREATE INDEX CONCURRENTLY still running on prod postgres?"
+    expect: [sre-diagnostics, sre-database-triage]
+    forbid: []
+  - id: dr-innodb-status
+    prompt: "dump SHOW ENGINE INNODB STATUS from the prod mysql"
+    expect: [sre-database-triage]
+    forbid: []
+  - id: dr-redis-evictions
+    prompt: "redis is evicting keys and cache hit rate dropped"
+    expect: [sre-database-triage]
+    forbid: [sre-chaos-engineering, sre-k8s-safe-remediation]
+  # Over-trigger guards for the new database and expiry skills.
+  - id: negative-redis-tutorial
+    prompt: "explain how Redis sorted sets work with an example"
+    expect: [none]
+    forbid: [sre-database-triage]
+  - id: negative-orm-migration
+    prompt: "write a Django migration that adds a nullable column to the orders table"
+    expect: [none]
+    forbid: [sre-database-triage, sre-change-safety]
+  - id: negative-cert-concept
+    prompt: "what's the difference between a TLS certificate and a private key?"
+    expect: [none]
+    forbid: [sre-expiry-audit]
+  - id: negative-domain-shopping
+    prompt: "suggest a few available domain names for a bakery website"
+    expect: [none]
+    forbid: [sre-expiry-audit]

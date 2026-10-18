@@ -1,6 +1,6 @@
 ---
 name: sre-k8s-triage
-description: "Use when a Kubernetes workload or node is unhealthy: CrashLoopBackOff, Pending, OOMKilled, ImagePullBackOff, node pressure, DNS, probes, stuck rollouts, Helm. Read-only decision tree."
+description: "Use when a Kubernetes workload or node is unhealthy: CrashLoopBackOff, Pending, OOMKilled, ImagePullBackOff, node pressure, DNS, probes, stuck rollouts, Helm, and whether a restart is safe. Read-only decision tree."
 ---
 
 # Kubernetes Triage
@@ -31,11 +31,12 @@ Full rules: [sre-safety-gates](../sre-safety-gates/SKILL.md). Read-only MCP setu
 ```bash
 kubectl config get-contexts                  # confirm <ctx> with the user
 kubectl --context <ctx> -n <ns> get pods -o wide
-kubectl --context <ctx> -n <ns> events --types=Warning
+kubectl --context <ctx> -n <ns> events --types=Warning | tail -n 50
+kubectl --context <ctx> -n <ns> events --for pod/<pod> | tail -n 50   # one object only
 kubectl --context <ctx> -n <ns> describe pod <pod>
 ```
 
-`kubectl events` sorts by time itself; `.lastTimestamp` is often empty on events.k8s.io/v1. Alternative: `kubectl --context <ctx> -n <ns> get events --sort-by=.metadata.creationTimestamp | tail -30`.
+`kubectl events` has no `--limit` or `--sort-by` flag; it prints oldest first, so `tail -n 50` keeps the newest. Never add `--watch`/`-w` (unbounded). `.lastTimestamp` is often empty on events.k8s.io/v1. Alternative: `kubectl --context <ctx> -n <ns> get events --sort-by=.metadata.creationTimestamp | tail -n 50`.
 
 ## Decision tree by pod status
 
@@ -93,6 +94,46 @@ kubectl --context <ctx> -n <ns> get hpa
 kubectl --context <ctx> -n <ns> auth can-i --list      # what your credentials can do
 ```
 
+## Is it safe to restart or scale it? (read-only)
+
+Answer this before proposing any restart, scale-down or rollout. Every command here is read-only. `<kind>` is `deployment`, `statefulset`, `daemonset` or `rollout` (Argo Rollouts).
+
+```bash
+# 1. Workload kind: what owns the pod (a ReplicaSet means a Deployment or Rollout owns that)
+kubectl --context <ctx> -n <ns> get pod <pod> -o jsonpath='{.metadata.ownerReferences[0].kind}/{.metadata.ownerReferences[0].name}{"\n"}'
+kubectl --context <ctx> -n <ns> get rs <rs> -o jsonpath='{.metadata.ownerReferences[0].kind}/{.metadata.ownerReferences[0].name}{"\n"}'
+# 2. Ready vs desired (DaemonSet: desiredNumberScheduled / numberReady)
+kubectl --context <ctx> -n <ns> get <kind>/<name> -o jsonpath='desired={.spec.replicas} ready={.status.readyReplicas} updated={.status.updatedReplicas}{"\n"}'
+kubectl --context <ctx> -n <ns> get daemonset/<name> -o jsonpath='desired={.status.desiredNumberScheduled} ready={.status.numberReady}{"\n"}'
+# 3. PodDisruptionBudget covering these pods: ALLOWED DISRUPTIONS column
+kubectl --context <ctx> -n <ns> get pdb
+# 4. HPA: who owns the replica count, and is it already at max?
+kubectl --context <ctx> -n <ns> get hpa
+# 5. Readiness probe and rollout strategy (Deployment/Rollout: .spec.strategy; StatefulSet/DaemonSet: .spec.updateStrategy)
+kubectl --context <ctx> -n <ns> get <kind>/<name> -o jsonpath='{range .spec.template.spec.containers[*]}{.name}: readiness={.readinessProbe}{"\n"}{end}'
+kubectl --context <ctx> -n <ns> get <kind>/<name> -o jsonpath='strategy={.spec.strategy} updateStrategy={.spec.updateStrategy}{"\n"}'
+# 6. Blast radius: who sends traffic here
+kubectl --context <ctx> -n <ns> get endpointslices -l kubernetes.io/service-name=<svc>
+kubectl --context <ctx> get ingress -A | grep -i '<svc>\|<name>' | head -n 20   # routes that point at it
+kubectl --context <ctx> get ingressclass                                       # is this workload the ingress controller itself?
+# StatefulSet: which pod is the primary/leader? (label key depends on the operator)
+kubectl --context <ctx> -n <ns> get pods -l <selector> -L role,spilo-role,cnpg.io/instanceRole
+```
+
+| Check | Looks safe | Stop signal |
+|---|---|---|
+| Kind | Deployment or Rollout behind a Service | StatefulSet holding a primary/leader or quorum (database, broker, etcd/ZooKeeper) |
+| Ready vs desired | ready = desired, and at least 2 | fewer than 2, or ready < desired already (a restart removes more capacity) |
+| PDB | `ALLOWED DISRUPTIONS` >= 1 | 0: the owners say no pod can be spared. Note a rollout restart is paced by its strategy, not by the PDB, so the PDB alone will not stop it |
+| HPA | below `maxReplicas`, headroom on its metric | at `maxReplicas`; also, with an HPA never `scale` by hand (it overrides you) |
+| Readiness probe | present and checks real readiness | missing: new pods get traffic before they can serve |
+| Strategy | `RollingUpdate` with `maxUnavailable: 0` or small and `maxSurge` >= 1 | `Recreate` (every pod down at once); DaemonSet `maxUnavailable` large; StatefulSet `OnDelete` (a restart changes nothing until pods are deleted); StatefulSet `partition` > 0 (only ordinals >= partition restart) |
+| Blast radius | Service has other Ready endpoints; one app's routes | the ingress controller, DNS, CNI or another shared component: every route or every node is affected |
+
+**Stop rule:** if ready or desired replicas are fewer than 2, the PDB allows 0 disruptions, the target is a StatefulSet primary/leader (or uses `Recreate`), or the target is a shared component (the ingress controller, DNS such as CoreDNS, the CNI, a service mesh control plane, or anything else every route or node depends on), do not propose a restart. Escalate to the service owner or Incident Commander with what you found.
+
+Otherwise, report the verdict (kind, ready/desired, PDB allowed disruptions, HPA, probe, strategy, blast radius, risk low/med/high) and hand off: the per-kind restart commands are in [sre-remediation-actions](../sre-remediation-actions/SKILL.md) (Restart), and the write runs through `/sre-k8s-safe-remediation` (Claude plugin install: `/sre:sre-k8s-safe-remediation`; Codex: `$sre-k8s-safe-remediation`), which is manual-only.
+
 ## Common fixes (all WRITE — propose, get approval, use sre-remediation-actions)
 
 | Action | Command | Note |
@@ -100,20 +141,20 @@ kubectl --context <ctx> -n <ns> auth can-i --list      # what your credentials c
 | Roll back | `kubectl --context <ctx> -n <ns> rollout undo deployment/<name>` | Reverted by GitOps unless sync paused / Git reverted; uses ReplicaSet history (`revisionHistoryLimit`) |
 | Helm rollback | `helm --kube-context <ctx> -n <ns> rollback <release> <revision>` | Check `helm history` first |
 | Scale | `kubectl --context <ctx> -n <ns> scale deployment/<name> --replicas=<n>` | HPA overrides; GitOps reverts |
-| Restart after evidence capture | `kubectl --context <ctx> -n <ns> rollout restart deployment/<name>` | Loses in-memory state |
+| Restart after evidence capture | `kubectl --context <ctx> -n <ns> rollout restart deployment/<name>` | Answer "Is it safe to restart or scale it?" first; loses in-memory state |
 | Raise limits / fix probes | Change manifests via Git/GitOps, not `kubectl edit` | |
 
 ## Bundled scripts and references
 
 ```bash
-S=scripts   # relative to this skill folder (the one containing SKILL.md)
-$S/k8s-preflight.sh --context <ctx> -n <ns>        # auth can-i matrix; exits 1 if the identity can read Secrets, exec, port-forward or write
-$S/k8s-triage-snapshot.sh --context <ctx> -n <ns>  # bounded, read-only evidence bundle; Secrets never read
+# run from this skill folder (the one containing SKILL.md)
+bash scripts/k8s-preflight.sh --context <ctx> -n <ns>        # auth can-i matrix; exits 1 if the identity can read Secrets, exec, port-forward or write
+bash scripts/k8s-triage-snapshot.sh --context <ctx> -n <ns>  # bounded, read-only evidence bundle; Secrets never read
 ```
 
 - [references/command-cheatsheet.md](references/command-cheatsheet.md) · [references/destructive-commands.md](references/destructive-commands.md)
 - Opt-in hardening: [references/rbac-readonly.yaml](references/rbac-readonly.yaml), [references/kubernetes-mcp-server.toml](references/kubernetes-mcp-server.toml), [references/claude-settings-k8s-deny.json](references/claude-settings-k8s-deny.json). The deny list also blocks `cordon` and other fixes, so Claude cannot execute an approved fix by design; a human runs it.
-- Writes: tell the user to run `/sre-k8s-safe-remediation`.
+- Writes: tell the user to run `/sre-k8s-safe-remediation` (Claude plugin install: `/sre:sre-k8s-safe-remediation`; Codex: `$sre-k8s-safe-remediation`).
 
 If neither the Kubernetes MCP server nor kubectl is available, output the commands for the human and stop.
 

@@ -7,7 +7,7 @@ REF="$HERE/../references"
 GEN="$HERE/gen-burn-rate-rules.py"
 PROMTOOL="${PROMTOOL:-promtool}"
 command -v "$PROMTOOL" >/dev/null || { echo "promtool not found; set PROMTOOL=/path/to/promtool" >&2; exit 2; }
-T="$(mktemp -d)"; trap 'rm -rf "$T"' EXIT
+T="$(mktemp -d)"; trap 'rm -rf -- "${T:?}"' EXIT
 pass=0; fail=0
 expect_ok()   { local d="$1"; shift; if "$@" >/dev/null 2>&1; then echo "PASS: $d"; pass=$((pass+1)); else echo "FAIL: $d"; fail=$((fail+1)); fi; }
 expect_fail() { local d="$1"; shift; if "$@" >/dev/null 2>&1; then echo "FAIL: $d"; fail=$((fail+1)); else echo "PASS: $d"; pass=$((pass+1)); fi; }

@@ -1,19 +1,6 @@
----
-name: sre-tools-catalog
-description: "Reference catalog of SRE tooling (metrics, logs, traces, alerting, on-call, SLO, chaos, feature flags, load testing) with trade-offs and a last-reviewed date. Loaded when comparing tools."
-user-invocable: false
----
+# SRE tools catalog
 
-# SRE Tools Catalog
-
-## Safety gates (REQUIRED)
-
-1. Read-only diagnosis first.
-2. Propose each change with risk (low/med/high) and reversibility.
-3. Wait for explicit human approval before any prod-changing command, MCP write tool, or external post.
-4. Act only as approved, verify, and stop and escalate if anything gets worse.
-
-Full rules: [sre-safety-gates](../sre-safety-gates/SKILL.md). Read-only MCP setup: [sre-safety-gates/references/mcp.md](../sre-safety-gates/references/mcp.md).
+Gate rules: [sre-safety-gates](../../sre-safety-gates/SKILL.md). This reference is read-only design guidance.
 
 Categorized catalog of SRE tooling with guidance on selection.
 

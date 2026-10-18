@@ -25,63 +25,64 @@ Process skill: `sre-change-safety` (risk score, rollout, verification). Remediat
 
 ## Secrets rule
 
-Sensitive values: never print. `terraform show` masks only values **marked** sensitive; `show -json`, `state show` (unmarked attributes), `output -json/-raw`, `state pull`, and the plan/state files expose them in plain text. Never commit, upload or paste plan or state files. Use `scripts/plan-risk.sh` for machine review. See [references/secrets-exposure.md](references/secrets-exposure.md).
+Sensitive values: never print. `terraform show` masks only values **marked** sensitive; `show -json`, `state show` (unmarked attributes), `output -json/-raw`, `state pull`, and the plan/state files expose them in plain text. Never commit, upload or paste plan or state files. Use `bash scripts/plan-risk.sh` for machine review. See [references/secrets-exposure.md](references/secrets-exposure.md).
 
 ## Confirm the target first
 
 ```bash
-S=scripts   # relative to this skill folder (the one containing SKILL.md)
-$S/preflight.sh -C <root-module-dir>   # version, workspace, backend type, lock file, risky env (names only)
+# run from this skill folder (the one containing SKILL.md)
+bash scripts/preflight.sh -C <root-module-dir>   # version, workspace, backend type, lock file, risky env (names only)
 terraform -chdir=<root-module-dir> workspace show
 # plus the provider's own identity check, e.g. `aws sts get-caller-identity`, `az account show`, `gcloud config list`
 ```
 
-## Read-only workflow
+## Plan review (read-only, one workflow)
+
+Use for any change, drift fix or rollback before apply. It never applies. Every plan in this skill goes to one private path, `"$P"`, outside the repo: plan files hold secrets in clear text, so never commit, upload or paste them.
 
 ```bash
-terraform fmt -check -recursive
-terraform init -input=false -lockfile=readonly    # don't rewrite the lock file
-terraform validate
-terraform plan -input=false -out=tfplan           # tfplan holds secrets in cleartext: never commit, upload, or paste it
-terraform show -no-color tfplan                   # human review (masks values marked sensitive)
-$S/plan-risk.sh tfplan                            # machine review without values; exit 3 = approval required
-terraform state list
-terraform state show '<address>'                  # quote addresses; prints attributes not marked sensitive in clear text
-$S/drift-check.sh                                 # plan -refresh-only -detailed-exitcode: 0 none, 1 error, 2 drift
+P="$(mktemp -d)/tfplan"                                                  # the one plan path for this session
+bash scripts/tf-readonly.sh -C <root-module-dir> fmt
+bash scripts/tf-readonly.sh -C <root-module-dir> init                   # read-only flags forced; the lock file isn't rewritten
+bash scripts/tf-readonly.sh -C <root-module-dir> validate
+bash scripts/tf-readonly.sh -C <root-module-dir> plan -out="$P"
+bash scripts/tf-readonly.sh -C <root-module-dir> show -no-color "$P"     # human review (masks values marked sensitive)
+bash scripts/plan-risk.sh -C <root-module-dir> "$P"                      # machine review without values; exit 3 = approval required
+terraform -chdir=<root-module-dir> state list
 ```
 
-Or run everything through `$S/tf-readonly.sh -C <root-module-dir> <subcommand>`, which forces the read-only flags and refuses writes.
-
-## Plan review
-
-Use for any change before apply. Never applies.
-
-```bash
-P="$(mktemp -d)/tfplan"                                      # private path; plan files hold secrets
-$S/tf-readonly.sh -C <root-module-dir> init
-$S/tf-readonly.sh -C <root-module-dir> validate
-$S/tf-readonly.sh -C <root-module-dir> plan -out="$P"
-$S/tf-readonly.sh -C <root-module-dir> show -no-color "$P"
-$S/plan-risk.sh   -C <root-module-dir> "$P"                  # exit 3 = approval required
-```
+`tf-readonly.sh` forces the read-only flags and refuses writes. `terraform -chdir=<root-module-dir> state show '<address>'` prints attributes not marked sensitive in clear text; quote the address and don't paste the output.
 
 1. Confirm the workspace and account match the intended environment. If anything looks off, stop.
-2. `plan-risk.sh` counts create/update/delete/replace/forget, lists deletes, replaces (with forcing attribute paths), imports, moved and removed, sensitive attribute paths changed, output changes and drift, and never prints values. Treat **any** delete, replace, forget, import, errored or incomplete plan as high risk. For stateful resources (databases, volumes, buckets, DNS zones, KMS keys, queues), stop and ask.
+2. `plan-risk.sh` counts create/update/delete/replace/forget, lists deletes, replaces (with forcing attribute paths), imports, moved and removed, sensitive attribute paths changed, output changes and drift, and never prints values. Treat **any** delete, replace, forget, import, errored or incomplete plan as high risk.
 3. Check replace reasons (`forced by:` paths, `action_reason`), unexpected resources, drift seen during refresh, and provider or module version changes.
 4. Report sensitive changes as attribute **paths** only.
-5. End with the exact command awaiting approval: `terraform -chdir=<root-module-dir> apply <planfile>`. It runs **without a prompt**, so approval comes first. If the state changed, re-plan. Delete the plan file afterward.
+5. **Stateful delete or replace** (databases, volumes, buckets, DNS zones, KMS keys, queues): stop. Don't propose an apply. Find out why (a removed block, a renamed address that needs a `moved` block, a forcing attribute, the wrong workspace or state) and report the cause and the config fix. The fix gets its own new plan review.
+6. Otherwise, write the proposal: plan summary, risk, reversibility, rollback, and the plan file path. Then **wait for explicit approval of that exact plan file.**
+
+## Apply the approved plan
+
+Only after step 6 of the plan review and explicit approval. A saved plan applies **without a prompt**. Never `-auto-approve`, never a plain `apply` without the plan file (it re-plans and skips the review).
+
+**Gate: approval required.**
+
+```bash
+terraform -chdir=<root-module-dir> apply "$P"
+```
+
+If the state changed since the plan, Terraform rejects the stale plan: run the plan review again and get approval again. A failed apply isn't rolled back automatically, so stop and report. Afterwards, check that `bash scripts/drift-check.sh -C <root-module-dir>` exits 0 and the service metrics are healthy, then delete the plan file and its folder (this fails safely if `$P` isn't set in this shell): `rm -f -- "${P:?plan path not set}" && rmdir -- "$(dirname "$P")"`.
 
 ## Drift check
 
 ```bash
-$S/drift-check.sh -C <root-module-dir> [-- -var-file=<env>.tfvars]
+bash scripts/drift-check.sh -C <root-module-dir> [-- -var-file=<env>.tfvars]
 echo "exit=$?"   # 0 = no drift, 1 = error, 2 = drift detected
 ```
 
 The script refuses `-lock=false`, `-target`, `-replace`, `-destroy`, `-refresh=false` and `-auto-approve`, keeps the state lock, and deletes its temporary plan. Detecting drift is read-only; never use `terraform refresh` (= `apply -refresh-only -auto-approve`).
 
 - **0:** no drift. Record the time and workspace.
-- **2:** for each drifted address find the cause (incident fix, console change, another tool, provider default), then propose one of: (a) change the config to match reality, then run a Plan review; (b) revert reality by applying the normal plan (approval required); (c) accept into state with `terraform plan -refresh-only -out=tfplan`, review, then `terraform apply tfplan` (approval required; writes state).
+- **2:** for each drifted address find the cause (incident fix, console change, another tool, provider default), then propose one of: (a) change the config to match reality, then run a plan review; (b) revert reality with a normal plan review and apply; (c) accept reality into state with `terraform -chdir=<root-module-dir> plan -refresh-only -out="$P"`, reviewed like any plan, then applied through Apply the approved plan (it writes state).
 - **1:** report the diagnostics (credentials, lock held, provider error). Don't retry with `-lock=false`.
 
 ## Rolling back
@@ -89,8 +90,8 @@ The script refuses `-lock=false`, `-target`, `-replace`, `-destroy`, `-refresh=f
 There is no `terraform rollback`.
 
 1. `git revert <commit>` (or check out the last good config).
-2. `terraform plan -input=false -out=tfplan && terraform show -no-color tfplan && $S/plan-risk.sh tfplan`. Reverting doesn't undo destroyed data.
-3. After explicit approval only: `terraform apply tfplan`. A saved plan applies **without a prompt**. If the state changed, Terraform rejects the stale plan; re-plan. A failed apply is not rolled back automatically.
+2. Run the plan review. Reverting doesn't bring back destroyed data, and a stateful delete or replace in the revert plan stops at step 5 like any other.
+3. Apply through Apply the approved plan, after explicit approval only.
 
 ## Guardrails
 
@@ -99,10 +100,10 @@ There is no `terraform rollback`.
 - Remote state with locking. `terraform force-unlock LOCK_ID` only with explicit approval, after confirming no run is active, and never `-force`.
 - **Opt-in second layer (not enabled by default):** [hooks/terraform-guard.sh](hooks/terraform-guard.sh) (PreToolUse: denies auto-approve, destroy, refresh, plan-less apply; asks for saved-plan apply, state surgery, import, force-unlock) and the rules in [assets/settings.example.json](assets/settings.example.json). They match strings: a guardrail, not a sandbox.
 - MCP: [references/mcp-server-safety.md](references/mcp-server-safety.md).
-- Tests: `tests/run-tests.sh` (throwaway `terraform_data` config). Requires bash 3.2+, jq, terraform 1.16+.
+- Tests: `bash tests/run-tests.sh` (throwaway `terraform_data` config). Requires bash 3.2+, jq, terraform 1.16+.
 
 If terraform is not available, output the commands for the human and stop.
 
 ## Output
 
-- Target confirmed (workspace + identity), plan summary (adds/changes/destroys/replaces, risky resources, sensitive paths), drift result with exit code, likely cause and proposed option, and the exact `terraform apply <plan-file>` awaiting approval
+- Target confirmed (workspace + identity), plan summary (adds/changes/destroys/replaces, risky resources, sensitive paths), drift result with exit code, likely cause and proposed option. For a stateful delete or replace: the cause and the config fix, with no apply proposed. Otherwise: the plan file path awaiting approval

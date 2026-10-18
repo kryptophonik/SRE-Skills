@@ -18,7 +18,7 @@ Full rules: [sre-safety-gates](../sre-safety-gates/SKILL.md). Read-only MCP setu
 
 1. Set the window (default: last shift, e.g. 12 h or 7 d for weekly rotations).
 2. Collect, read-only:
-   - Incidents and alerts: `sre-pagerduty-opsgenie`. Count pages with its capped paginated scripts (`scripts/pd_incidents.sh --since … --until … --json | wc -l`; Opsgenie `scripts/og_alerts.sh`). The default API page of 25 undercounts; a `MAX_PAGES` warning means the count is a lower bound.
+   - Incidents and alerts: `sre-pagerduty-opsgenie`. Count pages with its capped paginated scripts (`bash ../sre-pagerduty-opsgenie/scripts/pd_incidents.sh --since … --until … --json | wc -l`; Opsgenie `bash ../sre-pagerduty-opsgenie/scripts/og_alerts.sh`). The default API page of 25 undercounts; a `MAX_PAGES` warning means the count is a lower bound.
    - Open problems: `sre-dynatrace`; firing alerts: `sre-prometheus-grafana`, `sre-datadog`.
    - Deploys and changes: CI/CD history, `sre-change-safety` log, Terraform runs.
 3. Group alerts by service; flag noisy (fired 3+ times, no action) and missing-runbook alerts.

@@ -37,11 +37,11 @@ Quick start (Claude Code plugin):
 /plugin install sre@claude-sre
 ```
 
-Plugin skills are namespaced, for example `/sre:sre-incident-command`.
+Plugin skills are namespaced, for example `/sre:sre-incident-command`. Verify with `claude plugin details sre@claude-sre`.
 
 ## Quick start
 
-Commands and copy steps below are the whole-pack install from each guide. Follow the linked doc for a single skill, personal scope, and how the gates stay attached.
+Commands and copy steps below are the whole-pack install from each guide. Copy steps assume you ran `git clone https://github.com/kryptophonik/claude-sre.git` and are in the folder that contains `claude-sre/`. Follow the linked doc for a single skill, personal scope, and how the gates stay attached.
 
 ### Claude Code
 
@@ -59,22 +59,26 @@ Or from your shell: `claude plugin marketplace add kryptophonik/claude-sre`, the
 [docs/install/gemini-cli.md](docs/install/gemini-cli.md)
 
 ```bash
-gemini extensions install https://github.com/kryptophonik/claude-sre --ref v3.0.0
+gemini extensions install https://github.com/kryptophonik/claude-sre
 ```
 
-The `v3.0.0` tag is created at release. Until then, omit `--ref` to install the default branch.
+Don't pin `--ref`: a pinned tag never updates. The install asks you to trust the current folder and to confirm the skill list; `--consent` skips the second prompt.
 
 ### Cursor
 
 [docs/install/cursor.md](docs/install/cursor.md)
 
-Copy `.claude/skills/sre-*` and `.cursor/rules/sre-safety-gates.mdc` into your repo, keeping the same paths. Cursor reads `.claude/skills` directly, so no conversion is needed.
+```bash
+mkdir -p <your-repo>/.claude/skills <your-repo>/.cursor/rules
+cp -r claude-sre/.claude/skills/sre-* <your-repo>/.claude/skills/
+cp claude-sre/.cursor/rules/sre-safety-gates.mdc <your-repo>/.cursor/rules/
+```
 
 ### Grok
 
 [docs/install/grok.md](docs/install/grok.md)
 
-Run `grok plugin marketplace add kryptophonik/claude-sre`, then install `sre` from the TUI Marketplace tab or with `grok plugin install`. To try it without installing, run `grok --plugin-dir <path-to-clone>`.
+Run `grok plugin marketplace add kryptophonik/claude-sre`, then `grok plugin install sre@claude-sre` (or install `sre` from the TUI Marketplace tab). To try it without installing, run `grok --plugin-dir <path-to-clone>`.
 
 ### Codex CLI
 
@@ -83,14 +87,18 @@ Run `grok plugin marketplace add kryptophonik/claude-sre`, then install `sre` fr
 ```bash
 mkdir -p <your-repo>/.agents/skills
 cp -r claude-sre/skills/sre-* <your-repo>/.agents/skills/
-cp claude-sre/AGENTS.md <your-repo>/AGENTS.md     # or append its gate section to your existing AGENTS.md
+cat claude-sre/AGENTS.md >> <your-repo>/AGENTS.md    # appends; never overwrites your AGENTS.md (run once)
 ```
 
 ### GitHub Copilot
 
 [docs/install/copilot.md](docs/install/copilot.md)
 
-Copy `.claude/skills/sre-*` (Copilot reads `.claude/skills` directly) and `.github/copilot-instructions.md` into your repo. If you already have a `copilot-instructions.md`, append the gate section.
+```bash
+mkdir -p <your-repo>/.claude/skills <your-repo>/.github
+cp -r claude-sre/.claude/skills/sre-* <your-repo>/.claude/skills/
+cat claude-sre/.github/copilot-instructions.md >> <your-repo>/.github/copilot-instructions.md   # appends (run once)
+```
 
 ## What's inside
 
@@ -108,9 +116,10 @@ All 34 skills. The "What it does" column is each skill's frontmatter `descriptio
 |---|---|---|
 | [`sre-incident-command`](.claude/skills/sre-incident-command/SKILL.md) | Use when an incident is declared or suspected: declare, assign roles (IC, ops, comms, scribe), set severity, keep the timeline, drive decisions, hand off and close. Debugging goes to sre-engineer. | auto |
 | [`sre-security-incident-triage`](.claude/skills/sre-security-incident-triage/SKILL.md) | Use when a security compromise is suspected: leaked credentials, suspicious access, compromised host or container, unexpected infra changes. Preserve evidence, gated containment, hand off to security. | auto |
-| [`sre-engineer`](.claude/skills/sre-engineer/SKILL.md) | Use for a concrete live problem: diagnosing an incident or alert, high latency or 5xx, proposing and (only after explicit approval) executing remediation, or walking a runbook. Not for strategy. | auto |
-| [`sre-k8s-triage`](.claude/skills/sre-k8s-triage/SKILL.md) | Use when a Kubernetes workload or node is unhealthy: CrashLoopBackOff, Pending, OOMKilled, ImagePullBackOff, node pressure, DNS, probes, stuck rollouts, Helm. Read-only decision tree. | auto |
+| [`sre-engineer`](.claude/skills/sre-engineer/SKILL.md) | Use for live problems (incident, alert, latency or 5xx, gated remediation, runbook walk) and for SRE design: observability architecture, reliability reviews, on-call program design, and choosing tools. | auto |
+| [`sre-k8s-triage`](.claude/skills/sre-k8s-triage/SKILL.md) | Use when a Kubernetes workload or node is unhealthy: CrashLoopBackOff, Pending, OOMKilled, ImagePullBackOff, node pressure, DNS, probes, stuck rollouts, Helm, and whether a restart is safe. Read-only decision tree. | auto |
 | [`sre-k8s-safe-remediation`](.claude/skills/sre-k8s-safe-remediation/SKILL.md) | Use when a fix from sre-k8s-triage needs a kubectl or helm write (rollback, restart, scale, pod delete, Helm rollback): evidence, GitOps/HPA ownership check, preview, explicit approval, verify. | manual only |
+| [`sre-database-triage`](.claude/skills/sre-database-triage/SKILL.md) | Use when Postgres, MySQL/MariaDB or Redis is slow or failing: connection exhaustion, locks, long or slow queries, replication lag, disk/WAL/bloat, Redis memory/eviction, DB CPU. Read-only; kill and failover are gated. | auto |
 | [`sre-diagnostics`](.claude/skills/sre-diagnostics/SKILL.md) | Use to investigate a live issue read-only: logs/metrics/traces queries, correlation, hypothesis testing, profiling and bottleneck identification. Gives exact commands when tools are unavailable. | auto |
 | [`sre-incident-communication`](.claude/skills/sre-incident-communication/SKILL.md) | Use when an incident update or stakeholder message is needed: announcements, status updates, resolution notices, executive summaries with severity cadence. Drafts only until approved. | auto |
 | [`sre-postmortem-templates`](.claude/skills/sre-postmortem-templates/SKILL.md) | Use after an incident is resolved to draft or facilitate a blameless postmortem / incident review / RCA with a timeline from paging, monitoring and deploy history. Not for active incidents. | auto |
@@ -118,17 +127,17 @@ All 34 skills. The "What it does" column is each skill's frontmatter `descriptio
 | [`sre-oncall-audit`](.claude/skills/sre-oncall-audit/SKILL.md) | Use before rotation changes, after a migration, or quarterly: read-only audit of PagerDuty/Opsgenie schedules and escalation policies for coverage gaps, single-person layers, DST, loops, unreachable users. | auto |
 | [`sre-change-safety`](.claude/skills/sre-change-safety/SKILL.md) | Use before, during or right after a deploy, migration or infra change: risk score, freeze and error-budget check, canary/progressive rollout, rollback plan, post-deploy verification. | auto |
 | [`sre-slo-alerting`](.claude/skills/sre-slo-alerting/SKILL.md) | Use when creating or revising SLIs, SLOs, error budget policy, burn-rate alerts or paging policy, and for alert-fatigue reduction. Not for responding to a firing alert (use sre-engineer). | auto |
-| [`sre-slo-burn-rate-rules`](.claude/skills/sre-slo-burn-rate-rules/SKILL.md) | Use when asked to create or fix Prometheus SLO burn-rate alerts: generate 4-tier multiwindow rules from an SLO target and counter selectors, then lint and unit-test with promtool. Files for review only; never deploys. | auto |
+| [`sre-slo-burn-rate-rules`](.claude/skills/sre-slo-burn-rate-rules/SKILL.md) | Use when authoring or fixing Prometheus SLO burn-rate alert rules: generate 4-tier multiwindow rules from an SLO target and counters, then promtool lint and test. Files only, never deploys. Not for responding to a firing alert (use sre-engineer). | auto |
 | [`sre-runbook-templates`](.claude/skills/sre-runbook-templates/SKILL.md) | Use when creating or reviewing a runbook: full template with owner, scope, diagnosis, decision points, gated actions with rollback, verification, escalation and last-reviewed date. | auto |
 | [`sre-production-readiness`](.claude/skills/sre-production-readiness/SKILL.md) | Use before a new service or major change goes live: run a production readiness review (PRR) / launch checklist and produce a pass/fail verdict with evidence. | auto |
 | [`sre-capacity-planning`](.claude/skills/sre-capacity-planning/SKILL.md) | Use before launches or peak events, or when saturation trends up: forecast demand from metrics, compute headroom, plan load tests, set scaling triggers. Read-only queries. | auto |
 | [`sre-dr-backup-test`](.claude/skills/sre-dr-backup-test/SKILL.md) | Use when testing backups or DR readiness: backup-restore and failover drills against RTO/RPO, restoring only to new isolated targets after approval, with an evidence record. | auto |
 | [`sre-dependency-mapping`](.claude/skills/sre-dependency-mapping/SKILL.md) | Use for PRRs, reliability reviews, incident blast radius or chaos planning: map upstream/downstream services, criticality, timeouts/retries and single points of failure. Read-only. | auto |
+| [`sre-expiry-audit`](.claude/skills/sre-expiry-audit/SKILL.md) | Use when asked what expires soon: TLS certs (endpoints, cert-manager), domain registrations, ACM/IAM certs, Secrets Manager rotation, GCP Secret/Certificate Manager, Azure Key Vault. Read-only metadata; flags 30/14/7 days. | auto |
 | [`sre-toil-review`](.claude/skills/sre-toil-review/SKILL.md) | Use for quarterly ops reviews or when on-call load is high: inventory repetitive manual work, score frequency x time x risk, and pick automation candidates. | auto |
 | [`sre-cloud-cost-review`](.claude/skills/sre-cloud-cost-review/SKILL.md) | Use for cloud or observability cost reviews and spend spikes: idle/oversized resources, storage sprawl, data transfer, commitments, ingest/retention. Read-only; never deletes or resizes without approval. | auto |
 | [`sre-observability-query-cookbook`](.claude/skills/sre-observability-query-cookbook/SKILL.md) | Use when you need a correct query for golden signals, RED/USE, saturation, error ratio, latency percentiles or SLO burn rate in PromQL, DQL, Datadog or LogQL. | auto |
 | [`sre-chaos-engineering`](.claude/skills/sre-chaos-engineering/SKILL.md) | Use to design or run a chaos / fault-injection experiment or game day, with hard no-go rules, approval and abort criteria. Manual invocation only. Not for live incident response. | manual only |
-| [`sre-architect`](.claude/skills/sre-architect/SKILL.md) | Use for SRE design and planning: observability architecture, reliability reviews, SRE program and on-call design. Routes specific asks to other sre-* skills. Not for live incidents (use sre-incident-command / sre-engineer). | auto |
 | [`sre-dynatrace`](.claude/skills/sre-dynatrace/SKILL.md) | Use when data lives in Dynatrace: DQL for problems, logs, metrics and entities, Davis problem triage, SLO and health checks. Read-only MCP or DQL for Notebooks. | auto |
 | [`sre-prometheus-grafana`](.claude/skills/sre-prometheus-grafana/SKILL.md) | Use when metrics, logs or alerts live in Prometheus, Alertmanager, Loki or Grafana: bounded PromQL/LogQL, active alerts, rule linting with promtool, gated silences, dashboards. | auto |
 | [`sre-datadog`](.claude/skills/sre-datadog/SKILL.md) | Use when metrics, traces, logs, monitors or SLOs live in Datadog: queries, monitor and SLO review, incidents and events. Read-only MCP or API (read-scoped keys); writes need approval. | auto |
@@ -139,7 +148,6 @@ All 34 skills. The "What it does" column is each skill's frontmatter `descriptio
 | [`sre-gcp`](.claude/skills/sre-gcp/SKILL.md) | Use when the system runs on Google Cloud: Cloud Monitoring, Cloud Logging, GKE/Compute/Cloud Run/Cloud SQL status, audit logs, quotas. Viewer roles via gcloud or MCP allowlist; writes need approval. | auto |
 | [`sre-safety-gates`](.claude/skills/sre-safety-gates/SKILL.md) | Shared approval gates for every sre-* skill: read-only first, propose with risk/reversibility, explicit human approval before any prod change, MCP write or external post, verify, stop if worse. | reference (`user-invocable: false`) |
 | [`sre-remediation-actions`](.claude/skills/sre-remediation-actions/SKILL.md) | Reference of gated recovery procedures (rollback, scale, restart, failover) with risk/reversibility labels, evidence capture and dry-run first. Loaded by sre-engineer before any remediation. | reference (`user-invocable: false`) |
-| [`sre-tools-catalog`](.claude/skills/sre-tools-catalog/SKILL.md) | Reference catalog of SRE tooling (metrics, logs, traces, alerting, on-call, SLO, chaos, feature flags, load testing) with trade-offs and a last-reviewed date. Loaded when comparing tools. | reference (`user-invocable: false`) |
 
 ## Example: 5xx spike
 
@@ -154,9 +162,11 @@ All 34 skills. The "What it does" column is each skill's frontmatter `descriptio
 
 ## Validate locally
 
+Needs Python 3.11 or newer (`validate.py` uses `tomllib`), PyYAML (`pip install pyyaml`) and shellcheck.
+
 ```bash
 python3 scripts/build-targets.py --check
-python3 scripts/validate.py          # needs PyYAML
+python3 scripts/validate.py
 find .claude -name '*.sh' -exec bash -n {} \; && shellcheck -S warning $(find .claude -name '*.sh')
 .claude/skills/sre-pagerduty-opsgenie/scripts/tests/run_tests.sh
 ```

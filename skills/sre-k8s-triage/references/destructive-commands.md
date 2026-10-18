@@ -1,6 +1,6 @@
 # Never without explicit human approval
 
-Before any of these: run `scripts/k8s-triage-snapshot.sh` to capture evidence, state the target (`--context`, `-n`, name), the risk and how to roll back, then wait for approval. Prefer GitOps (a PR or revert) over imperative changes.
+Before any of these: run `bash scripts/k8s-triage-snapshot.sh --context <ctx> -n <ns>` to capture evidence, state the target (`--context`, `-n`, name), the risk and how to roll back, then wait for approval. Prefer GitOps (a PR or revert) over imperative changes.
 Sources: https://kubernetes.io/docs/reference/kubectl/generated/ · https://helm.sh/docs/helm/ · https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/
 
 | Command | Why it's dangerous | Safer alternative |
