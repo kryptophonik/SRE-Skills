@@ -18,7 +18,7 @@ Every `kubectl`/`helm` command below carries `--context <ctx> -n <ns>` (`--kube-
 Full rules: [sre-safety-gates](../sre-safety-gates/SKILL.md). Read-only MCP setup: [sre-safety-gates/references/mcp.md](../sre-safety-gates/references/mcp.md).
 **Legend:** `risk` = low / med / high blast radius. `reversible` = yes / no (can be cleanly undone without data loss).
 
-For Kubernetes writes, tell the user to run `/sre-k8s-safe-remediation` (manual-only gated workflow).
+For Kubernetes writes, tell the user to run `/sre-k8s-safe-remediation` (Claude plugin install: `/sre:sre-k8s-safe-remediation`; Codex: `$sre-k8s-safe-remediation`) (manual-only gated workflow).
 
 ## Remediation hierarchy
 

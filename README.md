@@ -37,11 +37,11 @@ Quick start (Claude Code plugin):
 /plugin install sre@claude-sre
 ```
 
-Plugin skills are namespaced, for example `/sre:sre-incident-command`.
+Plugin skills are namespaced, for example `/sre:sre-incident-command`. Verify with `claude plugin details sre@claude-sre`.
 
 ## Quick start
 
-Commands and copy steps below are the whole-pack install from each guide. Follow the linked doc for a single skill, personal scope, and how the gates stay attached.
+Commands and copy steps below are the whole-pack install from each guide. Copy steps assume you ran `git clone https://github.com/kryptophonik/claude-sre.git` and are in the folder that contains `claude-sre/`. Follow the linked doc for a single skill, personal scope, and how the gates stay attached.
 
 ### Claude Code
 
@@ -59,22 +59,26 @@ Or from your shell: `claude plugin marketplace add kryptophonik/claude-sre`, the
 [docs/install/gemini-cli.md](docs/install/gemini-cli.md)
 
 ```bash
-gemini extensions install https://github.com/kryptophonik/claude-sre --ref v3.0.0
+gemini extensions install https://github.com/kryptophonik/claude-sre
 ```
 
-The `v3.0.0` tag is created at release. Until then, omit `--ref` to install the default branch.
+Don't pin `--ref`: a pinned tag never updates. The install asks you to trust the current folder and to confirm the skill list; `--consent` skips the second prompt.
 
 ### Cursor
 
 [docs/install/cursor.md](docs/install/cursor.md)
 
-Copy `.claude/skills/sre-*` and `.cursor/rules/sre-safety-gates.mdc` into your repo, keeping the same paths. Cursor reads `.claude/skills` directly, so no conversion is needed.
+```bash
+mkdir -p <your-repo>/.claude/skills <your-repo>/.cursor/rules
+cp -r claude-sre/.claude/skills/sre-* <your-repo>/.claude/skills/
+cp claude-sre/.cursor/rules/sre-safety-gates.mdc <your-repo>/.cursor/rules/
+```
 
 ### Grok
 
 [docs/install/grok.md](docs/install/grok.md)
 
-Run `grok plugin marketplace add kryptophonik/claude-sre`, then install `sre` from the TUI Marketplace tab or with `grok plugin install`. To try it without installing, run `grok --plugin-dir <path-to-clone>`.
+Run `grok plugin marketplace add kryptophonik/claude-sre`, then `grok plugin install sre@claude-sre` (or install `sre` from the TUI Marketplace tab). To try it without installing, run `grok --plugin-dir <path-to-clone>`.
 
 ### Codex CLI
 
@@ -83,14 +87,18 @@ Run `grok plugin marketplace add kryptophonik/claude-sre`, then install `sre` fr
 ```bash
 mkdir -p <your-repo>/.agents/skills
 cp -r claude-sre/skills/sre-* <your-repo>/.agents/skills/
-cp claude-sre/AGENTS.md <your-repo>/AGENTS.md     # or append its gate section to your existing AGENTS.md
+cat claude-sre/AGENTS.md >> <your-repo>/AGENTS.md    # appends; never overwrites your AGENTS.md (run once)
 ```
 
 ### GitHub Copilot
 
 [docs/install/copilot.md](docs/install/copilot.md)
 
-Copy `.claude/skills/sre-*` (Copilot reads `.claude/skills` directly) and `.github/copilot-instructions.md` into your repo. If you already have a `copilot-instructions.md`, append the gate section.
+```bash
+mkdir -p <your-repo>/.claude/skills <your-repo>/.github
+cp -r claude-sre/.claude/skills/sre-* <your-repo>/.claude/skills/
+cat claude-sre/.github/copilot-instructions.md >> <your-repo>/.github/copilot-instructions.md   # appends (run once)
+```
 
 ## What's inside
 
@@ -152,9 +160,11 @@ All 34 skills. The "What it does" column is each skill's frontmatter `descriptio
 
 ## Validate locally
 
+Needs Python 3.11 or newer (`validate.py` uses `tomllib`), PyYAML (`pip install pyyaml`) and shellcheck.
+
 ```bash
 python3 scripts/build-targets.py --check
-python3 scripts/validate.py          # needs PyYAML
+python3 scripts/validate.py
 find .claude -name '*.sh' -exec bash -n {} \; && shellcheck -S warning $(find .claude -name '*.sh')
 .claude/skills/sre-pagerduty-opsgenie/scripts/tests/run_tests.sh
 ```

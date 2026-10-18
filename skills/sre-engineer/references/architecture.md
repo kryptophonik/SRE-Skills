@@ -19,7 +19,7 @@ Strategic, read-only design and review. Keep it short: frame the problem, route 
 | SLOs, error budgets, alert rules, alert fatigue | `sre-slo-alerting` |
 | Production readiness / launch | `sre-production-readiness` |
 | Runbook writing | `sre-runbook-templates` |
-| Chaos program or experiment | manual only: tell the user to run `/sre-chaos-engineering` |
+| Chaos program or experiment | manual only: tell the user to run `/sre-chaos-engineering` (Claude plugin install: `/sre:sre-chaos-engineering`; Codex: `$sre-chaos-engineering`) |
 | Capacity / headroom / load tests | `sre-capacity-planning` |
 | Backup and DR drills | `sre-dr-backup-test` |
 | Upstream/downstream, blast radius | `sre-dependency-mapping` |

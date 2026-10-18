@@ -24,7 +24,7 @@ Every skill is prefixed `sre-` so it does not collide with or shadow other packs
 | Suspected compromise, leaked key, suspicious access | `sre-security-incident-triage` | auto |
 | Debug a live issue, high 5xx/latency, remediate, run a runbook | `sre-engineer` | auto |
 | Kubernetes workload unhealthy | `sre-k8s-triage` | auto |
-| Kubernetes write (rollback, restart, scale, delete pod, Helm rollback) | `sre-k8s-safe-remediation` | **manual only** (`/sre-k8s-safe-remediation`) |
+| Kubernetes write (rollback, restart, scale, delete pod, Helm rollback) | `sre-k8s-safe-remediation` | **manual only** (`/sre-k8s-safe-remediation`; Claude plugin: `/sre:sre-k8s-safe-remediation`; Codex: `$sre-k8s-safe-remediation`) |
 | Investigation and profiling detail | `sre-diagnostics` | auto |
 | Incident update / status page / exec summary drafts | `sre-incident-communication` | auto |
 | Postmortem / RCA | `sre-postmortem-templates` | auto |
@@ -41,7 +41,7 @@ Every skill is prefixed `sre-` so it does not collide with or shadow other packs
 | Toil review | `sre-toil-review` | auto |
 | Cloud or observability cost | `sre-cloud-cost-review` | auto |
 | A correct query in any monitoring tool | `sre-observability-query-cookbook` | auto |
-| Chaos experiment / game day | `sre-chaos-engineering` | **manual only** (`/sre-chaos-engineering`) |
+| Chaos experiment / game day | `sre-chaos-engineering` | **manual only** (`/sre-chaos-engineering`; Claude plugin: `/sre:sre-chaos-engineering`; Codex: `$sre-chaos-engineering`) |
 | Design, reliability review, on-call program, tool choice | `sre-engineer` (references `architecture.md`, `tools-catalog.md`) | auto |
 
 ### Tool adapters (load with the process skill)
@@ -62,9 +62,9 @@ Every profile needs `sre-safety-gates` (each skill also carries an inline gate b
 
 | Profile | Skills | Requires |
 |---|---|---|
-| Core incident response | `sre-safety-gates`, `sre-incident-command`, `sre-engineer`, `sre-diagnostics`, `sre-remediation-actions`, `sre-incident-communication`, `sre-postmortem-templates`, `sre-oncall-handoff`, `sre-change-safety` | — |
+| Core incident response | `sre-safety-gates`, `sre-incident-command`, `sre-engineer`, `sre-diagnostics`, `sre-remediation-actions`, `sre-incident-communication`, `sre-postmortem-templates`, `sre-oncall-handoff`, `sre-change-safety` | `sre-oncall-handoff` needs `sre-pagerduty-opsgenie` for its paging scripts |
 | Reliability program | `sre-slo-alerting`, `sre-production-readiness`, `sre-capacity-planning`, `sre-dr-backup-test`, `sre-dependency-mapping`, `sre-toil-review`, `sre-cloud-cost-review`, `sre-chaos-engineering`, `sre-runbook-templates`, `sre-observability-query-cookbook` | core |
-| Kubernetes | `sre-k8s-triage`, `sre-k8s-safe-remediation` | core |
+| Kubernetes | `sre-k8s-triage`, `sre-k8s-safe-remediation` | core; `sre-k8s-safe-remediation` needs `sre-k8s-triage` |
 | Per cloud | `sre-aws` / `sre-azure` / `sre-gcp` | core |
 | Per observability vendor | `sre-dynatrace` / `sre-prometheus-grafana` (+ `sre-slo-burn-rate-rules`) / `sre-datadog` | core; `sre-slo-burn-rate-rules` needs `sre-prometheus-grafana` |
 | Paging | `sre-pagerduty-opsgenie` (+ `sre-oncall-audit`) | core; `sre-oncall-audit` needs `sre-pagerduty-opsgenie` |

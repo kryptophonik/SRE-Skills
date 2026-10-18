@@ -100,6 +100,34 @@ if os.path.exists('evals/triggers.yaml'):
         if s != 'none' and s not in names: errors.append(f'evals/triggers.yaml {c["id"]}: unknown skill {s} in {k}')
     if not c.get('expect'): errors.append(f'evals/triggers.yaml {c["id"]}: needs expect (use [none] for negatives)')
 
+# Install docs: commands must work on a fresh machine, copied literally.
+install_docs = ['README.md', 'INSTALL.md'] + sorted(glob.glob('docs/install/*.md'))
+for p in install_docs:
+  lines = open(p).read().split('\n'); fence = False; made = set()
+  for i, line in enumerate(lines, 1):
+    t = line.strip()
+    if t.startswith('```'):
+      fence = not fence; made = set(); continue
+    if re.search(r'--ref\s+v\d', line): errors.append(f'{p}:{i}: don\'t pin --ref to a tag; a pinned ref never updates')
+    if not fence:
+      for span in re.findall(r'`([^`]+)`', line):
+        if re.match(r'(cp|mkdir)\s', span): errors.append(f'{p}:{i}: put copy commands in a fenced block with mkdir -p, not inline')
+      continue
+    if t.startswith('mkdir -p '): made.update(x.rstrip('/') for x in t.split()[2:])
+    if t.startswith('cp '):
+      args = t.split('#')[0].split()
+      if re.search(r'\{[^}]*,', t): errors.append(f'{p}:{i}: brace expansion fails in sh; list each path')
+      if args[-1].endswith('AGENTS.md'): errors.append(f'{p}:{i}: cp overwrites an existing AGENTS.md; append with cat >>')
+      elif args[-1].endswith('/') and args[-1].rstrip('/') not in made: errors.append(f'{p}:{i}: {args[-1]} needs mkdir -p earlier in the same block')
+
+# Manual-only skills: every slash command in skill text also names the plugin form.
+manual = [n for n in names if yaml.safe_load(re.match(r'---\n(.*?)\n---\n', open(f'.claude/skills/{n}/SKILL.md').read(), re.S).group(1)).get('disable-model-invocation')]
+for p in glob.glob('.claude/skills/**/*.md', recursive=True) + ['SKILLS.md']:
+  for i, line in enumerate(open(p), 1):
+    for n in manual:
+      if f'`/{n}`' in line and f'/sre:{n}' not in line:
+        errors.append(f'{p}:{i}: /{n} also needs the Claude plugin form /sre:{n}')
+
 if errors:
   print('\n'.join(errors)); raise SystemExit(f'{len(errors)} content error(s)')
 print('content checks ok')

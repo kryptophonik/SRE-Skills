@@ -113,7 +113,7 @@ $S/k8s-triage-snapshot.sh --context <ctx> -n <ns>  # bounded, read-only evidence
 
 - [references/command-cheatsheet.md](references/command-cheatsheet.md) · [references/destructive-commands.md](references/destructive-commands.md)
 - Opt-in hardening: [references/rbac-readonly.yaml](references/rbac-readonly.yaml), [references/kubernetes-mcp-server.toml](references/kubernetes-mcp-server.toml), [references/claude-settings-k8s-deny.json](references/claude-settings-k8s-deny.json). The deny list also blocks `cordon` and other fixes, so Claude cannot execute an approved fix by design; a human runs it.
-- Writes: tell the user to run `/sre-k8s-safe-remediation`.
+- Writes: tell the user to run `/sre-k8s-safe-remediation` (Claude plugin install: `/sre:sre-k8s-safe-remediation`; Codex: `$sre-k8s-safe-remediation`).
 
 If neither the Kubernetes MCP server nor kubectl is available, output the commands for the human and stop.
 

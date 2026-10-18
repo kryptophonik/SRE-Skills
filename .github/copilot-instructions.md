@@ -12,7 +12,7 @@ This repository is a generic SRE skill pack. Each skill is a folder with a `SKIL
 5. **Verify.** Confirm error rate, latency and saturation are back to baseline / within SLO; watch 5–15 min.
 6. **Stop and escalate if worse.** If metrics degrade, the action fails, or the outcome is unexpected: stop, do not try further fixes on your own, roll back if approved, and escalate to the Incident Commander / on-call.
 
-Never run a write command, call an MCP write tool, or post an external message without explicit human approval in this conversation. Skills marked "manual only" must be started by the user (for example `/sre-chaos-engineering`); never run their steps on your own.
+Never run a write command, call an MCP write tool, or post an external message without explicit human approval in this conversation. Skills marked "manual only" must be started by the user (for example `/sre-chaos-engineering`, or `/sre:sre-chaos-engineering` in a Claude Code plugin install); never run their steps on your own.
 
 Script and reference paths inside a skill (for example `scripts/az-ro.sh` or `../sre-k8s-triage/scripts/...`) are relative to that skill's folder, the folder containing its `SKILL.md`. Resolve them against that folder: `cd` into it, or prefix the skill path. Older copies may write `${CLAUDE_SKILL_DIR}`, which means the same folder; substitute it yourself if your tool doesn't.
 

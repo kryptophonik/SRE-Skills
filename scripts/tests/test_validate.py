@@ -43,6 +43,27 @@ try:
   open(dc, 'w').write('```bash\nredis-cli FLUSHALL\nredis-cli KEYS *\n```\n')
   out = subprocess.run([sys.executable, 'scripts/validate.py'], cwd=r, capture_output=True, text=True).stdout
   if 'destructive-commands.md' in out: print('NEVER-RUN REFERENCE FLAGGED', out); fails += 1
-  print(f'{len(BAD) + len(GOOD) + 2 - fails} ok, {fails} failed'); sys.exit(1 if fails else 0)
+  di = os.path.join(r, 'docs/install/zz-fixture.md')
+  INSTALL_BAD = {
+    '```bash\ngemini extensions install https://example.test/x --ref v3.0.0\n```\n': 'never updates',
+    '```bash\ncp -r a/sre-* ~/.claude/skills/\n```\n': 'needs mkdir -p',
+    '```bash\nmkdir -p ~/s\ncp -r a/{x,y} ~/s/\n```\n': 'brace expansion',
+    '```bash\ncp claude-sre/AGENTS.md repo/AGENTS.md\n```\n': 'overwrites an existing AGENTS.md',
+    'Run `cp -r a ~/.claude/skills/` now.\n': 'fenced block',
+  }
+  for body, why in INSTALL_BAD.items():
+    open(di, 'w').write(body)
+    out = subprocess.run([sys.executable, 'scripts/validate.py'], cwd=r, capture_output=True, text=True).stdout
+    if 'zz-fixture.md' not in out: print('MISSED install', why); fails += 1
+  open(di, 'w').write('```bash\nmkdir -p ~/.claude/skills\ncp -r a/sre-x a/sre-y ~/.claude/skills/\ncat a/AGENTS.md >> repo/AGENTS.md\n```\n')
+  out = subprocess.run([sys.executable, 'scripts/validate.py'], cwd=r, capture_output=True, text=True).stdout
+  if 'zz-fixture.md' in out: print('INSTALL FALSE POSITIVE', out); fails += 1
+  os.remove(di)
+  open(os.path.join(d, 'zz-fixture.md'), 'w').write('Tell the user to run `/sre-chaos-engineering`.\n')
+  out = subprocess.run([sys.executable, 'scripts/validate.py'], cwd=r, capture_output=True, text=True).stdout
+  if 'plugin form' not in out: print('MISSED un-namespaced manual command'); fails += 1
+  os.remove(os.path.join(d, 'zz-fixture.md'))
+  extra = len(INSTALL_BAD) + 2
+  print(f'{len(BAD) + len(GOOD) + 2 + extra - fails} ok, {fails} failed'); sys.exit(1 if fails else 0)
 finally:
   shutil.rmtree(tmp)

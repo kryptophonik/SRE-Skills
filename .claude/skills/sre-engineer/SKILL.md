@@ -125,7 +125,7 @@ Read-only. Follow [references/architecture.md](references/architecture.md): obse
 
 ### Chaos experiments
 
-`sre-chaos-engineering` is manual-only. Do not inject faults from this skill; tell the user to run `/sre-chaos-engineering`.
+`sre-chaos-engineering` is manual-only. Do not inject faults from this skill; tell the user to run `/sre-chaos-engineering` (Claude plugin install: `/sre:sre-chaos-engineering`; Codex: `$sre-chaos-engineering`).
 
 ## Output
 

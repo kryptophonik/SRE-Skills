@@ -85,7 +85,7 @@ This repository is a generic SRE skill pack. Each skill is a folder with a `SKIL
 
 {gate_block()}
 
-Never run a write command, call an MCP write tool, or post an external message without explicit human approval in this conversation. Skills marked "manual only" must be started by the user (for example `/sre-chaos-engineering`); never run their steps on your own.
+Never run a write command, call an MCP write tool, or post an external message without explicit human approval in this conversation. Skills marked "manual only" must be started by the user (for example `/sre-chaos-engineering`, or `/sre:sre-chaos-engineering` in a Claude Code plugin install); never run their steps on your own.
 {PATHS_NOTE}
 {extra}
 ## Skills
