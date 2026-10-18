@@ -164,3 +164,20 @@ cases:
     prompt: "redis is evicting keys and cache hit rate dropped"
     expect: [sre-database-triage]
     forbid: [sre-chaos-engineering, sre-k8s-safe-remediation]
+  # Over-trigger guards for the new database and expiry skills.
+  - id: negative-redis-tutorial
+    prompt: "explain how Redis sorted sets work with an example"
+    expect: [none]
+    forbid: [sre-database-triage]
+  - id: negative-orm-migration
+    prompt: "write a Django migration that adds a nullable column to the orders table"
+    expect: [none]
+    forbid: [sre-database-triage, sre-change-safety]
+  - id: negative-cert-concept
+    prompt: "what's the difference between a TLS certificate and a private key?"
+    expect: [none]
+    forbid: [sre-expiry-audit]
+  - id: negative-domain-shopping
+    prompt: "suggest a few available domain names for a bakery website"
+    expect: [none]
+    forbid: [sre-expiry-audit]
