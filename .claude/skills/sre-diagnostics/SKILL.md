@@ -294,7 +294,7 @@ Triage database symptoms with `sre-database-triage` first. Everything below is a
 **Gate: approval required.**
 
 ```sql
--- PostgreSQL: no write lock. Can't run inside a transaction block (no BEGIN; psql autocommit on).
+-- PostgreSQL: no write lock. Run outside BEGIN or any migration-tool transaction (psql autocommit on); it fails inside a transaction block.
 CREATE INDEX CONCURRENTLY <index_name> ON <schema>.<table> (<column>);
 ```
 
@@ -318,6 +318,7 @@ Dropping the invalid index before a retry is a separate write:
 **Gate: approval required.**
 
 ```sql
+-- Run outside BEGIN or any migration-tool transaction; it fails inside a transaction block.
 DROP INDEX CONCURRENTLY <index_name>;
 ```
 
