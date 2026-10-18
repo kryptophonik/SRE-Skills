@@ -228,7 +228,7 @@ bash scripts/db-ro.sh pg -- "EXPLAIN SELECT <columns> FROM <table> WHERE <predic
 | Cancel/terminate | same functions; the admin role cannot signal the provider's own sessions (confirm live) | same | same |
 | Failover | `aws rds failover-db-cluster` (Aurora, Multi-AZ DB cluster) or `aws rds reboot-db-instance --force-failover` (Multi-AZ instance) | `gcloud sql instances failover` (HA instances) | `az postgres flexible-server restart --failover Planned` (or `Forced`), HA servers only |
 
-Failover is never done in SQL on a managed service. Before proposing one, check replica lag (section 4), confirm the incident is the database host and not the app, and expect clients to reconnect (DNS/endpoint flip, 30–120 s of errors).
+Failover is never done in SQL on a managed service. Before proposing one, check replica lag: section 4 for RDS Multi-AZ, Cloud SQL and Azure; on Aurora, replicas don't appear in `pg_stat_replication`, so use CloudWatch `AuroraReplicaLag` (milliseconds) or `SELECT server_id, session_id, replica_lag_in_msec FROM aurora_replica_status();` on any instance. Aurora Global Database uses `aws rds switchover-global-cluster` or `failover-global-cluster`, not the commands below (see [sre-aws](../../sre-aws/SKILL.md)). Also confirm the incident is the database host and not the app, and expect clients to reconnect (DNS/endpoint flip, 30–120 s of errors).
 
 Proposal: managed failover. Evidence captured, IC and DB owner approve, lag checked, rollback is "fail back" (another failover). Use only the one block for your platform; each is a separate approval.
 

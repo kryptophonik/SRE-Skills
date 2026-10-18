@@ -37,7 +37,7 @@ Full rules: [sre-safety-gates](../sre-safety-gates/SKILL.md). Read-only MCP setu
 - Gather facts (service, severity, impact, symptom, start time, IC, channel). Mark unknowns as [TBD]; never guess.
 - Draft using templates below.
 - Present draft with channel + audience; wait for explicit approval.
-- After approval, post exactly the approved text (or hand it to the human to post).
+- After approval, hand the exact approved text to the human comms lead, who sends it. Post it yourself only if that human explicitly asks you to, with that text and destination.
 - Schedule next update per the Update cadence section.
 
 ## Templates
@@ -79,7 +79,7 @@ Only for the status page and customer channels. No names, IC, bridge or channel 
 **Next update:** By [Time] UTC
 ```
 
-### Resolution announcement
+### Resolution announcement (internal)
 
 ```markdown
 ✅ **INCIDENT RESOLVED**
@@ -89,7 +89,7 @@ Only for the status page and customer channels. No names, IC, bridge or channel 
 **Follow-up:** A blameless postmortem will be scheduled within 48 hours of resolution.
 ```
 
-### Executive summary
+### Executive summary (internal)
 
 ```markdown
 ## Executive Summary: Incident [ID]

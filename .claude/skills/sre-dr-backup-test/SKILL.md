@@ -53,28 +53,73 @@ velero backup describe <backup> --details
 
 Full AWS RDS drill (inventory, isolated restore, validation, RTO/RPO, tag-checked cleanup): [references/aws-rds.md](references/aws-rds.md).
 
+Each command below is a separate write and a separate approval. Restores go to a new, isolated target only.
+
+RDS restores are billable and NOT isolated by default (default SG, default subnet group). Always override:
+
+**Gate: approval required.**
 ```bash
-# RDS restores are billable and NOT isolated by default (default SG, default subnet group). Always override:
 aws rds restore-db-instance-from-db-snapshot --profile <profile> --region <region> --db-instance-identifier drtest-<db>-<date> --db-snapshot-identifier <snap> \
   --db-subnet-group-name <isolated-subnet-group> --vpc-security-group-ids <isolated-sg> --no-publicly-accessible --no-multi-az \
   --db-instance-class <small-class> --tags Key=purpose,Value=dr-drill
-# MySQL/PostgreSQL restores may default to RDS Extended Support (extra charges); set --engine-lifecycle-support if needed
+```
+
+MySQL/PostgreSQL restores may default to RDS Extended Support (extra charges); set --engine-lifecycle-support if needed.
+
+**Gate: approval required.**
+```bash
 aws rds restore-db-instance-to-point-in-time --profile <profile> --region <region> --source-db-instance-identifier <db> --target-db-instance-identifier drtest-<db>-<date> \
   --restore-time <ISO8601> --db-subnet-group-name <isolated-subnet-group> --vpc-security-group-ids <isolated-sg> --no-publicly-accessible --no-multi-az \
   --db-instance-class <small-class> --tags Key=purpose,Value=dr-drill      # or --use-latest-restorable-time instead of --restore-time
-# Aurora: restore a cluster, then add an instance
+```
+
+Aurora: restore a cluster, then add an instance.
+
+**Gate: approval required.**
+```bash
 aws rds restore-db-cluster-from-snapshot --profile <profile> --region <region> --db-cluster-identifier drtest-<cluster>-<date> --snapshot-identifier <snap> --engine <aurora-mysql|aurora-postgresql> \
   --db-subnet-group-name <isolated-subnet-group> --vpc-security-group-ids <isolated-sg> --tags Key=purpose,Value=dr-drill
-# Cleanup (WRITE, approval required): only if the identifier starts with drtest-
+```
+
+Cleanup: only if the identifier starts with `drtest-`.
+
+**Gate: approval required.**
+```bash
 aws rds delete-db-instance --profile <profile> --region <region> --db-instance-identifier drtest-<db>-<date> --skip-final-snapshot
+```
+
+Kubernetes (Velero): restore into a mapped `-drtest` namespace.
+
+**Gate: approval required.**
+```bash
 velero restore create --from-backup <backup> --namespace-mappings <ns>:<ns>-drtest
-# GCP Cloud SQL: restore to a NEW isolated instance, never the source instance (Google: "The restore process overwrites all of the current data on the instance, including previous point-in-time recovery (PITR) logs." — https://cloud.google.com/sql/docs/mysql/backup-recovery/restoring)
+```
+
+GCP Cloud SQL: restore to a NEW isolated instance, never the source instance (Google: "The restore process overwrites all of the current data on the instance, including previous point-in-time recovery (PITR) logs." — https://cloud.google.com/sql/docs/mysql/backup-recovery/restoring)
+
+**Gate: approval required.**
+```bash
 gcloud sql backups restore <BACKUP_ID> --restore-instance=<NEW_ISOLATED_INSTANCE> --backup-instance=<SOURCE_INSTANCE> --project=<PROJECT_ID>
-# Azure VM: restore disks to a NEW resource group / storage account, never the original location
+```
+
+Azure VM: restore disks to a NEW resource group / storage account, never the original location.
+
+**Gate: approval required.**
+```bash
 az backup restore restore-disks --resource-group <vault-rg> --vault-name <vault> --container-name <container> --item-name <vm> --rp-name <recovery-point> --storage-account <new-staging-sa> --target-resource-group <new-drtest-rg> --subscription <subscription-id>
-# Azure SQL / SAP HANA workloads in VMs: restore as a new database to an alternate target
+```
+
+Azure SQL / SAP HANA workloads in VMs: restore as a new database to an alternate target.
+
+**Gate: approval required.**
+```bash
 az backup restore restore-azurewl --resource-group <vault-rg> --vault-name <vault> --recovery-config <recovery-config.json> --subscription <subscription-id>
-# Azure Site Recovery: run a TEST failover into an isolated network (not a planned/unplanned failover)
+```
+
+Azure Site Recovery: run a TEST failover into an isolated network (not a planned or unplanned failover).
+
+**Gate: approval required.**
+```bash
 az site-recovery protected-item test-failover --resource-group <rg> --vault-name <asr-vault> --fabric-name <fabric> --protection-container <container> --name <protected-item> --subscription <subscription-id> # params vary by version; check `az site-recovery protected-item test-failover -h`
 ```
 

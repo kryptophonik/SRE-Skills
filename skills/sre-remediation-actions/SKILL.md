@@ -271,8 +271,8 @@ Follow `sre-database-triage` (read-only triage, then its Fix order). Capture evi
 Evidence first (read-only). PgBouncer admin console, with the password in `PGPASSFILE`. The `SHOW` commands need only a user listed in `stats_users`; `admin_users` is needed only for `RELOAD`, `PAUSE` and `RESUME` below.
 
 ```bash
-psql -h <pooler-host> -p 6432 -U <pgbouncer-admin-user> pgbouncer -c 'SHOW POOLS;'
-psql -h <pooler-host> -p 6432 -U <pgbouncer-admin-user> pgbouncer -c 'SHOW STATS;'
+psql -h <pooler-host> -p 6432 -U <pgbouncer-stats-user> pgbouncer -c 'SHOW POOLS;'
+psql -h <pooler-host> -p 6432 -U <pgbouncer-stats-user> pgbouncer -c 'SHOW STATS;'
 psql -h <db-host> -U <readonly-user> -d <db> -c "SELECT state, count(*) FROM pg_stat_activity GROUP BY state ORDER BY 2 DESC;"
 psql -h <db-host> -U <readonly-user> -d <db> -c "SHOW max_connections;"
 ```
@@ -316,7 +316,7 @@ Try these first, in order:
    psql -h <pooler-host> -p 6432 -U <pgbouncer-admin-user> pgbouncer -c 'RELOAD;'
    ```
 
-3. To drain one database on a pooler without dropping clients, use `PAUSE <db>;`: it waits for every server connection to be released and holds new queries; `RESUME <db>;` lets them through again. A single idle-in-transaction session makes `PAUSE` hang with every client queued behind it, so clear those first (step 1). Never run a bare `PAUSE;`: it holds every database on that pooler. Before pausing, open a second admin session with the `RESUME` line ready to paste. Keep the pause short.
+3. To drain one database on a pooler without dropping clients, use `PAUSE <db>;`: it waits for every server connection to be released and holds new queries; `RESUME <db>;` lets them through again. A single idle-in-transaction session makes `PAUSE` hang with every client queued behind it, so clear those first (step 1). Never run a bare `PAUSE;`: it holds every database on that pooler. Before pausing, open a second admin session with the `RESUME` line ready to paste. Keep the pause short. In `pool_mode = session` a server connection is released only when its client disconnects, so `PAUSE` can hang until every client leaves; there, prefer the timeout or terminate steps, or a restart.
 
    **Gate: approval required.**
 
@@ -334,12 +334,23 @@ Try these first, in order:
 
 Only if those fail, restart, **one pooler instance at a time** when there are several, waiting for each to pass verification before the next. PgBouncer 1.23 and later can do a rolling restart with `so_reuseport` across several processes, which avoids a full outage ([PgBouncer usage](https://www.pgbouncer.org/usage.html)).
 
+On a VM or host, run it on that one pooler host:
+
 **Gate: approval required.**
+```bash
+ssh <pooler-host> 'sudo systemctl restart pgbouncer && systemctl is-active pgbouncer'
+```
+
+On Kubernetes:
+
+**Gate: approval required.**
+```bash
+kubectl --context <ctx> -n <ns> rollout restart deployment/<pgbouncer>
+```
+
+Then watch it (read-only):
 
 ```bash
-sudo systemctl restart pgbouncer
-# or, on Kubernetes:
-kubectl --context <ctx> -n <ns> rollout restart deployment/<pgbouncer>
 kubectl --context <ctx> -n <ns> rollout status deployment/<pgbouncer> --timeout=300s
 ```
 

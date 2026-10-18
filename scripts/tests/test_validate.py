@@ -50,6 +50,10 @@ try:
     open(os.path.join(d, 'zz-fixture.md'), 'w').write(f'{loose}\n\n```sql\nSELECT pg_cancel_backend(123);\n```\n')
     out = subprocess.run([sys.executable, 'scripts/validate.py'], cwd=r, capture_output=True, text=True).stdout
     if 'zz-fixture.md' not in out: print('LOOSE GATE NOTE ACCEPTED', loose); fails += 1
+  for cmd in ('SELECT pg_terminate_backend(1);', 'aws rds failover-db-cluster --db-cluster-identifier c', 'redis-cli CLIENT KILL ID 7'):
+    open(os.path.join(d, 'zz-fixture.md'), 'w').write(f'**Gate: approval required.**\n```sql\nSELECT pg_cancel_backend(1);\n```\n\nNext:\n\n```bash\n{cmd}\n```\n')
+    out = subprocess.run([sys.executable, 'scripts/validate.py'], cwd=r, capture_output=True, text=True).stdout
+    if 'zz-fixture.md:9: state-changing' not in out or 'zz-fixture.md:3' in out: print('UNGATED BLOCK AFTER GATED ONE ACCEPTED', cmd); fails += 1
   os.remove(os.path.join(d, 'zz-fixture.md'))
   dc = os.path.join(r, '.claude/skills/sre-engineer/references/destructive-commands.md')
   open(dc, 'w').write('```bash\nredis-cli FLUSHALL\nredis-cli KEYS *\n```\n')

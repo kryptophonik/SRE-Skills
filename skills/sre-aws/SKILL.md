@@ -73,22 +73,32 @@ aws logs stop-query --profile <profile> --region <region> --query-id <query-id> 
 | Scale ASG | `aws autoscaling set-desired-capacity --profile <profile> --region <region> --auto-scaling-group-name <asg> --desired-capacity <n>` | low | yes |
 | Deregister bad target | `aws elbv2 deregister-targets --profile <profile> --region <region> --target-group-arn <arn> --targets Id=<id>` | low | yes |
 | Reboot RDS with failover (Multi-AZ only; causes a brief outage) | `aws rds reboot-db-instance --profile <profile> --region <region> --db-instance-identifier <db> --force-failover` | high | no |
-| Fail over Aurora / Multi-AZ DB cluster to a named replica (gated block below) | `aws rds failover-db-cluster --profile <profile> --region <region> --db-cluster-identifier <cluster> --target-db-instance-identifier <replica-instance>` | high | no |
+| Fail over an Aurora or RDS for PostgreSQL Multi-AZ DB cluster to a named replica (gated blocks below) | `aws rds failover-db-cluster --profile <profile> --region <region> --db-cluster-identifier <cluster> --target-db-instance-identifier <replica-instance>` | high | no |
+| Fail over an RDS for MySQL Multi-AZ DB cluster (no target flag; gated block below) | `aws rds failover-db-cluster --profile <profile> --region <region> --db-cluster-identifier <cluster>` | high | no |
 | Roll back ECS service | `aws ecs update-service --profile <profile> --region <region> --cluster <c> --service <s> --task-definition <family:prev-rev>` | med | yes |
 
 ### Aurora or Multi-AZ DB cluster failover
 
-Last resort, after [sre-database-triage](../sre-database-triage/SKILL.md) shows the writer itself is the problem. Pick the target replica yourself; don't let Aurora choose. First check that replica's lag (read-only; `AuroraReplicaLag` is in milliseconds, use `ReplicaLag` in seconds for a Multi-AZ DB cluster):
+Last resort, after [sre-database-triage](../sre-database-triage/SKILL.md) shows the writer itself is the problem. Capture evidence first with `bash ../sre-database-triage/scripts/db-snapshot.sh <pg|mysql> <outdir>`. The IC and the database owner approve. Writers drop their connections for a short time while the cluster endpoint moves (typically tens of seconds), so apps must reconnect.
+
+Check replica lag first (read-only). Aurora replicas report `AuroraReplicaLag` in milliseconds; Multi-AZ DB cluster standbys report `ReplicaLag` in seconds. Run it for every replica or standby you might fail over to:
 
 ```bash
-aws cloudwatch get-metric-statistics --profile <profile> --region <region> --namespace AWS/RDS --metric-name AuroraReplicaLag --dimensions Name=DBInstanceIdentifier,Value=<replica-instance> --start-time <ISO8601-15min-ago> --end-time <ISO8601-now> --period 60 --statistics Maximum
+aws cloudwatch get-metric-statistics --profile <profile> --region <region> --namespace AWS/RDS --metric-name <AuroraReplicaLag|ReplicaLag> --dimensions Name=DBInstanceIdentifier,Value=<replica-instance> --start-time <ISO8601-15min-ago> --end-time <ISO8601-now> --period 60 --statistics Maximum
 ```
 
-Writers drop their connections for a short time while the cluster endpoint moves (typically tens of seconds), so apps must reconnect. The IC and the database owner approve; capture evidence first with `bash ../sre-database-triage/scripts/db-snapshot.sh`.
+Aurora (MySQL or PostgreSQL) or an RDS for PostgreSQL Multi-AZ DB cluster: pick the target replica yourself, the one with the lowest lag, instead of letting RDS choose.
 
 **Gate: approval required.**
 ```bash
 aws rds failover-db-cluster --profile <profile> --region <region> --db-cluster-identifier <cluster> --target-db-instance-identifier <replica-instance>
+```
+
+RDS for MySQL Multi-AZ DB cluster: `--target-db-instance-identifier` isn't supported, so RDS picks one of the two readable standbys. Check `ReplicaLag` on both standbys first, and fail over only when both are caught up.
+
+**Gate: approval required.**
+```bash
+aws rds failover-db-cluster --profile <profile> --region <region> --db-cluster-identifier <cluster>
 ```
 
 Aurora Global Database is different: use `aws rds switchover-global-cluster` (planned, no data loss) or `aws rds failover-global-cluster` (Region outage, may lose data), not this command. Both are separate gated proposals.

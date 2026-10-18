@@ -84,10 +84,8 @@ cases:
     prompt: "we're in a SEV-1 on checkout, roll back v2.14.0"
     expect: [sre-engineer, sre-change-safety, sre-k8s-triage]
     forbid: [sre-k8s-safe-remediation]
-  - id: dr-safe-remediation-handoff
-    prompt: "/sre-k8s-safe-remediation roll back deployment checkout-api in prod-use1 ns checkout"
-    expect: [sre-k8s-safe-remediation]
-    forbid: [sre-chaos-engineering]
+  # dr-safe-remediation-handoff is not a trigger case: sre-k8s-safe-remediation sets
+  # disable-model-invocation, so only a user's slash command loads it, and the model is never offered it.
   - id: dr-gitops-rollback
     prompt: "the deployment is managed by Argo CD, how do I roll it back safely?"
     expect: [sre-change-safety, sre-k8s-triage]

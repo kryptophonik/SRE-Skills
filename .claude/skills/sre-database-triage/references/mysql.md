@@ -226,13 +226,20 @@ bash scripts/db-ro.sh mariadb -- "SELECT NAME, ROUND(FILE_SIZE / 1048576) AS fil
 | Load view | CloudWatch Database Insights (Performance Insights console end of life 2026-07-31; the `aws pi get-resource-metrics` API still works) | Query insights | Query Performance Insight / slow query log in Azure Monitor |
 | Failover | `aws rds failover-db-cluster` (Aurora) / `aws rds reboot-db-instance --force-failover` (Multi-AZ) | `gcloud sql instances failover` | `az mysql flexible-server restart --failover Forced` (HA only) |
 
-Proposal: managed failover. Same rules as Postgres: last resort, lag checked, IC and DB owner approve, evidence captured. Use only the one block for your platform; each is a separate approval.
+Proposal: managed failover. Same rules as Postgres: last resort, lag checked (Aurora replicas don't appear in `SHOW REPLICA STATUS`; use CloudWatch `AuroraReplicaLag` in milliseconds, or `SELECT SERVER_ID, SESSION_ID, REPLICA_LAG_IN_MILLISECONDS, LAST_UPDATE_TIMESTAMP FROM information_schema.replica_host_status;` on the writer; Multi-AZ DB cluster standbys report `ReplicaLag` in seconds), IC and DB owner approve, evidence captured. Use only the one block for your platform; each is a separate approval.
 
-Aurora MySQL or a Multi-AZ DB cluster:
+Aurora MySQL (pick the lowest-lag replica as the target). Aurora Global Database uses `aws rds switchover-global-cluster` or `failover-global-cluster` instead (see [sre-aws](../../sre-aws/SKILL.md)):
 
 **Gate: approval required.**
 ```bash
 aws rds failover-db-cluster --profile <profile> --region <region> --db-cluster-identifier <cluster> --target-db-instance-identifier <replica-instance>
+```
+
+RDS for MySQL Multi-AZ DB cluster (`--target-db-instance-identifier` isn't supported; check `ReplicaLag` on both standbys first):
+
+**Gate: approval required.**
+```bash
+aws rds failover-db-cluster --profile <profile> --region <region> --db-cluster-identifier <cluster>
 ```
 
 RDS Multi-AZ DB instance:

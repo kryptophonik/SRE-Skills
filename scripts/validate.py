@@ -41,7 +41,7 @@ FORBIDDEN = [  # never runnable outside a never-run reference
   (re.compile(r'REDISCLI_AUTH=(?!<|\$|")\S'), 'inline Redis password; export REDISCLI_AUTH from a secret store, not on the command line'),
   (re.compile(r'\b(?:postgres(?:ql)?|mysql|mariadb|rediss?)://[^\s:/@]*:(?!<)[^\s@/]+@'), 'password in a connection URI; use PGPASSFILE, --defaults-extra-file or REDISCLI_AUTH'),
 ]
-GATED = re.compile(r'pg_terminate_backend|pg_cancel_backend|^\s*KILL\b|\bFLUSH(ALL|DB)\b|\bCONFIG\s+SET\b|(^|redis-cli.*\s)(CLUSTER\s+|SENTINEL\s+)?FAILOVER\b|VACUUM\s+FULL', re.I)
+GATED = re.compile(r'pg_terminate_backend|pg_cancel_backend|pg_drop_replication_slot|^\s*KILL\b|rds_kill|az_kill|CLIENT\s+KILL|\bFLUSH(ALL|DB)\b|\bCONFIG\s+SET\b|ALTER\s+SYSTEM|SET\s+GLOBAL|(^|redis-cli.*\s)(CLUSTER\s+|SENTINEL\s+)?FAILOVER\b|VACUUM\s+FULL|failover-db-cluster|failover-global-cluster|switchover-global-cluster|reboot-db-instance|instances\s+failover|restart\b.*--failover|failover-shard|test-failover|force-reboot', re.I)
 
 def runnable(path):
   """Yield (line_no, text, in_fence, preceding_context) for fenced lines and inline code spans."""
@@ -54,6 +54,15 @@ def runnable(path):
     else:
       for span in re.findall(r'`([^`]+)`', line):
         if not line.lstrip().startswith('|'): yield i + 1, span.strip(), False, ctx + '\n' + line
+
+
+def gate_above(path, line_no):
+  """True when the nearest non-blank line above this line's fence opening is exactly the gate marker."""
+  L = open(path).read().split('\n'); i = line_no - 1
+  while i >= 0 and not L[i].lstrip().startswith('```'): i -= 1
+  j = i - 1
+  while j >= 0 and not L[j].strip(): j -= 1
+  return j >= 0 and L[j].strip() == '**Gate: approval required.**'
 
 errors = []
 for p in glob.glob('.claude/skills/**/*.md', recursive=True):
@@ -75,8 +84,8 @@ for p in glob.glob('.claude/skills/**/*.md', recursive=True):
       errors.append(f'{p}:{n}: kubectl events has no limit flag; pipe it to | tail -n 50')
     for rx, why in FORBIDDEN:
       if rx.search(t) and not ('innodb_lock_waits' in why and re.search(r'mariadb', ctx + t, re.I)): errors.append(f'{p}:{n}: {why}')
-    if fence and GATED.search(t) and '**Gate: approval required.**' not in ctx:
-      errors.append(f'{p}:{n}: state-changing command needs the exact marker **Gate: approval required.** in its block or the 8 lines above it')
+    if fence and GATED.search(t) and not gate_above(p, n):
+      errors.append(f'{p}:{n}: state-changing command needs the exact marker **Gate: approval required.** on the line directly above its block')
 for p in glob.glob('.claude/skills/**/scripts/**/*', recursive=True):
   if not os.path.isfile(p) or '/tests/' in p: continue
   for n, line in enumerate(open(p, errors='replace'), 1):
