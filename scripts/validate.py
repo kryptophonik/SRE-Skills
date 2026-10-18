@@ -33,7 +33,7 @@ CALL = re.compile(r'^(?:[A-Z_][A-Z0-9_]*=\S+ +)*(?P<runner>bash +|python3 +)?(?P
                   r'(?P<path>(?:\.\./[a-z0-9-]+/)?scripts/[\w.-]+\.(?P<ext>sh|py))(?P<rest>\b.*)$')
 FORBIDDEN = [  # never runnable outside a never-run reference
   (re.compile(r'\bKEYS\s+\*|\bkeys\s+\*'), 'Redis KEYS * blocks the server; use SCAN or redis-cli --bigkeys/--memkeys'),
-  (re.compile(r'redis-cli\b.*\bMONITOR\b|^\s*MONITOR\s*$', re.I), 'Redis MONITOR on a primary halves throughput; use SLOWLOG GET / LATENCY DOCTOR'),
+  (re.compile(r'redis-cli\b.*(?<![\w-])MONITOR(?![\w-])|^\s*MONITOR\s*$', re.I), 'Redis MONITOR on a primary halves throughput; use SLOWLOG GET / LATENCY DOCTOR'),
   (re.compile(r'information_schema\.innodb_lock_waits', re.I), 'removed in MySQL 8.0; use sys.innodb_lock_waits'),
   (re.compile(r'redis-cli\b[^|]*\s-a\s+(?!<)'), 'inline Redis password; use REDISCLI_AUTH'),
   (re.compile(r'\bmysql(admin)?\b[^|]*\s-p(?!\s|$|<)\S'), 'inline MySQL password; use --defaults-extra-file'),
@@ -74,7 +74,7 @@ for p in glob.glob('.claude/skills/**/*.md', recursive=True):
     elif re.search(r'\bkubectl\b.*\sevents\b\s+\S', t) and not re.search(r'\|\s*(tail|head)\b|--help', t):
       errors.append(f'{p}:{n}: kubectl events has no limit flag; pipe it to | tail -n 50')
     for rx, why in FORBIDDEN:
-      if rx.search(t): errors.append(f'{p}:{n}: {why}')
+      if rx.search(t) and not ('innodb_lock_waits' in why and re.search(r'mariadb', ctx + t, re.I)): errors.append(f'{p}:{n}: {why}')
     if fence and GATED.search(t) and not re.search(r'approv|gate', ctx, re.I):
       errors.append(f'{p}:{n}: state-changing command needs an approval/gate note in its block or the 8 lines above it')
 for p in glob.glob('.claude/skills/**/scripts/**/*', recursive=True):
@@ -82,7 +82,7 @@ for p in glob.glob('.claude/skills/**/scripts/**/*', recursive=True):
   for n, line in enumerate(open(p, errors='replace'), 1):
     if line.lstrip().startswith('#'): continue
     for rx, why in FORBIDDEN:
-      if rx.search(line): errors.append(f'{p}:{n}: {why}')
+      if rx.search(line) and not ('innodb_lock_waits' in why and re.search(r'mariadb', line, re.I)): errors.append(f'{p}:{n}: {why}')
 
 # README skills table must match the skills on disk, description for description.
 readme = open('README.md').read()

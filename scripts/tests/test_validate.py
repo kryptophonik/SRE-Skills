@@ -4,6 +4,7 @@ import os, shutil, subprocess, sys, tempfile
 BAD = {  # each line must be flagged
   'redis-cli -h h KEYS *': 'KEYS',
   'redis-cli -h h MONITOR': 'MONITOR',
+  'redis-cli -h h monitor | head -n 100': 'MONITOR',
   'redis-cli -a hunter2 INFO': 'inline Redis password',
   'mysql -u root -psecret -e "select 1"': 'inline MySQL password',
   'PGPASSWORD=hunter2 psql -h db': 'inline Postgres password',
@@ -22,6 +23,9 @@ GOOD = [  # each line must pass
   'PGPASSFILE=~/.pgpass psql -h db', 'psql postgres://app@db:5432/app',
   'psql "postgres://app:<password>@db/app"', 'redis-cli --scan --pattern "sess:*" --count 100',
   'REDISCLI_AUTH="$(cat /run/secrets/redis)" redis-cli INFO',
+  'redis-cli -h h CONFIG GET latency-monitor-threshold',
+  'redis-cli -h h CONFIG GET latency_monitor',
+  'SELECT * FROM information_schema.innodb_lock_waits; -- MariaDB keeps this table',
   'kubectl --context c -n n events --types=Warning | tail -n 50', 'kubectl --context c -n n events --for pod/p | tail -n 50',
 ]
 root = os.getcwd(); tmp = tempfile.mkdtemp()

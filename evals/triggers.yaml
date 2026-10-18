@@ -34,8 +34,8 @@ cases:
     expect: [none]
     forbid: []
   # Cold-test pages (baseline on v3.0.1, 2026-10-17). P3 and P7 are the acceptance
-  # tests for sre-database-triage and sre-expiry-audit: add those skills to expect
-  # when they land.
+  # tests for sre-database-triage and sre-expiry-audit. P7 expects sre-expiry-audit;
+  # add sre-database-triage to P3 when it lands.
   - id: page-p1-5xx-alert
     prompt: "PagerDuty: [FIRING] checkout-api 5xx rate 14% > 2% for 10m"
     expect: [sre-engineer, sre-incident-command, sre-diagnostics]
@@ -62,7 +62,7 @@ cases:
     forbid: [sre-cloud-cost-review]
   - id: page-p7-cert-expiry
     prompt: "which of our certs expire this month"
-    expect: [none, sre-aws, sre-azure, sre-gcp]
+    expect: [sre-expiry-audit]
     forbid: [sre-oncall-handoff, sre-production-readiness, sre-security-incident-triage]
   - id: page-p8-postmortem
     prompt: "write up the postmortem for last night's checkout outage"
