@@ -23,8 +23,9 @@ Blameless postmortem templates and facilitation guidance. Gather the evidence fi
    - **Alerts and pages:** the incident log from `sre-pagerduty-opsgenie` (trigger, acknowledge, escalate, resolve, notes): `bash ../sre-pagerduty-opsgenie/scripts/pd_incidents.sh --since <ISO8601> --until <ISO8601> --status resolved`, then that incident's log entries via [api-reference-pagerduty.md](../sre-pagerduty-opsgenie/references/api-reference-pagerduty.md). Also check alert history in the monitoring tool: when each alert first fired, including ones that fired before anyone was paged.
    - **Monitoring:** when the SLI first left normal and when it recovered (error rate, latency, saturation), and the error budget spent (`sre-slo-alerting`).
    - **Deploys and changes:** CI/CD deploy history, `kubectl --context <ctx> -n <ns> rollout history deployment/<name>`, `helm --kube-context <ctx> -n <ns> history <release>`, `git log --since=<ISO8601> --until=<ISO8601> --oneline | head -n 50` in the service and infrastructure repos, feature-flag and config change audit logs (`sre-change-safety`).
+   - **Databases:** if a database was involved, the evidence bundle captured during the incident by `bash ../sre-database-triage/scripts/db-snapshot.sh` (locks, connections, replication lag, slow queries at that moment), plus the managed service's event log and failover history. Use [sre-database-triage](../sre-database-triage/SKILL.md) read-only if the bundle is missing.
    - **Chat and incident channel:** declaration, decisions, who approved each action and when, status page and customer updates. Quote decisions, not people's mistakes.
-3. **Merge and check.** Sort everything into one UTC timeline. Mark the key points: start of impact, detection, acknowledgement, mitigation, resolution. Compute time to detect, time to acknowledge, time to mitigate and total duration. Flag gaps and conflicting timestamps as open questions instead of guessing.
+3. **Merge and check.** Sort everything into one UTC timeline. Mark the key points: start of impact, detection, acknowledgement, mitigation, resolution. Compute TTD (time to detect: impact start to first alert), TTA (time to acknowledge: first alert to first human acknowledgement), TTM (time to mitigate: impact start to impact stopping) and total duration. Flag gaps and conflicting timestamps as open questions instead of guessing.
 4. **Keep it a draft.** Redact secrets and customer data. Publishing or sending the postmortem is an external post and needs approval ([sre-safety-gates](../sre-safety-gates/SKILL.md)).
 
 ## Postmortem principles
@@ -48,10 +49,13 @@ Give a 2-3 sentence overview of what happened and the impact.
 ## 2. Impact
 - **User Impact:** [e.g., 50% of users in US-East could not log in]
 - **Duration:** [e.g., 45 minutes]
+- **TTD (time to detect):** [impact start to first alert, e.g., 8 min]
+- **TTA (time to acknowledge):** [first alert to first human ack, e.g., 5 min]
+- **TTM (time to mitigate):** [impact start to impact stopping, e.g., 38 min]
 - **SLO Impact:** [e.g., Consumed 15% of monthly error budget]
 
 ## 3. Timeline (UTC)
-Sources: [PagerDuty/Opsgenie incident ID], [dashboards], [deploy history], [incident channel]
+Sources: [PagerDuty/Opsgenie incident ID], [dashboards], [deploy history], [database evidence bundle], [incident channel]
 - **09:52:** Impact starts: [SLI] leaves normal (from monitoring)
 - **10:00:** Issue detected by [Alert Name]
 - **10:05:** Incident bridge opened

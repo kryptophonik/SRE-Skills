@@ -232,7 +232,7 @@ Aurora MySQL or a Multi-AZ DB cluster:
 
 **Gate: approval required.**
 ```bash
-aws rds failover-db-cluster --profile <profile> --region <region> --db-cluster-identifier <cluster>
+aws rds failover-db-cluster --profile <profile> --region <region> --db-cluster-identifier <cluster> --target-db-instance-identifier <replica-instance>
 ```
 
 RDS Multi-AZ DB instance:

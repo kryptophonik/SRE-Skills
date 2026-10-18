@@ -34,7 +34,7 @@ Full rules: [sre-safety-gates](../sre-safety-gates/SKILL.md). Read-only MCP setu
 
 ## Workflow
 
-- Gather facts (service, severity, symptom, impact, IC, channel). Mark unknowns as [TBD]; never guess.
+- Gather facts (service, severity, impact, symptom, start time, IC, channel). Mark unknowns as [TBD]; never guess.
 - Draft using templates below.
 - Present draft with channel + audience; wait for explicit approval.
 - After approval, post exactly the approved text (or hand it to the human to post).
@@ -42,12 +42,13 @@ Full rules: [sre-safety-gates](../sre-safety-gates/SKILL.md). Read-only MCP setu
 
 ## Templates
 
-### Initial announcement
+### Initial announcement (internal)
 
 ```markdown
 🚨 **NEW INCIDENT DECLARED** 🚨
 **Service:** [Service Name]
 **Severity:** [SEV-1/SEV-2]
+**Impact:** [Who is affected and how, e.g., ~20% of checkout requests fail in EU]
 **Symptom:** [e.g., High 5xx rates on Checkout]
 **Incident Commander (IC):** [@User]
 **Bridge/Channel:** [#inc-checkout-YYYY-MM-DD]
@@ -60,8 +61,22 @@ Full rules: [sre-safety-gates](../sre-safety-gates/SKILL.md). Read-only MCP setu
 ```markdown
 🔄 **INCIDENT UPDATE** ([Time] UTC)
 **Current Status:** [Investigating / Identified / Mitigating / Monitoring]
+**Severity:** [SEV-1/SEV-2, note any change]
+**Impact:** [Current impact; say if it has grown or shrunk]
 **Actions Taken:** [e.g., Rolled back v1.2.3, scaling up K8s cluster]
 **Next Update:** [Time] UTC
+```
+
+### External status page (customer-facing)
+
+Only for the status page and customer channels. No names, IC, bridge or channel links, internal hostnames or internal causes.
+
+```markdown
+**[Investigating / Identified / Monitoring / Resolved]: [Customer-facing feature] [degraded / unavailable]**
+**Impact:** [What customers see, e.g., Some customers can't complete checkout]
+**Started:** [Time] UTC
+**Workaround:** [Steps customers can take, or "None at this time"]
+**Next update:** By [Time] UTC
 ```
 
 ### Resolution announcement
@@ -84,6 +99,17 @@ Full rules: [sre-safety-gates](../sre-safety-gates/SKILL.md). Read-only MCP setu
 **Short-term Fix:** [What we did to stop the bleeding]
 **Long-term Prevention:** [What we are doing to ensure it never happens again]
 ```
+
+## Output
+
+For each draft, present:
+
+- **Channel and audience:** internal Slack, external Slack, status page, or email.
+- **Severity:** the current SEV, and any change since the last update.
+- **Impact:** who is affected and how, with [TBD] for unknowns.
+- **Text:** the filled template, using the external template for anything customers see.
+- **Next update:** the time, per the Update cadence section.
+- **Approval:** who must approve before it goes out (IC or comms lead). The draft stays unsent until then.
 
 ## Best practices
 
