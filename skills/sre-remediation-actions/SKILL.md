@@ -40,7 +40,7 @@ For Kubernetes writes, tell the user to run `/sre-k8s-safe-remediation` (Claude 
 ```bash
 kubectl --context <ctx> rollout history deployment/<name> -n <ns>
 kubectl --context <ctx> describe deployment/<name> -n <ns>
-kubectl --context <ctx> events -n <ns> --types=Warning
+kubectl --context <ctx> events -n <ns> --types=Warning | tail -n 50
 kubectl --context <ctx> logs <pod> -n <ns> --all-containers --timestamps > <pod>.log   # may contain secrets/PII: keep out of repos, redact
 kubectl --context <ctx> logs <pod> -n <ns> --all-containers --previous > <pod>.prev.log   # errors if no previous instance; harmless
 ```
@@ -82,9 +82,55 @@ helm history --kube-context <ctx> <release> -n <ns>
 
 #### Kubernetes
 
+Before proposing any restart, answer "Is it safe to restart or scale it?" in [sre-k8s-triage](../sre-k8s-triage/SKILL.md) (workload kind, ready vs desired, PDB, HPA, probes, strategy, blast radius) and obey its stop rule. A restart can't be undone: the old pods and their in-memory state are gone. Capture evidence first. Use the command for the workload's kind, and run the verification right after it.
+
+| Kind | Risk | Reversible | How it restarts |
+|---|---|---|---|
+| Deployment | med | no | Rolling, paced by `maxUnavailable`/`maxSurge`. `Recreate` strategy takes every pod down at once (high) |
+| StatefulSet | high | no | One pod at a time, highest ordinal first; `partition` > 0 restarts only ordinals >= partition; `OnDelete` does nothing until pods are deleted. Never on a primary/leader without the owner |
+| DaemonSet | med-high | no | One node at a time per `maxUnavailable`; ingress controllers, CNI and log agents hit every node |
+| Argo Rollout | med | no | Needs the Argo Rollouts kubectl plugin; `kubectl rollout restart` doesn't apply to a Rollout |
+
+Deployment:
+
+**Gate: approval required.**
+
+```bash
+kubectl --context <ctx> -n <ns> rollout restart deployment/<name>
+kubectl --context <ctx> -n <ns> rollout status deployment/<name> --timeout=300s
+```
+
+StatefulSet:
+
+**Gate: approval required.**
+
+```bash
+kubectl --context <ctx> -n <ns> rollout restart statefulset/<name>
+kubectl --context <ctx> -n <ns> rollout status statefulset/<name> --timeout=600s
+```
+
+DaemonSet:
+
+**Gate: approval required.**
+
+```bash
+kubectl --context <ctx> -n <ns> rollout restart daemonset/<name>
+kubectl --context <ctx> -n <ns> rollout status daemonset/<name> --timeout=600s
+```
+
+Argo Rollout:
+
+**Gate: approval required.**
+
+```bash
+kubectl argo rollouts restart <name> --context <ctx> -n <ns>
+kubectl argo rollouts status <name> --context <ctx> -n <ns> --timeout 300s
+```
+
+Verify after `rollout status` succeeds: `kubectl --context <ctx> -n <ns> get <kind>/<name>` shows ready = desired, `kubectl --context <ctx> -n <ns> events --for <kind>/<name> | tail -n 50` has no new warnings, and error rate and latency are back at baseline. If `rollout status` times out or pods don't become Ready, stop: don't re-run the restart. Report and escalate.
+
 | Action | Risk | Reversible | Note |
 |---|---|---|---|
-| `kubectl --context <ctx> rollout restart deployment/<name> -n <ns>` | med | no | Evidence capture first; rolling, but loses in-memory state |
 | `kubectl --context <ctx> delete pod <pod-name> -n <ns>` | med | no | Capture logs/--previous first; single pod only, never by label selector without approval |
 
 #### Systemd

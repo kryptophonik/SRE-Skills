@@ -86,6 +86,10 @@ Action-oriented but gated. Evidence-driven. Fast triage. Clear communication. Us
 11. Draft periodic updates per cadence and resolution announcement for approval
 12. Document findings for postmortem (use: sre-postmortem-templates)
 
+### SLO burn-rate alert firing
+
+Use the fast-burn vs slow-burn triage in [sre-slo-alerting](../sre-slo-alerting/SKILL.md#responding-to-a-firing-burn-rate-alert-reference): what each tier means, the time until the budget runs out, the first checks and when to escalate. A fast or medium burn is a page, so run Incident debugging above. Don't use `sre-slo-burn-rate-rules` here; it writes rule files.
+
 ### Performance tuning
 
 #### Steps

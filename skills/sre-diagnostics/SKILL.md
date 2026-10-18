@@ -16,7 +16,7 @@ Full rules: [sre-safety-gates](../sre-safety-gates/SKILL.md). Read-only MCP setu
 
 Structured, read-only debugging and performance investigation. Follows [sre-safety-gates](../sre-safety-gates/SKILL.md): profiling or capturing on prod needs approval.
 
-For tool-specific queries see `sre-observability-query-cookbook`, `sre-dynatrace`, `sre-prometheus-grafana`, `sre-datadog`, and `sre-k8s-triage`.
+For tool-specific queries see `sre-observability-query-cookbook`, `sre-dynatrace`, `sre-prometheus-grafana`, `sre-datadog`, and `sre-k8s-triage`. For database symptoms (slow queries, locks, connection exhaustion, replication lag, vacuum, Redis memory or latency) use `sre-database-triage`, which has the read-only queries per engine.
 
 ## Part 1 — Debugging
 
@@ -120,10 +120,17 @@ For tool-specific queries see `sre-observability-query-cookbook`, `sre-dynatrace
 
 ## Hypothesis testing
 
-- A/B test hypotheses with canary deployments
-- Use feature flags to toggle suspected code
-- Reproduce in staging if possible
+Read-only:
+
 - Compare healthy vs unhealthy instances
+- Reproduce in staging if possible
+
+Proposals that change production. Give each one with risk and reversibility, then wait for approval:
+
+**Gate: approval required.**
+
+- Canary test: send a small share of traffic to a build with or without the suspected change and compare error rate and latency. This is a deploy and changes what users get.
+- Feature-flag test: turn off the flag behind the suspected code path for a small cohort or everyone. This changes user-facing behavior.
 
 ## Quick commands
 
@@ -132,7 +139,7 @@ For tool-specific queries see `sre-observability-query-cookbook`, `sre-dynatrace
 ```bash
 kubectl --context <ctx> -n <ns> logs -l app.kubernetes.io/name=<app> --prefix --all-containers --since=15m --tail=100 --max-log-requests=5 > /tmp/<app>.log   # summarize the file; do not dump it
 kubectl --context <ctx> -n <ns> describe pod <pod-name>
-kubectl --context <ctx> -n <ns> events --types=Warning
+kubectl --context <ctx> -n <ns> events --types=Warning | tail -n 50
 kubectl --context <ctx> -n <ns> top pod   # needs metrics-server
 ```
 
@@ -235,13 +242,13 @@ tcpdump -i <if> -c 1000 -w /tmp/cap.pcap '<narrow filter>'  # see Capture warnin
 
 - iostat -x for disk stats
 - iotop for process I/O
-- Database query analysis (EXPLAIN, slow query log)
+- Database query analysis (plain `EXPLAIN`, slow query log): use `sre-database-triage`. `EXPLAIN ANALYZE` runs the statement for real, so don't run it on writes in prod
 
 #### Remedies
 
 - Faster storage (SSD, NVMe)
 - Query optimization
-- Indexing
+- Indexing (proposal; see Tuning guidance, Database)
 - Caching layer
 
 ### Network bottleneck
@@ -277,11 +284,45 @@ tcpdump -i <if> -c 1000 -w /tmp/cap.pcap '<narrow filter>'  # see Capture warnin
 
 ### Database
 
-- Add appropriate indexes
-- Partition large tables
-- Tune connection pool size
-- Enable query cache
-- Read replicas for scale
+Triage database symptoms with `sre-database-triage` first. Everything below is a **proposal** for after triage, not an incident step.
+
+- Tune connection pool size (application side)
+- Read replicas for read scale (capacity work)
+- Cache hot reads in the application or Redis. Don't enable the database query cache: MySQL 8.0 removed it ([What Is New in MySQL 8.0](https://dev.mysql.com/doc/refman/8.0/en/mysql-nutshell.html)), and in MariaDB it is off by default, serializes on one mutex and is invalidated by every write to a table ([MariaDB Query Cache](https://mariadb.com/kb/en/query-cache/)), so it hurts write-heavy workloads.
+- Add an index, using the online form only. On PostgreSQL a plain `CREATE INDEX` blocks every write to the table until the build finishes, which on a busy primary is an outage ([CREATE INDEX](https://www.postgresql.org/docs/current/sql-createindex.html)).
+
+**Gate: approval required.**
+
+```sql
+-- PostgreSQL: no write lock. Can't run inside a transaction block (no BEGIN; psql autocommit on).
+CREATE INDEX CONCURRENTLY <index_name> ON <schema>.<table> (<column>);
+```
+
+**Gate: approval required.**
+
+```sql
+-- MySQL 8.0+ / MariaDB: fails with an error instead of falling back to a locking algorithm
+ALTER TABLE <table> ADD INDEX <index_name> (<column>), ALGORITHM=INPLACE, LOCK=NONE;
+```
+
+Then check (read-only). A failed `CREATE INDEX CONCURRENTLY` leaves an `INVALID` index that is ignored by queries but still slows every write:
+
+```sql
+-- PostgreSQL 12+: build progress, then any invalid indexes left behind
+SELECT pid, phase, blocks_done, blocks_total FROM pg_stat_progress_create_index;
+SELECT indexrelid::regclass AS invalid_index, indrelid::regclass AS on_table FROM pg_index WHERE NOT indisvalid;
+```
+
+Dropping the invalid index before a retry is a separate write:
+
+**Gate: approval required.**
+
+```sql
+DROP INDEX CONCURRENTLY <index_name>;
+```
+
+Caveats: `CONCURRENTLY` takes longer and waits for older transactions to finish first. MySQL/MariaDB online DDL still takes a brief exclusive metadata lock at the start and end, so one long-running transaction on the table stalls it and every query queues behind it; check for long transactions with `sre-database-triage` first. Index builds add I/O and CPU, and on MySQL replicas the build replays afterwards and can cause replication lag. Test with `EXPLAIN` on a staging copy and run off-peak.
+- Partitioning an existing large table is design work, not incident remediation: it moves every row and needs a migration plan. Take it to a design review (`sre-engineer`, Design and reliability review) or `sre-capacity-planning`, never into an incident.
 
 ### Infrastructure
 

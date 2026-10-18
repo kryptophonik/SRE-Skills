@@ -118,6 +118,40 @@ Alert only when both the long and the short window exceed `N * (1 - <slo>)`. The
 - `for:` is only a noise filter; `for: 0m` is valid because the short window already de-noises.
 - Full Prometheus rule file (promtool-validated): `sre-prometheus-grafana`; generate your own with `/sre-slo-burn-rate-rules`.
 
+## Responding to a firing burn-rate alert (reference)
+
+Reference for `sre-engineer` when a burn-rate alert fires; designing the alerts stays above. Source: Google SRE Workbook, [Alerting on SLOs](https://sre.google/workbook/alerting-on-slos/) (Tables 5-4, 5-6 and 5-8).
+
+**Burn rate** is how fast the error budget is being spent relative to the SLO: 1x spends exactly the whole budget over the SLO period. Time to exhaust the whole budget = period / burn rate. With part of the budget already spent: remaining fraction x period / burn rate.
+
+| Alert | Burn rate (long / short window) | Budget spent when it fires (30d) | Whole budget gone in (30d) | What it means | Response |
+|---|---|---|---|---|---|
+| Fast burn | 14.4x (1h / 5m) | 2% | about 2 days (50 h) | Something broke recently and is still broken | Page: respond now |
+| Medium burn | 6x (6h / 30m) | 5% | 5 days | Significant sustained errors | Page: respond now |
+| Slow burn | 3x (1d / 2h) | 10% | 10 days | Chronic degradation | Ticket: next business day |
+| Very slow burn | 1x (3d / 6h) | 10% | 30 days | On track to spend exactly the budget | Ticket |
+
+Read-only checks (example for a 99.9% SLO and the recording rules in Part 2; use your SLO and rule names):
+
+```promql
+# current burn rate; above the tier's threshold = still burning
+job:slo_errors_per_request:ratio_rate5m{job="<svc>"} / (1 - 0.999)   # short window
+job:slo_errors_per_request:ratio_rate1h{job="<svc>"} / (1 - 0.999)   # long window
+```
+
+**Fast or medium burn (page), first 15 minutes:**
+
+1. Is it still burning? If the short-window burn rate is back under the threshold, the spike has passed: record it and keep watching instead of mitigating.
+2. Is it real? Check request volume. On a low-traffic service a handful of errors can be a 1,000x burn rate (Workbook, "Low-Traffic Services").
+3. Scope: which route, status code, region, zone or version is failing (use `sre-diagnostics` and your observability adapter).
+4. What changed in the last 1-2 hours: deploys, feature flags, config, infrastructure, dependencies.
+5. Mitigate before root cause: propose a rollback or flag-off with risk and reversibility from `sre-remediation-actions`, and wait for approval.
+6. Compute the remaining budget and time to exhaustion and put both in the incident notes.
+
+**Slow or very slow burn (ticket):** not an emergency. Find which route, dependency, retry pattern or gradual latency regression is spending budget, forecast the date the budget runs out, and file it with the owning team. Apply the error budget policy above.
+
+**Escalate:** for a fast or medium burn with confirmed user impact, get an Incident Commander (`sre-incident-command`). Escalate to the service owner if it isn't mitigated within 30 minutes, if the remaining budget falls below 25%, or if the budget is spent (the error budget policy applies). Escalate a slow burn when a page tier fires as well or the budget forecast runs out before the period ends.
+
 ## Alert definition template
 
 ```markdown
