@@ -33,3 +33,46 @@ cases:
     prompt: "Write me a Python function that reverses a string."
     expect: [none]
     forbid: []
+  # Cold-test pages (baseline on v3.0.1, 2026-10-17). P3 and P7 are the acceptance
+  # tests for sre-database-triage and sre-expiry-audit: add those skills to expect
+  # when they land.
+  - id: page-p1-5xx-alert
+    prompt: "PagerDuty: [FIRING] checkout-api 5xx rate 14% > 2% for 10m"
+    expect: [sre-engineer, sre-incident-command, sre-diagnostics]
+    forbid: [sre-slo-alerting, sre-oncall-audit, sre-postmortem-templates, sre-k8s-safe-remediation]
+  - id: page-p2-crashloop-after-deploy
+    prompt: "pods in payments ns crashlooping since the 2:40 deploy, what do i do"
+    expect: [sre-k8s-triage]
+    forbid: [sre-k8s-safe-remediation, sre-chaos-engineering]
+  - id: page-p3-p99-db
+    prompt: "p99 latency on orders doubled, no deploys, db?"
+    expect: [sre-engineer, sre-diagnostics]
+    forbid: [sre-change-safety, sre-capacity-planning]
+  - id: page-p4-restart-ingress
+    prompt: "is it safe to restart the ingress controller pods? customers are erroring"
+    expect: [sre-engineer, sre-k8s-triage]
+    forbid: [sre-k8s-safe-remediation, sre-chaos-engineering]
+  - id: page-p5-fast-burn
+    prompt: "SLO burn rate alert fast-burn on login service"
+    expect: [sre-engineer, sre-observability-query-cookbook, sre-prometheus-grafana]
+    forbid: [sre-slo-burn-rate-rules, sre-slo-alerting]
+  - id: page-p6-tf-destroy-rds
+    prompt: "terraform plan shows it wants to destroy the prod RDS instance??"
+    expect: [sre-terraform]
+    forbid: [sre-cloud-cost-review]
+  - id: page-p7-cert-expiry
+    prompt: "which of our certs expire this month"
+    expect: [none, sre-aws, sre-azure, sre-gcp]
+    forbid: [sre-oncall-handoff, sre-production-readiness, sre-security-incident-triage]
+  - id: page-p8-postmortem
+    prompt: "write up the postmortem for last night's checkout outage"
+    expect: [sre-postmortem-templates]
+    forbid: [sre-incident-command]
+  - id: negative-networking-question
+    prompt: "What's the difference between TCP and UDP? Explain like I'm new."
+    expect: [none]
+    forbid: []
+  - id: negative-regex
+    prompt: "Give me a regex that matches US zip codes."
+    expect: [none]
+    forbid: []
