@@ -262,7 +262,7 @@ Verify after `rollout status` succeeds: `kubectl --context <ctx> -n <ns> get <ki
 
 **Risk: high. Reversible: no** (it drops every client connection through that pooler; in-flight transactions roll back). Do it after a rollback of the change that caused the problem, not before.
 
-Evidence first (read-only). PgBouncer admin console, with the password in `PGPASSFILE`:
+Evidence first (read-only). PgBouncer admin console, with the password in `PGPASSFILE`. The `SHOW` commands need only a user listed in `stats_users`; `admin_users` is needed only for `RELOAD`, `PAUSE` and `RESUME` below.
 
 ```bash
 psql -h <pooler-host> -p 6432 -U <pgbouncer-admin-user> pgbouncer -c 'SHOW POOLS;'
@@ -280,21 +280,29 @@ Try these first, in order:
    ```sql
    SELECT pid, usename, application_name, now() - state_change AS idle_for
    FROM pg_stat_activity
-   WHERE state = 'idle in transaction' AND usename = '<app_role>'
+   WHERE state = 'idle in transaction' AND usename = '<app_role>' AND application_name = '<app>'
    ORDER BY idle_for DESC LIMIT 20;
    ```
+
+   Terminate them (waits up to 5 seconds per backend; on PostgreSQL 13 use the one-argument `pg_terminate_backend(pid)`):
 
    **Gate: approval required.**
 
    ```sql
-   SELECT pg_terminate_backend(pid) FROM pg_stat_activity
-   WHERE state = 'idle in transaction' AND usename = '<app_role>'
+   SELECT pg_terminate_backend(pid, 5000) FROM pg_stat_activity
+   WHERE state = 'idle in transaction' AND usename = '<app_role>' AND application_name = '<app>'
      AND now() - state_change > interval '5 minutes';
-   -- or, as a config change for that role (applies to new sessions only):
+   ```
+
+   Or, as a separate config change for that role (applies to new sessions only):
+
+   **Gate: approval required.**
+
+   ```sql
    ALTER ROLE <app_role> SET idle_in_transaction_session_timeout = '60s';
    ```
 
-2. If the pool is simply too small for current load and the database has headroom below `max_connections`, raise the pool size in `pgbouncer.ini` and reload it. `RELOAD` applies the new config without dropping clients.
+2. If the pool is simply too small for current load, check headroom across the whole fleet first: (`default_pool_size` + `reserve_pool_size`) × each database/user pair × the number of PgBouncer instances must stay below `max_connections` minus the reserved slots (`superuser_reserved_connections`, and `reserved_connections` on PostgreSQL 16+). A raise that looks safe on one pod is N times that across N poolers, and can recreate the exhaustion you are fixing. Only then raise the pool size in `pgbouncer.ini` and reload it. `RELOAD` applies the new config without dropping clients.
 
    **Gate: approval required.**
 
@@ -302,13 +310,20 @@ Try these first, in order:
    psql -h <pooler-host> -p 6432 -U <pgbouncer-admin-user> pgbouncer -c 'RELOAD;'
    ```
 
-3. To drain a pooler without dropping clients, `PAUSE` waits for in-flight transactions to finish and holds new ones; `RESUME` lets them through again. Keep the pause short: queued clients wait the whole time.
+3. To drain one database on a pooler without dropping clients, use `PAUSE <db>;`: it waits for every server connection to be released and holds new queries; `RESUME <db>;` lets them through again. A single idle-in-transaction session makes `PAUSE` hang with every client queued behind it, so clear those first (step 1). Never run a bare `PAUSE;`: it holds every database on that pooler. Before pausing, open a second admin session with the `RESUME` line ready to paste. Keep the pause short.
 
    **Gate: approval required.**
 
    ```bash
-   psql -h <pooler-host> -p 6432 -U <pgbouncer-admin-user> pgbouncer -c 'PAUSE;'
-   psql -h <pooler-host> -p 6432 -U <pgbouncer-admin-user> pgbouncer -c 'RESUME;'
+   psql -h <pooler-host> -p 6432 -U <pgbouncer-admin-user> pgbouncer -c 'PAUSE <db>;'
+   ```
+
+   Check `SHOW POOLS;` until the database shows no active server connections, do the work, then resume:
+
+   **Gate: approval required.**
+
+   ```bash
+   psql -h <pooler-host> -p 6432 -U <pgbouncer-admin-user> pgbouncer -c 'RESUME <db>;'
    ```
 
 Only if those fail, restart, **one pooler instance at a time** when there are several, waiting for each to pass verification before the next. PgBouncer 1.23 and later can do a rolling restart with `so_reuseport` across several processes, which avoids a full outage ([PgBouncer usage](https://www.pgbouncer.org/usage.html)).
