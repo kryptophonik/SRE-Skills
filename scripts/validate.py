@@ -38,6 +38,8 @@ FORBIDDEN = [  # never runnable outside a never-run reference
   (re.compile(r'redis-cli\b[^|]*\s-a\s+(?!<)'), 'inline Redis password; use REDISCLI_AUTH'),
   (re.compile(r'\bmysql(admin)?\b[^|]*\s-p(?!\s|$|<)\S'), 'inline MySQL password; use --defaults-extra-file'),
   (re.compile(r'PGPASSWORD=(?!<|\$|")\S'), 'inline Postgres password; use PGPASSFILE'),
+  (re.compile(r'REDISCLI_AUTH=(?!<|\$|")\S'), 'inline Redis password; export REDISCLI_AUTH from a secret store, not on the command line'),
+  (re.compile(r'\b(?:postgres(?:ql)?|mysql|mariadb|rediss?)://[^\s:/@]*:(?!<)[^\s@/]+@'), 'password in a connection URI; use PGPASSFILE, --defaults-extra-file or REDISCLI_AUTH'),
 ]
 GATED = re.compile(r'pg_terminate_backend|pg_cancel_backend|^\s*KILL\b|\bFLUSH(ALL|DB)\b|\bCONFIG\s+SET\b|(^|redis-cli.*\s)(CLUSTER\s+|SENTINEL\s+)?FAILOVER\b|VACUUM\s+FULL', re.I)
 
