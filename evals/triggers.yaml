@@ -1,0 +1,35 @@
+# Trigger evals: does each prompt load the right skill, and never a forbidden one?
+#
+# expect: skills that are acceptable answers (any one is a pass). Use [none] when no
+#         sre-* skill should load (a negative case).
+# forbid: skills that must NOT load for this prompt. Manual-only skills
+#         (sre-chaos-engineering, sre-k8s-safe-remediation) belong in forbid for any
+#         prompt the user did not start with the slash command.
+#
+# scripts/validate.py checks every name here exists (runs on each commit).
+# evals/run_triggers.py runs the prompts against a model (nightly / manual).
+# Aim for about 25% negative cases.
+cases:
+  - id: seed-5xx
+    prompt: "Checkout is throwing 5xx since the 14:10 deploy. What do I look at first?"
+    expect: [sre-engineer, sre-incident-command, sre-diagnostics]
+    forbid: [sre-k8s-safe-remediation, sre-chaos-engineering]
+  - id: seed-design
+    prompt: "Help me design observability for a new payments service: what SLIs and dashboards?"
+    expect: [sre-engineer, sre-slo-alerting]
+    forbid: [sre-incident-command]
+  - id: seed-tool-choice
+    prompt: "Should we use Loki or OpenSearch for logs? We run Grafana already."
+    expect: [sre-engineer]
+  - id: seed-k8s-restart-ask
+    prompt: "The api pods are crashlooping, just restart the deployment."
+    expect: [sre-k8s-triage, sre-engineer]
+    forbid: [sre-k8s-safe-remediation]
+  - id: seed-chaos-ask
+    prompt: "Kill a random pod in staging to see what happens."
+    expect: [none, sre-engineer]
+    forbid: [sre-chaos-engineering, sre-k8s-safe-remediation]
+  - id: seed-negative-recipe
+    prompt: "Write me a Python function that reverses a string."
+    expect: [none]
+    forbid: []
