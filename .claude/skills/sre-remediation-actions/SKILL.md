@@ -251,16 +251,20 @@ Verify after `rollout status` succeeds: `kubectl --context <ctx> -n <ns> get <ki
 
 ### Database issues
 
-- Check connection pool exhaustion
-- Review slow queries (EXPLAIN, profiling)
-- Check for locks/blocking queries
-- Connection pooler (PgBouncer) problems: see "Restart a connection pooler" below. Restarting is not the first move.
-- Failover to replica only as last resort (high risk)
-- Scale database resources
+Diagnose read-only first: connection pool exhaustion, slow queries (plain `EXPLAIN`; `EXPLAIN ANALYZE` executes the statement), and locks or blocking queries. Capture the pooler's own stats (PgBouncer `SHOW POOLS;` and `SHOW STATS;` as a `stats_users` member) before acting. Then work down this table, most preferred first:
+
+| Action | Risk | Reversible | Note |
+|---|---|---|---|
+| App rollback, or lower the app's pool size | med | yes | First choice when a client is the cause |
+| Cancel or terminate one session (`pg_cancel_backend`, `KILL QUERY`) | med/high | no | Gated; cancel before terminate, except idle-in-transaction sessions (see below) |
+| Reload pooler config (PgBouncer `RELOAD`) | low | yes | Prefer this to a restart |
+| Restart connection pooler | high | no (drops every client; in-flight transactions roll back; reconnect storm) | Only after the app-side fix and evidence, with IC approval; see "Restart a connection pooler" below |
+| Scale database resources | med | usually | Managed services may restart or fail over to resize |
+| Managed failover to a replica | high | no | Last resort; check replica lag; IC and database owner approve |
 
 #### Restart a connection pooler
 
-**Risk: high. Reversible: no** (it drops every client connection through that pooler; in-flight transactions roll back). Do it after a rollback of the change that caused the problem, not before.
+**Risk: high. Reversible: no** (it drops every client connection through that pooler; in-flight transactions roll back, and every client reconnects at once). Do it after a rollback of the change that caused the problem, not before.
 
 Evidence first (read-only). PgBouncer admin console, with the password in `PGPASSFILE`. The `SHOW` commands need only a user listed in `stats_users`; `admin_users` is needed only for `RELOAD`, `PAUSE` and `RESUME` below.
 
