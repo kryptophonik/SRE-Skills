@@ -7,7 +7,7 @@ Sources: https://kubernetes.io/docs/reference/kubectl/quick-reference/ · https:
 |---|---|---|
 | Confirm context exists | `kubectl config get-contexts <ctx>` | Fails if missing; don't trust `current-context` |
 | Pods | `kubectl --context C -n N get pods -o wide` | |
-| Warning events, time-sorted | `kubectl --context C -n N events --types=Warning` | Built-in sorting. Avoid `get events --sort-by=.lastTimestamp` because it is often empty on events.k8s.io/v1 events. Fallback: `--sort-by=.metadata.creationTimestamp` ([kubectl events](https://kubernetes.io/docs/reference/kubectl/generated/kubectl_events/)) |
+| Warning events, time-sorted | `kubectl --context C -n N events --types=Warning \| tail -n 50` | Built-in sorting. Avoid `get events --sort-by=.lastTimestamp` because it is often empty on events.k8s.io/v1 events. Fallback: `--sort-by=.metadata.creationTimestamp` ([kubectl events](https://kubernetes.io/docs/reference/kubectl/generated/kubectl_events/)) |
 | Events for one object | `kubectl --context C -n N events --for pod/<pod>` | |
 | Describe | `kubectl --context C -n N describe pod <pod>` | Shows literal env values; redact before sharing |
 | Current logs | `kubectl --context C -n N logs <pod> -c <ctr> --tail=200 --since=15m` | No `-f` in agents (never returns) |

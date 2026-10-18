@@ -13,12 +13,16 @@ BAD = {  # each line must be flagged
   'SELECT * FROM information_schema.innodb_lock_waits;': 'removed in MySQL 8.0',
   'SELECT pg_terminate_backend(123);': 'approval/gate',
   'scripts/x.sh --since 1h': 'call scripts as',
+  '$S/pd_oncall.sh': 'not through $S',
+  'kubectl --context c -n n events --types=Warning': 'no limit flag',
+  'kubectl --context c -n n events --watch | tail -n 5': 'never ends',
 }
 GOOD = [  # each line must pass
   'mysql -u dbmonitor -p -h db', 'mysql -h db -P 3306 -u dbmonitor -p',
   'PGPASSFILE=~/.pgpass psql -h db', 'psql postgres://app@db:5432/app',
   'psql "postgres://app:<password>@db/app"', 'redis-cli --scan --pattern "sess:*" --count 100',
   'REDISCLI_AUTH="$(cat /run/secrets/redis)" redis-cli INFO',
+  'kubectl --context c -n n events --types=Warning | tail -n 50', 'kubectl --context c -n n events --for pod/p | tail -n 50',
 ]
 root = os.getcwd(); tmp = tempfile.mkdtemp()
 try:

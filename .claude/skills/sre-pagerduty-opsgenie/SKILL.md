@@ -41,16 +41,15 @@ Env (one set for scripts and snippets): `PD_API_KEY` (read-only REST key), `PD_R
 Use the bundled GET-only scripts. They send keys over stdin, retry HTTP 429, and cap pagination at `MAX_PAGES` (default 20 pages of 100):
 
 ```bash
-S=scripts   # relative to this skill folder (the one containing SKILL.md)
-$S/pd_oncall.sh                                              # who is on call now
-$S/pd_incidents.sh --status triggered --status acknowledged  # open incidents (table)
-$S/pd_incidents.sh --since <ISO8601> --until <ISO8601> --json | wc -l   # page count for handoff/toil
-$S/pd_audit_schedules.sh --since <ISO8601> --until <ISO8601>  # see sre-oncall-audit
-$S/og_alerts.sh --query 'status:open'
-$S/og_oncall.sh --schedule <schedule-name>
+bash scripts/pd_oncall.sh                                              # who is on call now
+bash scripts/pd_incidents.sh --status triggered --status acknowledged  # open incidents (table)
+bash scripts/pd_incidents.sh --since <ISO8601> --until <ISO8601> --json | wc -l   # page count for handoff/toil
+bash scripts/pd_audit_schedules.sh --since <ISO8601> --until <ISO8601>  # see sre-oncall-audit
+bash scripts/og_alerts.sh --query 'status:open'
+bash scripts/og_oncall.sh --schedule <schedule-name>
 ```
 
-Raw REST calls (paginated, projected and capped helpers, plus marked writes): [references/api-reference-pagerduty.md](references/api-reference-pagerduty.md), [references/api-reference-opsgenie.md](references/api-reference-opsgenie.md). Run the offline tests with `$S/tests/run_tests.sh`.
+Raw REST calls (paginated, projected and capped helpers, plus marked writes): [references/api-reference-pagerduty.md](references/api-reference-pagerduty.md), [references/api-reference-opsgenie.md](references/api-reference-opsgenie.md). Run the offline tests with `bash scripts/tests/run_tests.sh`.
 
 ### Paging (Events API v2, approval required)
 

@@ -150,7 +150,7 @@ job:slo_errors_per_request:ratio_rate1h{job="<svc>"} / (1 - 0.999)   # long wind
 
 **Slow or very slow burn (ticket):** not an emergency. Find which route, dependency, retry pattern or gradual latency regression is spending budget, forecast the date the budget runs out, and file it with the owning team. Apply the error budget policy above.
 
-**Escalate:** for a fast or medium burn with confirmed user impact, get an Incident Commander (`sre-incident-command`). Escalate to the service owner if it isn't mitigated within 30 minutes, if the remaining budget falls below 25%, or if the budget is spent (the error budget policy applies). Escalate a slow burn when a page tier fires as well or the budget forecast runs out before the period ends.
+**Escalate:** for a fast or medium burn with confirmed user impact, get an Incident Commander (`sre-incident-command`). Escalate to the service owner if it isn't mitigated within 30 minutes, if the remaining budget falls below 25% (the same line as the error budget policy above), or if the budget is spent (the error budget policy applies). Escalate a slow burn when a page tier fires as well or the budget forecast runs out before the period ends. The 30-minute and 25% lines are this pack's defaults, not Workbook values; set your own in your error budget policy.
 
 ## Alert definition template
 

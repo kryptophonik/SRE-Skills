@@ -78,10 +78,9 @@ aws logs stop-query --profile <profile> --region <region> --query-id <query-id> 
 ## Bundled scripts and references
 
 ```bash
-S=scripts   # relative to this skill folder (the one containing SKILL.md)
-AWS_PROFILE=<profile> AWS_REGION=<region> $S/preflight.sh                       # identity, account, region; stop if wrong
-AWS_PROFILE=<profile> AWS_REGION=<region> $S/logs-insights-bounded.sh <log-group> 30 'fields @timestamp, @message | filter @message like /ERROR/'   # <= 60 min, auto "| limit 100"
-AWS_PROFILE=<profile> $S/scan-unattached-ebs-eip.sh <region>                    # cost review input
+AWS_PROFILE=<profile> AWS_REGION=<region> bash scripts/preflight.sh                       # identity, account, region; stop if wrong
+AWS_PROFILE=<profile> AWS_REGION=<region> bash scripts/logs-insights-bounded.sh <log-group> 30 'fields @timestamp, @message | filter @message like /ERROR/'   # <= 60 min, auto "| limit 100"
+AWS_PROFILE=<profile> bash scripts/scan-unattached-ebs-eip.sh <region>                    # cost review input
 ```
 
 - [references/readonly-iam-policy.json](references/readonly-iam-policy.json) + [references/readonly-iam-policy.md](references/readonly-iam-policy.md) (ViewOnlyAccess baseline, explicit denies)

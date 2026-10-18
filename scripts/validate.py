@@ -69,6 +69,10 @@ for p in glob.glob('.claude/skills/**/*.md', recursive=True):
       if invoked and not os.path.exists(os.path.join(skill_dir, m['path'])):
         errors.append(f'{p}:{n}: {m["path"]} not found relative to {skill_dir}')
     if never_run: continue
+    if re.search(r'(^|\s)"?\$\{?S\}?"?/\S+\.(sh|py)', t): errors.append(f'{p}:{n}: call scripts as `bash scripts/<name>.sh`, not through $S')
+    if re.search(r'\bkubectl\b.*\sevents\b.*\s(--watch|-w)\b', t): errors.append(f'{p}:{n}: kubectl events --watch never ends; drop it')
+    elif re.search(r'\bkubectl\b.*\sevents\b\s+\S', t) and not re.search(r'\|\s*(tail|head)\b|--help', t):
+      errors.append(f'{p}:{n}: kubectl events has no limit flag; pipe it to | tail -n 50')
     for rx, why in FORBIDDEN:
       if rx.search(t): errors.append(f'{p}:{n}: {why}')
     if fence and GATED.search(t) and not re.search(r'approv|gate', ctx, re.I):
