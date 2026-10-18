@@ -2,8 +2,9 @@
 # Offline tests: self-signed certs from openssl and a local RDAP mock. No network.
 set -uo pipefail
 here=$(cd "$(dirname "$0")" && pwd); s="$here/.."; tmp=$(mktemp -d); pass=0; fail=0
-port=${MOCK_PORT:-18090}
-trap 'kill $pid 2>/dev/null; rm -rf "$tmp"' EXIT
+freeport() { python3 -c 'import socket;s=socket.socket();s.bind(("127.0.0.1",0));print(s.getsockname()[1])'; }
+port=${MOCK_PORT:-$(freeport)}; pid=; spid=
+trap 'kill $pid $spid 2>/dev/null; rm -rf "$tmp"' EXIT
 ok() { echo "PASS $1"; pass=$((pass+1)); }; ko() { echo "FAIL $1"; fail=$((fail+1)); }
 mk() { openssl req -x509 -newkey rsa:2048 -nodes -keyout "$tmp/$1.key" -out "$tmp/$1.pem" -days "$2" -subj "/CN=$1.example.invalid" >/dev/null 2>&1; }
 mk long 200; mk soon 20; mk crit 3
@@ -39,4 +40,27 @@ case "$o" in OK*Example_Registrar) [ $r = 0 ] && ok "domain OK with registrar" |
 o=$(bash "$s/domain-expiry.sh" soon.example); case "$o" in CRIT*) ok "domain CRIT under 14 days";; *) ko "domain CRIT: $o";; esac
 o=$(bash "$s/domain-expiry.sh" missing.invalid); r=$?
 case "$o" in NO-RDAP*) [ $r = 2 ] && ok "no RDAP reported, exit 2" || ko "no RDAP exit $r";; *) ko "no RDAP: $o";; esac
+# Input hardening: a crafted --timeout must be rejected, never executed.
+o=$(bash "$s/cert-expiry.sh" --timeout "1);open('$tmp/pwned','w');(1" localhost:1 2>&1); r=$?
+[ $r = 2 ] && [ ! -e "$tmp/pwned" ] && ok "non-numeric --timeout rejected, not run" || ko "timeout injection: $r $o"
+bash "$s/cert-expiry.sh" --warn >/dev/null 2>&1; [ $? = 2 ] && ok "flag without value is a usage error" || ko "flag without value"
+bash "$s/domain-expiry.sh" --timeout x a.example >/dev/null 2>&1; [ $? = 2 ] && ok "domain --timeout validated" || ko "domain --timeout"
+o=$(bash "$s/cert-expiry.sh" ::1:443); case "$o" in *ipv6-needs-brackets*) ok "bare IPv6 explained";; *) ko "bare ipv6: $o";; esac
+
+# Chain: an expiring intermediate is caught with --chain, ignored without it.
+openssl req -x509 -newkey rsa:2048 -nodes -keyout "$tmp/ca.key" -out "$tmp/ca.pem" -days 3 -subj "/CN=int.example.invalid" >/dev/null 2>&1
+openssl req -newkey rsa:2048 -nodes -keyout "$tmp/leaf.key" -out "$tmp/leaf.csr" -subj "/CN=localhost" >/dev/null 2>&1
+openssl x509 -req -in "$tmp/leaf.csr" -CA "$tmp/ca.pem" -CAkey "$tmp/ca.key" -CAcreateserial -days 200 -out "$tmp/leaf.pem" >/dev/null 2>&1
+cat "$tmp/leaf.pem" "$tmp/ca.pem" > "$tmp/bundle.pem"
+o=$(bash "$s/cert-expiry.sh" --file "$tmp/bundle.pem"); r=$?; case "$o" in OK*) [ $r = 0 ] && ok "leaf-only by default" || ko "leaf exit $r";; *) ko "leaf only: $o";; esac
+o=$(bash "$s/cert-expiry.sh" --chain --file "$tmp/bundle.pem"); r=$?
+case "$o" in *"CRIT "*"bundle.pem#2"*) [ $r = 1 ] && ok "--chain finds expiring intermediate" || ko "chain exit $r";; *) ko "chain: $o";; esac
+
+# Live handshake against a local s_server (SNI, host:port parsing, --chain over the wire).
+sport=$(freeport)
+openssl s_server -quiet -accept "127.0.0.1:$sport" -cert "$tmp/leaf.pem" -key "$tmp/leaf.key" -cert_chain "$tmp/ca.pem" -www >/dev/null 2>&1 & spid=$!
+for _ in $(seq 50); do (exec 3<>"/dev/tcp/127.0.0.1/$sport") 2>/dev/null && break; sleep 0.1; done
+o=$(bash "$s/cert-expiry.sh" --timeout 5 "127.0.0.1:$sport"); r=$?; case "$o" in OK*"CN = localhost"*|OK*"CN=localhost"*) ok "host:port handshake";; *) ko "handshake: $r $o";; esac
+o=$(bash "$s/cert-expiry.sh" --timeout 5 --chain "127.0.0.1:$sport"); case "$o" in *CRIT*"#2"*) ok "--chain over the wire";; *) ko "chain wire: $o";; esac
+o=$(bash "$s/domain-expiry.sh" missing.invalid); case "$o" in *http-404*) ok "RDAP status in reason";; *) ko "rdap status: $o";; esac
 echo "$pass passed, $fail failed"; [ $fail = 0 ]
