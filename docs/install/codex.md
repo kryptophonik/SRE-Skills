@@ -58,3 +58,7 @@ Some skills need another skill's scripts: `sre-oncall-audit` and `sre-oncall-han
 - Every skill carries its own inline gate block.
 - Manual-only skills stay manual. `sre-chaos-engineering` and `sre-k8s-safe-remediation` ship `agents/openai.yaml` with `policy.allow_implicit_invocation: false`, generated from `disable-model-invocation: true`, so Codex runs them only when you name them (`$sre-chaos-engineering`, `$sre-k8s-safe-remediation`). Copy the whole skill folder, including `agents/`.
 - Use Codex's sandbox and approval modes (keep approvals on) as the hard control.
+
+## Upgrading
+
+For a copy install, follow [upgrading.md](upgrading.md): 3.1.0 removes two skills, and their old folders must be deleted.

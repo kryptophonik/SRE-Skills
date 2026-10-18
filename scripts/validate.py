@@ -32,6 +32,7 @@ NEVER_RUN_DOCS = ('destructive-commands.md', 'dangerous-commands.md', 'write-com
 CALL = re.compile(r'^(?:[A-Z_][A-Z0-9_]*=\S+ +)*(?P<runner>bash +|python3 +)?(?P<dot>\./)?'
                   r'(?P<path>(?:\.\./[a-z0-9-]+/)?scripts/[\w.-]+\.(?P<ext>sh|py))(?P<rest>\b.*)$')
 FORBIDDEN = [  # never runnable outside a never-run reference
+  (re.compile(r'\brm\s+(?:-\w+\s+)*-\w*(?:r\w*f|f\w*r)\w*\b[^;&|]*\$(?!\{\w+:\?)(?:\{?\w|\()'), 'rm -rf with an unguarded variable: an empty value deletes the wrong tree; use ${VAR:?msg} or rm -f on files plus rmdir'),
   (re.compile(r'\bKEYS\s+\*|\bkeys\s+\*'), 'Redis KEYS * blocks the server; use SCAN or redis-cli --bigkeys/--memkeys'),
   (re.compile(r'redis-cli\b.*(?<![\w-])MONITOR(?![\w-])|^\s*MONITOR\s*$', re.I), 'Redis MONITOR on a primary halves throughput; use SLOWLOG GET / LATENCY DOCTOR'),
   (re.compile(r'information_schema\.innodb_lock_waits', re.I), 'removed in MySQL 8.0; use sys.innodb_lock_waits'),

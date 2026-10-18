@@ -70,7 +70,7 @@ Only after step 6 of the plan review and explicit approval. A saved plan applies
 terraform -chdir=<root-module-dir> apply "$P"
 ```
 
-If the state changed since the plan, Terraform rejects the stale plan: run the plan review again and get approval again. A failed apply isn't rolled back automatically, so stop and report. Afterwards, check that `bash scripts/drift-check.sh -C <root-module-dir>` exits 0 and the service metrics are healthy, then delete the plan: `rm -rf "$(dirname "$P")"`.
+If the state changed since the plan, Terraform rejects the stale plan: run the plan review again and get approval again. A failed apply isn't rolled back automatically, so stop and report. Afterwards, check that `bash scripts/drift-check.sh -C <root-module-dir>` exits 0 and the service metrics are healthy, then delete the plan file and its folder (this fails safely if `$P` isn't set in this shell): `rm -f -- "${P:?plan path not set}" && rmdir -- "$(dirname "$P")"`.
 
 ## Drift check
 

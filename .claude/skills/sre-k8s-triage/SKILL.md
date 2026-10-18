@@ -1,6 +1,6 @@
 ---
 name: sre-k8s-triage
-description: "Use when a Kubernetes workload or node is unhealthy: CrashLoopBackOff, Pending, OOMKilled, ImagePullBackOff, node pressure, DNS, probes, stuck rollouts, Helm. Read-only decision tree."
+description: "Use when a Kubernetes workload or node is unhealthy: CrashLoopBackOff, Pending, OOMKilled, ImagePullBackOff, node pressure, DNS, probes, stuck rollouts, Helm, and whether a restart is safe. Read-only decision tree."
 ---
 
 # Kubernetes Triage
@@ -130,7 +130,7 @@ kubectl --context <ctx> -n <ns> get pods -l <selector> -L role,spilo-role,cnpg.i
 | Strategy | `RollingUpdate` with `maxUnavailable: 0` or small and `maxSurge` >= 1 | `Recreate` (every pod down at once); DaemonSet `maxUnavailable` large; StatefulSet `OnDelete` (a restart changes nothing until pods are deleted); StatefulSet `partition` > 0 (only ordinals >= partition restart) |
 | Blast radius | Service has other Ready endpoints; one app's routes | the ingress controller, DNS, CNI or another shared component: every route or every node is affected |
 
-**Stop rule:** if ready or desired replicas are fewer than 2, the PDB allows 0 disruptions, or the target is a StatefulSet primary/leader (or uses `Recreate`), do not propose a restart. Escalate to the service owner or Incident Commander with what you found.
+**Stop rule:** if ready or desired replicas are fewer than 2, the PDB allows 0 disruptions, the target is a StatefulSet primary/leader (or uses `Recreate`), or the target is a shared component (the ingress controller, DNS such as CoreDNS, the CNI, a service mesh control plane, or anything else every route or node depends on), do not propose a restart. Escalate to the service owner or Incident Commander with what you found.
 
 Otherwise, report the verdict (kind, ready/desired, PDB allowed disruptions, HPA, probe, strategy, blast radius, risk low/med/high) and hand off: the per-kind restart commands are in [sre-remediation-actions](../sre-remediation-actions/SKILL.md) (Restart), and the write runs through `/sre-k8s-safe-remediation` (Claude plugin install: `/sre:sre-k8s-safe-remediation`; Codex: `$sre-k8s-safe-remediation`), which is manual-only.
 

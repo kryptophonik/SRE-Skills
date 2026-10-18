@@ -72,3 +72,7 @@ Verify a copy install: `ls ~/.claude/skills | grep '^sre-'` (or the project path
 - No skill sets `allowed-tools`, so nothing is pre-approved.
 - Optional hard guardrails (hooks and permissions run outside the model): merge `.claude/skills/sre-terraform/assets/settings.example.json` and `.claude/skills/sre-k8s-triage/references/claude-settings-k8s-deny.json` into `.claude/settings.json`.
 - No `.mcp.json` is shipped. Configure MCP servers read-only per [mcp.md](../../.claude/skills/sre-safety-gates/references/mcp.md).
+
+## Upgrading
+
+For a copy install, follow [upgrading.md](upgrading.md): 3.1.0 removes two skills, and their old folders must be deleted.

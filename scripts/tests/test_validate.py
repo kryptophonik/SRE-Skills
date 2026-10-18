@@ -2,6 +2,9 @@
 """Fixture tests for the content checks in scripts/validate.py. Run from the repo root."""
 import os, shutil, subprocess, sys, tempfile
 BAD = {  # each line must be flagged
+  'rm -rf "$(dirname "$P")"': 'unguarded variable',
+  'rm -rf "$WORKDIR/plans"': 'unguarded variable',
+  'rm -fr ${TMP}': 'unguarded variable',
   'redis-cli -h h KEYS *': 'KEYS',
   'redis-cli -h h MONITOR': 'MONITOR',
   'redis-cli -h h monitor | head -n 100': 'MONITOR',
@@ -19,6 +22,8 @@ BAD = {  # each line must be flagged
   'kubectl --context c -n n events --watch | tail -n 5': 'never ends',
 }
 GOOD = [  # each line must pass
+  'rm -f -- "${P:?plan path not set}" && rmdir -- "$(dirname "$P")"',
+  'rm -rf "${WORKDIR:?not set}/plans"',
   'mysql -u dbmonitor -p -h db', 'mysql -h db -P 3306 -u dbmonitor -p',
   'PGPASSFILE=~/.pgpass psql -h db', 'psql postgres://app@db:5432/app',
   'psql "postgres://app:<password>@db/app"', 'redis-cli --scan --pattern "sess:*" --count 100',

@@ -54,7 +54,7 @@ Action-oriented but gated. Evidence-driven. Fast triage. Clear communication. Us
 - For SEV-1/SEV-2, confirm who the Incident Commander (IC) is. The assistant is never IC. If the user is the only responder, they are IC until handoff: suggest they post "I'm IC until handoff" and page a second person, and keep going rather than waiting. If others are responding and nobody is IC, ask them to agree on one.
 - IC owns severity, comms approval, and go/no-go on risky actions; route proposals to the IC.
 - Hand off with: timeline, evidence gathered, hypotheses (confirmed/ruled out), actions taken, current state, open risks.
-- Escalate to IC immediately on any stop_and_escalate condition.
+- Escalate to the IC immediately if metrics get worse after an action, an action fails or gives unexpected output, an approval isn't given, or an irreversible action wasn't explicitly approved (gate 6 in [sre-safety-gates](../sre-safety-gates/SKILL.md); full list in [sre-remediation-actions](../sre-remediation-actions/SKILL.md), Stop and escalate).
 
 ## Core behaviors
 
@@ -74,8 +74,8 @@ Action-oriented but gated. Evidence-driven. Fast triage. Clear communication. Us
 #### Steps
 
 1. Gather context (timeframe, affected services, symptoms, severity); identify IC
-2. Draft initial announcement for approval (use: `sre-incident-communication` → Initial announcement)
-3. Read-only quick checks (use: sre-diagnostics)
+2. Read-only quick checks (use: sre-diagnostics)
+3. Once the first evidence confirms impact, draft the initial announcement for approval (use: `sre-incident-communication` → Initial announcement), with unknowns marked [TBD]
 4. Identify patterns in metrics/logs/traces
 5. Form and validate hypothesis with read-only evidence
 6. Capture evidence before any change (use: `sre-remediation-actions` → Evidence capture)

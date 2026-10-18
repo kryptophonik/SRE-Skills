@@ -65,3 +65,7 @@ Run `grok inspect` in the project. It should list the `sre-*` skills (or the `sr
 - Every skill carries its own inline gate block.
 - Manual-only skills stay manual (`disable-model-invocation`).
 - Keep Grok's tool-approval prompts on as the hard control. Don't rely on `allowed-tools`, which doesn't restrict anything in Grok. The opt-in Terraform guard hook can be installed as a Grok hook (`.grok/hooks/`, needs `/hooks-trust`).
+
+## Upgrading
+
+For a copy install, follow [upgrading.md](upgrading.md): 3.1.0 removes two skills, and their old folders must be deleted.

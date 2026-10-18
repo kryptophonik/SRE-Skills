@@ -50,5 +50,5 @@ init_tf() {
 make_private_tmp() {
   umask 077
   TMPD="$(mktemp -d "${TMPDIR:-/tmp}/tf-ro.XXXXXX")"
-  trap 'rm -rf -- "$TMPD"' EXIT
+  trap 'rm -rf -- "${TMPD:?}"' EXIT
 }

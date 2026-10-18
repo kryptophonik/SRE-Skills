@@ -58,3 +58,7 @@ Some skills need another skill's scripts: `sre-oncall-audit` and `sre-oncall-han
 - Every skill carries its own inline gate block.
 - No skill sets `allowed-tools`, so Copilot prompts before running tools. Don't add `allowed-tools` to these skills.
 - Manual-only behaviour (`disable-model-invocation`) isn't documented for Copilot, so the chaos and k8s remediation skills rely on their text gates. Leave them out if you need them strictly manual.
+
+## Upgrading
+
+For a copy install, follow [upgrading.md](upgrading.md): 3.1.0 removes two skills, and their old folders must be deleted.

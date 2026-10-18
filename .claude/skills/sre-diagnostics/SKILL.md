@@ -348,8 +348,9 @@ Caveats: `CONCURRENTLY` takes longer and waits for older transactions to finish 
 
 ### Profiling
 
-- pprof:
+- pprof (a CPU profile adds load to the process for its 30 s window; run it on one instance):
 
+  **Gate: approval required.**
   ```bash
   go tool pprof http://localhost:6060/debug/pprof/profile
   ```

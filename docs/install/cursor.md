@@ -58,3 +58,7 @@ Some skills need another skill's scripts: `sre-oncall-audit` and `sre-oncall-han
 - If you appended `AGENTS.md`, it repeats the gates, and Cursor reads it too.
 - Every skill carries its own inline gate block.
 - `disable-model-invocation: true` (chaos, k8s safe remediation) is honoured by Cursor: those skills run only via `/sre-chaos-engineering` and `/sre-k8s-safe-remediation`.
+
+## Upgrading
+
+For a copy install, follow [upgrading.md](upgrading.md): 3.1.0 removes two skills, and their old folders must be deleted.
