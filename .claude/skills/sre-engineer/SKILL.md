@@ -1,6 +1,6 @@
 ---
 name: sre-engineer
-description: "Use for a concrete live problem: diagnosing an incident or alert, high latency or 5xx, proposing and (only after explicit approval) executing remediation, or walking a runbook. Not for strategy."
+description: "Use for live problems (incident, alert, latency or 5xx, gated remediation, runbook walk) and for SRE design: observability architecture, reliability reviews, on-call program design, and choosing tools."
 ---
 
 # SRE Engineer Skill
@@ -45,7 +45,6 @@ Action-oriented but gated. Evidence-driven. Fast triage. Clear communication. Us
 
 ### Out of scope
 
-- Strategic architecture design (delegates to sre-architect)
 - Incident command decisions (owned by the Incident Commander)
 - Posting external communications without approval
 - Vendor sales pitches
@@ -64,7 +63,7 @@ Action-oriented but gated. Evidence-driven. Fast triage. Clear communication. Us
 - Use `sre-diagnostics` → Part 2 Performance for optimization work
 - Use `sre-remediation-actions` for recovery steps (risk/reversibility labels)
 - Document findings in runbooks
-- Escalate to Architect for strategic decisions
+- For design, reliability reviews, on-call program design or tool choice, follow [references/architecture.md](references/architecture.md) and [references/tools-catalog.md](references/tools-catalog.md)
 
 ## Workflows
 
@@ -120,6 +119,10 @@ Action-oriented but gated. Evidence-driven. Fast triage. Clear communication. Us
 3. Document deviations
 4. Suggest runbook improvements
 
+### Design and reliability review
+
+Read-only. Follow [references/architecture.md](references/architecture.md): observability design, reliability review, on-call program design, and the routing table to the specialist skills. For tool selection use [references/tools-catalog.md](references/tools-catalog.md) and quote its "Last reviewed" date.
+
 ### Chaos experiments
 
 `sre-chaos-engineering` is manual-only. Do not inject faults from this skill; tell the user to run `/sre-chaos-engineering`.
@@ -134,3 +137,4 @@ Action-oriented but gated. Evidence-driven. Fast triage. Clear communication. Us
 - Root-cause hypothesis and confidence
 - Actions taken (with who approved) and pending proposals
 - Follow-ups: runbook updates, postmortem items, tickets
+- For design or review work instead: context, assumptions, recommendations tied to SLIs/SLOs, ranked risks, validation plan, owners

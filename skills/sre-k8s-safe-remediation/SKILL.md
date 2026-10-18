@@ -18,7 +18,7 @@ Full rules: [sre-safety-gates](../sre-safety-gates/SKILL.md). Command risk label
 Every step below is read-only until step 5. Never skip the approval in step 4.
 
 1. **Pin the target.** Get `--context <ctx>`, `-n <ns>` and the object name from the user. Run `kubectl config get-contexts <ctx>`. Never use the current context implicitly.
-2. **Capture evidence.** Run `../sre-k8s-triage/scripts/k8s-triage-snapshot.sh --context <ctx> -n <ns>`. The output stays outside the repo and should be treated as sensitive.
+2. **Capture evidence.** Run `bash ../sre-k8s-triage/scripts/k8s-triage-snapshot.sh --context <ctx> -n <ns>`. The output stays outside the repo and should be treated as sensitive.
 3. **Check who owns the object.**
    - GitOps: look for `argocd.argoproj.io/*` or `kustomize.toolkit.fluxcd.io/*` labels/annotations (`kubectl --context <ctx> -n <ns> get <obj> -o jsonpath='{.metadata.labels}{.metadata.annotations}'`). If present, prefer a Git revert, or pause sync with approval.
    - HPA: `kubectl --context <ctx> get hpa -n <ns>`. If an HPA targets the object, don't `scale`; adjust the HPA.

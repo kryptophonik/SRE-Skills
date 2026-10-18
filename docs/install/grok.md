@@ -19,7 +19,7 @@ Copy `sre-safety-gates` plus the skill (and anything it requires).
 
 ## How the gates stay attached
 
-- **`user-invocable: false` hides a skill from you and from the model in Grok.** That affects `sre-safety-gates`, `sre-remediation-actions` and `sre-tools-catalog`, which never appear in Grok's skill list. Skills that need them still reach them through relative links, and each skill keeps its own inline gate block, so the gates still apply. For the full rules always in context, use a project install with `AGENTS.md`.
+- **`user-invocable: false` hides a skill from you and from the model in Grok.** That affects `sre-safety-gates` and `sre-remediation-actions`, which never appear in Grok's skill list. Skills that need them still reach them through relative links, and each skill keeps its own inline gate block, so the gates still apply. For the full rules always in context, use a project install with `AGENTS.md`.
 - `AGENTS.md` (and `.claude/rules`/`CLAUDE.md` if you add them) loads into every session in the repo. Run `grok inspect` to confirm it's listed.
 - Every skill carries its own inline gate block.
 - Manual-only skills stay manual (`disable-model-invocation`).

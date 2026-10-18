@@ -20,8 +20,8 @@ Related: `sre-pagerduty-opsgenie` (adapter, scripts), `sre-oncall-handoff`; Opsg
 
 1. **Set the window:** default now to +14 d. Extend it to cover the next DST change.
 2. **Run the automated checks (read-only):**
-   - PagerDuty: `../sre-pagerduty-opsgenie/scripts/pd_audit_schedules.sh --since <ISO8601> --until <ISO8601>` (gaps, single-person layers, policies with no service, empty levels, users with no contact methods or notification rules)
-   - Opsgenie: `../sre-pagerduty-opsgenie/scripts/og_oncall.sh` (schedules with nobody on call now)
+   - PagerDuty: `bash ../sre-pagerduty-opsgenie/scripts/pd_audit_schedules.sh --since <ISO8601> --until <ISO8601>` (gaps, single-person layers, policies with no service, empty levels, users with no contact methods or notification rules)
+   - Opsgenie: `bash ../sre-pagerduty-opsgenie/scripts/og_oncall.sh` (schedules with nobody on call now)
    - Env: `PD_API_KEY` / `OG_API_KEY` (read-only keys), `PD_REGION` / `OG_REGION` = `us|eu`
 3. **Run the manual checks** in [schedule-escalation-audit.md](../sre-pagerduty-opsgenie/references/schedule-escalation-audit.md): time zones/DST, loops and repeat counts, overlapping overrides, timeouts, and the Opsgenie equivalents.
 4. **Rate each finding:** high means a service can page nobody; medium is single-person coverage or an unreachable user; low is cleanup.

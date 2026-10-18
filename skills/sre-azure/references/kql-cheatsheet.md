@@ -1,6 +1,6 @@
 # KQL cheat sheet (read-only queries)
 
-Run these with `scripts/az-ro.sh --subscription <sub-id> monitor log-analytics query -w <workspace-guid> --analytics-query "<kql>" --timespan PT1H`.
+Run these with `bash scripts/az-ro.sh --subscription <sub-id> monitor log-analytics query -w <workspace-guid> --analytics-query "<kql>" --timespan PT1H`.
 Replace the `<placeholders>`. Column names come from the Azure Monitor table reference pages linked below.
 
 ## AppRequests (workspace-based Application Insights)

@@ -43,7 +43,7 @@ Full rules: [sre-safety-gates](../sre-safety-gates/SKILL.md). Read-only MCP setu
 1. Check the No-go rules section; stop if any apply.
 2. Define 'Steady State': Metrics that indicate the system is healthy.
 3. Formulate Hypothesis: 'If we do X, the system will still be Y'.
-4. Design Experiment: Choose tool and parameters (use: sre-tools-catalog -> chaos).
+4. Design Experiment: Choose tool and parameters (see [tools catalog, Chaos](../sre-engineer/references/tools-catalog.md#chaos)).
 5. Define Abort Criteria and rollback (see Abort criteria).
 6. Propose plan: target, blast radius, owner, timebox, risk, rollback — get explicit approval.
 7. Run Experiment within timebox; monitor abort criteria continuously.
