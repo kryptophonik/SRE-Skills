@@ -15,7 +15,7 @@ The agent may **propose** any of the commands below with risk, reversibility, an
 | `terraform plan -refresh-only -detailed-exitcode` (`scripts/drift-check.sh`) | 0 = none, 1 = error, 2 = drift | https://developer.hashicorp.com/terraform/cli/commands/plan |
 | `terraform show -no-color tfplan` | Masks values marked sensitive | https://developer.hashicorp.com/terraform/cli/commands/show |
 | `terraform state list` | | https://developer.hashicorp.com/terraform/cli/commands/state/list |
-| `scripts/plan-risk.sh tfplan` | Summary without values | this skill |
+| `bash scripts/plan-risk.sh tfplan` | Summary without values | this skill |
 
 ## Read-only but exposes secrets (avoid; never paste the output)
 

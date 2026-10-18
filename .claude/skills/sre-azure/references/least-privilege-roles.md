@@ -13,7 +13,7 @@ Never use Owner, Contributor, or User Access Administrator for triage.
 | kubectl access to AKS (read) | Azure Kubernetes Service Cluster User Role + Kubernetes RBAC `view` (or Azure Kubernetes Service RBAC Reader) | Cluster | `az aks get-credentials` is a POST action that Reader lacks. Never use `--admin` or Cluster Admin for triage. |
 
 Check before assigning (read-only):
-`scripts/az-ro.sh --subscription <sub-id> role assignment list --assignee <principal-id> --all -o table`
+`bash scripts/az-ro.sh --subscription <sub-id> role assignment list --assignee <principal-id> --all -o table`
 
 Role assignment create or delete is a **write** and is out of scope for this skill.
 
