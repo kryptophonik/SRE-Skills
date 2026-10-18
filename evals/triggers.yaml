@@ -34,8 +34,7 @@ cases:
     expect: [none]
     forbid: []
   # Cold-test pages (baseline on v3.0.1, 2026-10-17). P3 and P7 are the acceptance
-  # tests for sre-database-triage and sre-expiry-audit. P7 expects sre-expiry-audit;
-  # add sre-database-triage to P3 when it lands.
+  # tests for sre-database-triage and sre-expiry-audit.
   - id: page-p1-5xx-alert
     prompt: "PagerDuty: [FIRING] checkout-api 5xx rate 14% > 2% for 10m"
     expect: [sre-engineer, sre-incident-command, sre-diagnostics]
@@ -46,7 +45,7 @@ cases:
     forbid: [sre-k8s-safe-remediation, sre-chaos-engineering]
   - id: page-p3-p99-db
     prompt: "p99 latency on orders doubled, no deploys, db?"
-    expect: [sre-engineer, sre-diagnostics]
+    expect: [sre-engineer, sre-diagnostics, sre-database-triage]
     forbid: [sre-change-safety, sre-capacity-planning]
   - id: page-p4-restart-ingress
     prompt: "is it safe to restart the ingress controller pods? customers are erroring"
@@ -76,8 +75,7 @@ cases:
     prompt: "Give me a regex that matches US zip codes."
     expect: [none]
     forbid: []
-  # 3am dry run (connection exhaustion on checkout). Database cases are added with
-  # sre-database-triage; negatives 22 and 23 then forbid it.
+  # 3am dry run (connection exhaustion on checkout).
   - id: dr-ic-solo
     prompt: "3am, I'm the only one on call, checkout 5xx at 14%. Go."
     expect: [sre-incident-command, sre-engineer]
@@ -117,8 +115,52 @@ cases:
   - id: negative-sql-howto
     prompt: "write a SQL query that finds duplicate emails in a users table"
     expect: [none]
-    forbid: []
+    forbid: [sre-database-triage]
   - id: negative-schema-design
     prompt: "design a Postgres schema for an orders app"
     expect: [none, sre-engineer]
+    forbid: [sre-database-triage]
+  - id: dr-db-conn-exhaustion
+    prompt: "checkout 5xx, logs say: remaining connection slots are reserved"
+    expect: [sre-database-triage, sre-engineer]
+    forbid: [sre-k8s-safe-remediation, sre-capacity-planning, sre-chaos-engineering]
+  - id: dr-db-cant-connect
+    prompt: "can't even connect to the prod postgres, too many clients, it's Aurora"
+    expect: [sre-database-triage, sre-aws]
+    forbid: [sre-k8s-safe-remediation]
+  - id: dr-kill-idle
+    prompt: "just kill all the idle in transaction connections on prod postgres"
+    expect: [sre-database-triage]
+    forbid: [sre-k8s-safe-remediation, sre-chaos-engineering]
+  - id: dr-snapshot-retry
+    prompt: "the db snapshot script says items_failed 16, what now?"
+    expect: [sre-database-triage]
     forbid: []
+  - id: dr-restart-pooler
+    prompt: "should I restart pgbouncer? checkout can't get DB connections"
+    expect: [sre-database-triage, sre-engineer]
+    forbid: [sre-k8s-safe-remediation]
+  - id: dr-explain-analyze
+    prompt: "run explain analyze on the slow checkout query in prod"
+    expect: [sre-database-triage]
+    forbid: [sre-chaos-engineering]
+  - id: dr-db-failover
+    prompt: "fail over the checkout database to the replica now"
+    expect: [sre-database-triage, sre-engineer, sre-aws]
+    forbid: [sre-dr-backup-test, sre-chaos-engineering]
+  - id: dr-verify-dependency
+    prompt: "rollback finished, is the database recovered?"
+    expect: [sre-database-triage, sre-engineer]
+    forbid: [sre-k8s-safe-remediation]
+  - id: dr-diag-sql-bounded
+    prompt: "is my CREATE INDEX CONCURRENTLY still running on prod postgres?"
+    expect: [sre-diagnostics, sre-database-triage]
+    forbid: []
+  - id: dr-innodb-status
+    prompt: "dump SHOW ENGINE INNODB STATUS from the prod mysql"
+    expect: [sre-database-triage]
+    forbid: []
+  - id: dr-redis-evictions
+    prompt: "redis is evicting keys and cache hit rate dropped"
+    expect: [sre-database-triage]
+    forbid: [sre-chaos-engineering, sre-k8s-safe-remediation]

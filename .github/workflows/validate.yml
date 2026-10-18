@@ -28,6 +28,9 @@ jobs:
         run: bash .claude/skills/sre-pagerduty-opsgenie/scripts/tests/run_tests.sh
       - name: Expiry audit script tests
         run: bash .claude/skills/sre-expiry-audit/scripts/tests/run_tests.sh
+      - name: Database triage script tests
+        working-directory: .claude/skills/sre-database-triage
+        run: bash tests/run-tests.sh
       - name: Install promtool
         run: |
           curl -sSfL https://github.com/prometheus/prometheus/releases/download/v3.5.0/prometheus-3.5.0.linux-amd64.tar.gz | tar xz -C /tmp
@@ -72,6 +75,9 @@ jobs:
         run: bash .claude/skills/sre-pagerduty-opsgenie/scripts/tests/run_tests.sh
       - name: Expiry audit tests on bash 3.2
         run: bash .claude/skills/sre-expiry-audit/scripts/tests/run_tests.sh
+      - name: Database triage tests on bash 3.2
+        working-directory: .claude/skills/sre-database-triage
+        run: bash tests/run-tests.sh
       - name: Terraform tests on bash 3.2
         working-directory: .claude/skills/sre-terraform
         run: bash tests/run-tests.sh

@@ -1,0 +1,2 @@
+Type	Name	Status
+InnoDB		\n------------\nTRANSACTIONS\n------------\n---TRANSACTION 9, ACTIVE 1 sec\nMySQL thread id 9, OS thread handle 9, query id 9 localhost root updating\nUPDATE app.t SET v='IDENTIFIED BY\n---TRANSACTION 999\nFIXTURE_LIMITATION_SECRET' WHERE id=1\n--------\nFILE I/O\n--------\nEND OF INNODB MONITOR OUTPUT\n

@@ -251,12 +251,12 @@ Verify after `rollout status` succeeds: `kubectl --context <ctx> -n <ns> get <ki
 
 ### Database issues
 
-Diagnose read-only first: connection pool exhaustion, slow queries (plain `EXPLAIN`; `EXPLAIN ANALYZE` executes the statement), and locks or blocking queries. Capture the pooler's own stats (PgBouncer `SHOW POOLS;` and `SHOW STATS;` as a `stats_users` member) before acting. Then work down this table, most preferred first:
+Follow `sre-database-triage` (read-only triage, then its Fix order). Capture evidence first with `bash ../sre-database-triage/scripts/db-snapshot.sh <engine> <outdir>`. Diagnose read-only: connection pool exhaustion, slow queries (plain `EXPLAIN`; `EXPLAIN ANALYZE` executes the statement), and locks or blocking queries. Capture the pooler's own stats (PgBouncer `SHOW POOLS;` and `SHOW STATS;` as a `stats_users` member) before acting. Then work down this table, most preferred first:
 
 | Action | Risk | Reversible | Note |
 |---|---|---|---|
 | App rollback, or lower the app's pool size | med | yes | First choice when a client is the cause |
-| Cancel or terminate one session (`pg_cancel_backend`, `KILL QUERY`) | med/high | no | Gated; cancel before terminate, except idle-in-transaction sessions (see below) |
+| Cancel or terminate one session (`pg_cancel_backend`, `KILL QUERY`) | med/high | no | Gated blocks in `sre-database-triage`; cancel before terminate, except idle-in-transaction sessions (see below) |
 | Reload pooler config (PgBouncer `RELOAD`) | low | yes | Prefer this to a restart |
 | Restart connection pooler | high | no (drops every client; in-flight transactions roll back; reconnect storm) | Only after the app-side fix and evidence, with IC approval; see "Restart a connection pooler" below |
 | Scale database resources | med | usually | Managed services may restart or fail over to resize |
