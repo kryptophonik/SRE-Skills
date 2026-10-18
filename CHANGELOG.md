@@ -4,10 +4,32 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ## Planned
 
-1. **Database/datastore triage** (`sre-database-triage`): Postgres/MySQL/Redis locks, replication lag, connection exhaustion, slow queries. Read-only, with the gate block.
-2. Queue/stream triage (Kafka, SQS, Pub/Sub lag and backlog).
-3. TLS/certificate expiry checks.
-4. Codex plugin packaging, once it's verified against the docs.
+1. Queue/stream triage (Kafka, SQS, Pub/Sub lag and backlog).
+2. Codex plugin packaging, once it's verified against the docs.
+
+## [3.1.0] - 2026-10-18
+
+### Added
+- `sre-database-triage`: read-only triage for PostgreSQL, MySQL/MariaDB and Redis (locks, connections, replication lag, slow queries, memory and eviction), self-hosted and managed (RDS/Aurora, Cloud SQL, Azure, ElastiCache/MemoryDB, Memorystore). Bundles `db-ro.sh`, `db-snapshot.sh` (a redacted evidence bundle) and a test suite; every state-changing step is a separate gated block.
+- `sre-expiry-audit`: TLS certificate (`cert-expiry.sh`, with `--chain` and IPv6) and domain (`domain-expiry.sh`, RDAP) expiry checks, plus cloud certificate and secret expiry.
+- `sre-incident-communication`: an external status-page template with no names, bridge links or internal causes, and an Output section with severity and impact fields.
+- `sre-postmortem-templates`: databases as an evidence source, and TTD, TTA and TTM (time to detect, acknowledge and mitigate) fields.
+- `sre-aws`: a gated Aurora / Multi-AZ DB cluster failover to a named replica, with the lag check first and the Global Database commands called out.
+- Evals: 22 dry-run cases from a simulated 3am incident and 4 more negative cases (10 of 42 trigger cases are negatives).
+
+### Changed
+- `sre-change-safety`: during an active SEV, impact-reducing changes (rollback to last known-good, flag off, scale up) may go ahead once the IC or the lone responder approves, logged in the timeline.
+- `sre-incident-command` and `sre-engineer`: a lone paged responder is IC until handoff and pages a second person for SEV-1/2. The assistant is never IC, and the comms lead is a human who approves and sends.
+- `sre-remediation-actions`: connection-pooler restart guidance (scoped `PAUSE`/`RESUME`, separate gated terminate and timeout blocks) and a risk/reversibility table for database actions.
+- `sre-k8s-safe-remediation`: reuses a pinned target and a recent snapshot, adds the GitOps revert path, and pauses auto-sync before a bare undo.
+- The validator requires the exact `**Gate: approval required.**` marker above every gated command.
+
+### Fixed
+- `cert-expiry.sh`: validates numeric arguments and passes the timeout safely, closing a command-injection path.
+
+### Known gaps
+- The InnoDB status size cap on a busy server hasn't been checked live.
+- Managed-service commands, real TLS endpoints, Valkey and real MySQL replica values were checked against current docs, not against live services.
 
 ## [3.0.1] - 2026-10-17
 
