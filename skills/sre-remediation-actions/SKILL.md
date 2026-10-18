@@ -268,7 +268,7 @@ Follow `sre-database-triage` (read-only triage, then its Fix order). Capture evi
 
 **Risk: high. Reversible: no** (it drops every client connection through that pooler; in-flight transactions roll back, and every client reconnects at once). Do it after a rollback of the change that caused the problem, not before.
 
-Evidence first (read-only). PgBouncer admin console, with the password in `PGPASSFILE`. The `SHOW` commands need only a user listed in `stats_users`; `admin_users` is needed only for `RELOAD`, `PAUSE` and `RESUME` below.
+Evidence first (read-only). PgBouncer admin console, with the password in `PGPASSFILE`. The `SHOW` commands need only a user listed in `stats_users`; `admin_users` is needed only for `RELOAD`, `PAUSE`, `RESUME` and `RECONNECT` below.
 
 ```bash
 psql -h <pooler-host> -p 6432 -U <pgbouncer-stats-user> pgbouncer -c 'SHOW POOLS;'

@@ -29,7 +29,7 @@ The table is machine-read by `tests/run-tests.sh`: column 1 is the engine, colum
 | redis | `BGREWRITEAOF` | Same fork cost as `BGSAVE` | `INFO persistence` |
 | redis | `CLIENT PAUSE 10000` | Stops serving clients for the timeout | Nothing in triage needs it |
 | redis | `CLIENT KILL TYPE normal` | Disconnects every application client at once | Gated `CLIENT KILL ID <id>` for one client |
-| pgbouncer | `KILL <db>` | Drops every client and server connection for that database at once; clients see errors | `PAUSE <db>` (transaction pooling) or gated `RECONNECT <db>` (session pooling) in sre-remediation-actions |
+| pgbouncer | `KILL <db>` | Drops every client and server connection for that database at once; clients see errors | Gated `RECONNECT <db>` or the gated pooler restart in sre-remediation-actions (`PAUSE <db>` in transaction pooling only) |
 | redis | `SCRIPT FLUSH` | Removes cached Lua scripts; clients relying on `EVALSHA` start failing | Escalate to the app owner |
 | redis | `FUNCTION FLUSH` | Deletes every loaded function library | Escalate to the app owner |
 | redis | `REPLICAOF NO ONE` | Promotes a replica by hand: split brain, the old primary keeps taking writes | Managed failover (gated) or the owner's Sentinel/Cluster procedure |
