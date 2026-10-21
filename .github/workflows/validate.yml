@@ -75,6 +75,8 @@ jobs:
           echo "$RUNNER_TEMP/b32" >> "$GITHUB_PATH"
       - name: Confirm bash 3.2
         run: bash -c 'echo "$BASH_VERSION"; [[ $BASH_VERSION == 3.2* ]]'
+      - name: Show jq version
+        run: jq --version
       - name: Syntax check with bash 3.2
         run: find .claude -name '*.sh' -print0 | xargs -0 -n1 /bin/bash -n
       - name: PagerDuty/Opsgenie tests on bash 3.2
