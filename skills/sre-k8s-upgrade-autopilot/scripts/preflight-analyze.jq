@@ -271,7 +271,7 @@ def objname(ns; name): if (ns == null or ns == "" or ns == "<undefined>") then n
     | unique_by(.obj + .image) ) as $addons
 | ( [ $addons[]
       | if .addon == "Cluster Autoscaler" and (.tag | minor) != $t then f("WARN"; "addon"; .obj; "Cluster Autoscaler \(.tag) should track the cluster minor; it will be behind 1.\($t)."; "Upgrade it to the latest 1.\($t).x release right after the control plane."; "https://github.com/kubernetes/autoscaler/releases")
-        elif .addon == "CoreDNS" and ($b.support.kubeadm_coredns["1.\($t)"] // "") as $bd | $bd != "" and (.tag == $bd or (.tag | startswith($bd + "-"))) then f("INFO"; "addon"; .obj; "CoreDNS \(.tag) is the version kubeadm ships with 1.\($t)."; "No action needed for this hop."; "")
+        elif .addon == "CoreDNS" and (($b.support.kubeadm_coredns["1.\($t)"] // "") as $bd | $bd != "" and (.tag == $bd or (.tag | startswith($bd + "-")))) then f("INFO"; "addon"; .obj; "CoreDNS \(.tag) is the version kubeadm ships with 1.\($t)."; "No action needed for this hop."; "")
         elif .addon == "kube-proxy" then f("INFO"; "addon"; .obj; "kube-proxy \(.tag) (skew checked above)."; "Upgrade with the nodes/managed add-on after the control plane."; SKEW)
         else f("WARN"; "addon"; .obj; "\(.addon) \(.tag): confirm this version supports 1.\($t) before the control-plane upgrade."; "Check the vendor compatibility matrix; upgrade first if 1.\($t) is not listed. Managed add-ons: see \($pref)."; "") end ] ) as $addon_findings
 
