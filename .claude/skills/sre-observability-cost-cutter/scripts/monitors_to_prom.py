@@ -15,6 +15,7 @@ import re
 import shutil
 import subprocess
 import sys
+import tempfile
 
 AGGS = ("avg", "sum", "min", "max")
 SUPPORTED_TYPES = ("metric alert", "query alert")
@@ -545,8 +546,10 @@ def find_promtool(explicit):
 def main(argv=None):
     p = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     p.add_argument("--monitors", required=True, help="monitor export JSON")
-    p.add_argument("--out", default="converted.rules.yml")
-    p.add_argument("--report", default="conversion-report.md")
+    p.add_argument("--out", default=None,
+                   help="rules YAML path (default: a new directory under ${TMPDIR:-/tmp}/obcost-conv-*)")
+    p.add_argument("--report", default=None,
+                   help="conversion report path (default: alongside --out)")
     p.add_argument("--map", help="JSON mapping: {\"metrics\": {dd_name: prom_name | {name, counter}}, \"labels\": {dd_tag: prom_label}}")
     p.add_argument("--ids", help="comma-separated monitor ids to convert (default: all)")
     p.add_argument("--group-name", default="converted-monitors")
@@ -554,6 +557,14 @@ def main(argv=None):
     p.add_argument("--check", action="store_true", help="run promtool check rules on the output; exit 1 if it fails")
     p.add_argument("--promtool", help="path to promtool (default: $PROMTOOL or PATH)")
     a = p.parse_args(argv)
+    workspace = None
+    if a.out is None or a.report is None:
+        workspace = tempfile.mkdtemp(prefix="obcost-conv-", dir=os.environ.get("TMPDIR") or None)
+        if a.out is None:
+            a.out = os.path.join(workspace, "converted.rules.yml")
+        if a.report is None:
+            a.report = os.path.join(workspace, "conversion-report.md")
+        print(f"workspace: {workspace}", file=sys.stderr)
     if not re.fullmatch(r"\d+[smhdw]", a.rate_window):
         p.error("--rate-window must look like 2m")
     mapping = {}

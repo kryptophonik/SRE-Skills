@@ -298,7 +298,7 @@ class Demo(unittest.TestCase):
         r = run([AUDIT, "--input-dir", DEMO, "--dollar-estimates", "--out", out])
         self.assertEqual(r.returncode, 0, r.stderr)
         fresh, committed = read(out), read(os.path.join(DEMO, "demo-report.md"))
-        self.assertEqual(fresh, committed, "demo/demo-report.md is stale; re-run the demo command")
+        self.assertEqual(fresh, committed, "demo/demo-report.md is stale; maintainers: --out demo/demo-report.md")
         head = "\n".join(committed.split("\n")[:5])
         self.assertIn("SYNTHETIC EXAMPLE DATA, not from a real account", head)
         self.assertNotIn("## Data not available", committed)
@@ -379,6 +379,52 @@ class Demo(unittest.TestCase):
         self.assertGreaterEqual(len(f["no_data"]), 2)
         self.assertGreaterEqual(len(f["rare_event_skipped"]), 2)
         self.assertGreaterEqual(len(f["muted_long"]), 1)
+
+
+    def test_default_demo_run_leaves_skill_tree_and_git_clean(self):
+        """Default outputs go under TMPDIR; a demo run must not dirty the skill or git status."""
+        def fingerprint(root):
+            rows = []
+            for dirpath, dirnames, filenames in os.walk(root):
+                dirnames[:] = [d for d in dirnames if d != "__pycache__"]
+                for fn in filenames:
+                    if fn.endswith(".pyc"):
+                        continue
+                    path = os.path.join(dirpath, fn)
+                    st = os.stat(path)
+                    rows.append((os.path.relpath(path, root), st.st_size, int(st.st_mtime)))
+            return rows
+        repo = os.path.dirname(os.path.dirname(os.path.dirname(SKILL)))
+        rel = os.path.relpath(SKILL, repo)
+        before_git = ""
+        if os.path.isdir(os.path.join(repo, ".git")):
+            g0 = subprocess.run(["git", "status", "--porcelain", "--", rel],
+                                cwd=repo, capture_output=True, text=True)
+            self.assertEqual(g0.returncode, 0, g0.stderr)
+            before_git = g0.stdout
+        before = fingerprint(SKILL)
+        tmp_parent = tempfile.mkdtemp(prefix="obcost-test-tmp-")
+        env = {"TMPDIR": tmp_parent}
+        r = run([AUDIT, "--input-dir", DEMO, "--dollar-estimates"], cwd=SKILL, env=env)
+        self.assertEqual(r.returncode, 0, r.stderr)
+        m = re.search(r"^workspace: (.+)$", r.stderr, re.M)
+        self.assertIsNotNone(m, r.stderr)
+        ws = m.group(1).strip()
+        self.assertTrue(ws.startswith(tmp_parent), ws)
+        self.assertTrue(os.path.isfile(os.path.join(ws, "cost-audit-report.md")))
+        self.assertTrue(os.path.isfile(os.path.join(ws, "findings.json")))
+        self.assertEqual(fingerprint(SKILL), before, "skill tree changed after default demo run")
+        r2 = run([CONV, "--monitors", os.path.join(DEMO, "monitors.json")], cwd=SKILL, env=env)
+        self.assertEqual(r2.returncode, 0, r2.stderr)
+        m2 = re.search(r"^workspace: (.+)$", r2.stderr, re.M)
+        self.assertIsNotNone(m2, r2.stderr)
+        self.assertTrue(m2.group(1).strip().startswith(tmp_parent))
+        self.assertEqual(fingerprint(SKILL), before, "skill tree changed after default converter run")
+        if os.path.isdir(os.path.join(repo, ".git")):
+            g1 = subprocess.run(["git", "status", "--porcelain", "--", rel],
+                                cwd=repo, capture_output=True, text=True)
+            self.assertEqual(g1.returncode, 0, g1.stderr)
+            self.assertEqual(g1.stdout, before_git, "demo/converter changed git status for the skill")
 
 class MockDatadog(http.server.BaseHTTPRequestHandler):
     seen = []

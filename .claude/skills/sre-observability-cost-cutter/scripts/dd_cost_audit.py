@@ -19,6 +19,7 @@ import json
 import os
 import re
 import sys
+import tempfile
 import time
 import urllib.error
 import urllib.parse
@@ -787,7 +788,8 @@ def main(argv=None):
     p = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     p.add_argument("--input-dir", help="offline mode: read exported JSON from this directory")
     p.add_argument("--save-dir", help="live mode: also save each raw response here for evidence and offline re-runs")
-    p.add_argument("--report", "--out", dest="report", default="cost-audit-report.md")
+    p.add_argument("--report", "--out", dest="report", default=None,
+                   help="Markdown report path (default: a new directory under ${TMPDIR:-/tmp}/obcost-*)")
     p.add_argument("--json", dest="json_out", help="also write findings as JSON")
     p.add_argument("--month", help="usage month YYYY-MM (default: audit_meta.json month offline, else previous month, UTC)")
     p.add_argument("--unqueried-days", type=int, default=30)
@@ -829,6 +831,18 @@ def main(argv=None):
             a.as_of = dt.datetime.strptime(a.as_of, "%Y-%m-%d").replace(tzinfo=dt.timezone.utc)
         except ValueError:
             p.error("--as-of must be YYYY-MM-DD")
+
+    # Default outputs go under ${TMPDIR:-/tmp}, never the cwd or the skill tree.
+    workspace = None
+    if a.report is None:
+        workspace = tempfile.mkdtemp(prefix="obcost-", dir=os.environ.get("TMPDIR") or None)
+        a.report = os.path.join(workspace, "cost-audit-report.md")
+        if a.json_out is None:
+            a.json_out = os.path.join(workspace, "findings.json")
+        if a.save_dir is None and not a.input_dir:
+            a.save_dir = os.path.join(workspace, "raw")
+        print(f"workspace: {workspace}", file=sys.stderr)
+
     a.product_map = None
     if a.product_map_path:
         with open(a.product_map_path) as f:

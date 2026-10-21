@@ -27,20 +27,33 @@ and evaluation date so the report is reproducible:
 
 ## Run the demo
 
-From the skill folder:
+From the skill folder, write the report to a temp workspace (do **not** overwrite the tracked
+`demo/demo-report.md`):
+
+```bash
+W="$(mktemp -d "${TMPDIR:-/tmp}/obcost-demo.XXXXXX")"
+python3 scripts/dd_cost_audit.py --input-dir demo --dollar-estimates --out "$W/demo-report.md"
+echo "wrote $W"
+```
+
+Omitting `--out` also creates a workspace under `${TMPDIR:-/tmp}` and prints `workspace: <path>`.
+
+The committed [demo-report.md](demo-report.md) is a golden copy of that output; the test suite
+regenerates it into a temp path and fails if it differs. The synthetic-data label sits at the top,
+at the bottom and at the start of every top-level section, so any excerpt carries it. Every dollar
+figure in it is a made-up example, labelled with its source and pull date; it is not a
+measurement of any real organization and not a savings claim.
+
+Maintainers refreshing the golden report (only when the demo inputs or report format change):
 
 ```bash
 python3 scripts/dd_cost_audit.py --input-dir demo --dollar-estimates --out demo/demo-report.md
 ```
 
-The committed [demo-report.md](demo-report.md) is the output of exactly that command; the test
-suite regenerates it and fails if it differs. The synthetic-data label sits at the top, at the
-bottom and at the start of every top-level section, so any excerpt carries it. Every dollar
-figure in it is a made-up example, labelled with its source and pull date; it is not a
-measurement of any real organization and not a savings claim.
-
-You can also try the converter on the demo monitors:
+You can also try the converter on the demo monitors (also outside the repo):
 
 ```bash
-python3 scripts/monitors_to_prom.py --monitors demo/monitors.json --out /tmp/demo.rules.yml --report /tmp/demo-conversion.md
+W="$(mktemp -d "${TMPDIR:-/tmp}/obcost-conv.XXXXXX")"
+python3 scripts/monitors_to_prom.py --monitors demo/monitors.json --out "$W/demo.rules.yml" --report "$W/demo-conversion.md"
+echo "wrote $W"
 ```
