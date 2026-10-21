@@ -184,7 +184,7 @@ These skills are operational runbooks. Test every change in non-production first
 
 ## Trademarks
 
-Datadog, Prometheus, Kubernetes, AWS, Google Cloud, Microsoft Azure and PagerDuty are trademarks or registered trademarks of their respective owners. They are used here only to describe compatibility. This project is not affiliated with, sponsored by or endorsed by any of them.
+Datadog, Prometheus, Grafana, Dynatrace, Kubernetes, Amazon EKS, Google Kubernetes Engine, Azure Kubernetes Service, AWS, Google Cloud, Microsoft Azure, PagerDuty, Opsgenie, Atlassian, PostgreSQL, MySQL, MariaDB, Redis, Terraform and HashiCorp are trademarks or registered trademarks of their respective owners. They are used here only to describe compatibility. This project is not affiliated with, sponsored by or endorsed by any of them.
 
 ## Project files
 

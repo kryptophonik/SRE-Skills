@@ -179,3 +179,29 @@ cases:
     prompt: "suggest a few available domain names for a bakery website"
     expect: [none]
     forbid: [sre-expiry-audit]
+
+  # New skills from the commercial port (observability cost cutter, migration safety, k8s upgrade).
+  - id: page-obs-cost-cutter
+    prompt: "Datadog bill is too high, find unused custom metrics and long log retention we can cut"
+    expect: [sre-observability-cost-cutter, sre-cloud-cost-review]
+    forbid: [sre-chaos-engineering, sre-k8s-safe-remediation]
+  - id: negative-obs-cost-monthly-finops
+    prompt: "Help me pick Reserved Instances vs Savings Plans for steady EC2 spend next year"
+    expect: [sre-cloud-cost-review, none]
+    forbid: [sre-observability-cost-cutter]
+  - id: page-migration-safety
+    prompt: "Review this Postgres migration before it merges: ALTER TABLE orders ADD COLUMN note text; CREATE INDEX ON orders(note);"
+    expect: [sre-migration-safety]
+    forbid: [sre-database-triage, sre-k8s-safe-remediation]
+  - id: negative-migration-orm-howto
+    prompt: "write a Django migration that adds a nullable column to the orders table"
+    expect: [none, sre-engineer]
+    forbid: [sre-migration-safety, sre-database-triage]
+  - id: page-k8s-upgrade-eks
+    prompt: "upgrade our EKS cluster to 1.34, what will break?"
+    expect: [sre-k8s-upgrade-autopilot]
+    forbid: [sre-k8s-safe-remediation, sre-chaos-engineering]
+  - id: negative-k8s-upgrade-restart
+    prompt: "The api pods are crashlooping, just restart the deployment."
+    expect: [sre-k8s-triage, sre-engineer]
+    forbid: [sre-k8s-upgrade-autopilot, sre-k8s-safe-remediation]

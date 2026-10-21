@@ -39,7 +39,7 @@ Test in non-production first. The operator approves every change, and this skill
 2. For each finding, check it against the table sizes and traffic from the inputs. Downgrade a finding only when the table is small or idle, and say so.
 3. Read the static checker's blind spots in [references/rules.md](references/rules.md) and review the SQL by hand for them: triggers, partitioned tables, enum changes, and anything the migration tool wraps in its own transaction.
 4. Write the review in the format under **Output**: one entry per risky statement with the rewritten, safe SQL.
-5. Optional, for a change you can't settle from the rules: reproduce it on a throwaway or staging server with the proof scripts (see **Safety gates**). They create a scratch database, test the lock and rewrite behaviour, and drop it.
+5. Optional, for a change you can't settle from the rules: reproduce it on a throwaway or staging server with the proof scripts (see **Skill-specific gates**). They create a scratch database, test the lock and rewrite behaviour, and drop it.
 
 ## Skill-specific gates
 Read-only by default. The checker never connects to a database.
