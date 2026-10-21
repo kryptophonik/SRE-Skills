@@ -1,0 +1,122 @@
+{
+ "data": [
+  {
+   "id": "demo.legacy.importer.rows",
+   "type": "metrics"
+  },
+  {
+   "id": "demo.debug.trace.samples",
+   "type": "metrics"
+  },
+  {
+   "id": "demo.batch.reconcile.duration",
+   "type": "metrics"
+  },
+  {
+   "id": "demo.experiment.flag.evals",
+   "type": "metrics"
+  },
+  {
+   "id": "demo.legacy.importer.errors",
+   "type": "metrics"
+  },
+  {
+   "id": "demo.old.api.v1.calls",
+   "type": "metrics"
+  },
+  {
+   "id": "demo.tmp.migration.progress",
+   "type": "metrics"
+  },
+  {
+   "id": "demo.debug.gc.pauses",
+   "type": "metrics"
+  },
+  {
+   "id": "demo.sandbox.load.test",
+   "type": "metrics"
+  }
+ ],
+ "included": [
+  {
+   "attributes": {
+    "indexed_volume": 11000,
+    "ingested_volume": 0
+   },
+   "id": "demo.legacy.importer.rows",
+   "type": "metric_volumes"
+  },
+  {
+   "attributes": {
+    "indexed_volume": 8800,
+    "ingested_volume": 0
+   },
+   "id": "demo.debug.trace.samples",
+   "type": "metric_volumes"
+  },
+  {
+   "attributes": {
+    "indexed_volume": 6400,
+    "ingested_volume": 0
+   },
+   "id": "demo.batch.reconcile.duration",
+   "type": "metric_volumes"
+  },
+  {
+   "attributes": {
+    "indexed_volume": 4300,
+    "ingested_volume": 0
+   },
+   "id": "demo.experiment.flag.evals",
+   "type": "metric_volumes"
+  },
+  {
+   "attributes": {
+    "indexed_volume": 2100,
+    "ingested_volume": 0
+   },
+   "id": "demo.legacy.importer.errors",
+   "type": "metric_volumes"
+  },
+  {
+   "attributes": {
+    "indexed_volume": 1700,
+    "ingested_volume": 0
+   },
+   "id": "demo.old.api.v1.calls",
+   "type": "metric_volumes"
+  },
+  {
+   "attributes": {
+    "indexed_volume": 900,
+    "ingested_volume": 0
+   },
+   "id": "demo.tmp.migration.progress",
+   "type": "metric_volumes"
+  },
+  {
+   "attributes": {
+    "indexed_volume": 350,
+    "ingested_volume": 0
+   },
+   "id": "demo.debug.gc.pauses",
+   "type": "metric_volumes"
+  },
+  {
+   "attributes": {
+    "indexed_volume": 60,
+    "ingested_volume": 0
+   },
+   "id": "demo.sandbox.load.test",
+   "type": "metric_volumes"
+  }
+ ],
+ "meta": {
+  "pagination": {
+   "cursor": null,
+   "limit": 1000,
+   "next_cursor": null,
+   "type": "cursor_limit"
+  }
+ }
+}

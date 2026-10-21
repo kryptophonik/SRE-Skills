@@ -1,0 +1,1 @@
+[{"ns":"kube-system","name":"coredns","replicas":2,"ready":2,"images":["mcr.microsoft.com/oss/v2/kubernetes/coredns:v1.12.1-1"]}]

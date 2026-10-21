@@ -1,0 +1,50 @@
+{
+ "data": [
+  {
+   "id": "example.legacy.batch.duration",
+   "type": "metrics"
+  },
+  {
+   "id": "example.debug.cache.hits",
+   "type": "metrics"
+  },
+  {
+   "id": "example.tiny.unused",
+   "type": "metrics"
+  }
+ ],
+ "included": [
+  {
+   "attributes": {
+    "indexed_volume": 6000,
+    "ingested_volume": 0
+   },
+   "id": "example.legacy.batch.duration",
+   "type": "metric_volumes"
+  },
+  {
+   "attributes": {
+    "indexed_volume": 1500,
+    "ingested_volume": 0
+   },
+   "id": "example.debug.cache.hits",
+   "type": "metric_volumes"
+  },
+  {
+   "attributes": {
+    "indexed_volume": 20,
+    "ingested_volume": 0
+   },
+   "id": "example.tiny.unused",
+   "type": "metric_volumes"
+  }
+ ],
+ "meta": {
+  "pagination": {
+   "cursor": null,
+   "limit": 1000,
+   "next_cursor": null,
+   "type": "cursor_limit"
+  }
+ }
+}

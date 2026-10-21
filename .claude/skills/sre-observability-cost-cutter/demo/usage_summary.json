@@ -1,0 +1,38 @@
+{
+ "apm_host_top99p_sum": 95,
+ "container_avg_sum": 2100,
+ "custom_ts_sum": 182000,
+ "end_date": "2026-09-30T23:00:00+00:00",
+ "infra_host_top99p_sum": 340,
+ "ingested_events_bytes_agg_sum": 38000000000000,
+ "logs_by_retention": {
+  "usage": [
+   {
+    "logs_indexed_logs_usage_agg_sum": 1400000000,
+    "logs_live_indexed_logs_usage_agg_sum": 1400000000,
+    "logs_rehydrated_indexed_logs_usage_agg_sum": 0,
+    "retention": "3"
+   },
+   {
+    "logs_indexed_logs_usage_agg_sum": 5200000000,
+    "logs_live_indexed_logs_usage_agg_sum": 5200000000,
+    "logs_rehydrated_indexed_logs_usage_agg_sum": 0,
+    "retention": "15"
+   },
+   {
+    "logs_indexed_logs_usage_agg_sum": 1900000000,
+    "logs_live_indexed_logs_usage_agg_sum": 1900000000,
+    "logs_rehydrated_indexed_logs_usage_agg_sum": 0,
+    "retention": "30"
+   },
+   {
+    "logs_indexed_logs_usage_agg_sum": 310000000,
+    "logs_live_indexed_logs_usage_agg_sum": 310000000,
+    "logs_rehydrated_indexed_logs_usage_agg_sum": 0,
+    "retention": "90"
+   }
+  ]
+ },
+ "start_date": "2026-09-01T00:00:00+00:00",
+ "trace_search_indexed_events_count_agg_sum": 1100000000
+}

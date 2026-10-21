@@ -1,0 +1,148 @@
+{
+ "usage": [
+  {
+   "event_count": 500000,
+   "hour": "2026-10-17T00",
+   "index_id": "main-id",
+   "index_name": "main",
+   "org_name": "example-org",
+   "public_id": "abc123",
+   "retention": 15
+  },
+  {
+   "event_count": 500000,
+   "hour": "2026-10-17T01",
+   "index_id": "main-id",
+   "index_name": "main",
+   "org_name": "example-org",
+   "public_id": "abc123",
+   "retention": 15
+  },
+  {
+   "event_count": 500000,
+   "hour": "2026-10-17T02",
+   "index_id": "main-id",
+   "index_name": "main",
+   "org_name": "example-org",
+   "public_id": "abc123",
+   "retention": 15
+  },
+  {
+   "event_count": 500000,
+   "hour": "2026-10-17T03",
+   "index_id": "main-id",
+   "index_name": "main",
+   "org_name": "example-org",
+   "public_id": "abc123",
+   "retention": 15
+  },
+  {
+   "event_count": 300000,
+   "hour": "2026-10-17T00",
+   "index_id": "apps-id",
+   "index_name": "apps",
+   "org_name": "example-org",
+   "public_id": "abc123",
+   "retention": 30
+  },
+  {
+   "event_count": 300000,
+   "hour": "2026-10-17T01",
+   "index_id": "apps-id",
+   "index_name": "apps",
+   "org_name": "example-org",
+   "public_id": "abc123",
+   "retention": 30
+  },
+  {
+   "event_count": 300000,
+   "hour": "2026-10-17T02",
+   "index_id": "apps-id",
+   "index_name": "apps",
+   "org_name": "example-org",
+   "public_id": "abc123",
+   "retention": 30
+  },
+  {
+   "event_count": 300000,
+   "hour": "2026-10-17T03",
+   "index_id": "apps-id",
+   "index_name": "apps",
+   "org_name": "example-org",
+   "public_id": "abc123",
+   "retention": 30
+  },
+  {
+   "event_count": 150000,
+   "hour": "2026-10-17T00",
+   "index_id": "audit-id",
+   "index_name": "audit",
+   "org_name": "example-org",
+   "public_id": "abc123",
+   "retention": 90
+  },
+  {
+   "event_count": 150000,
+   "hour": "2026-10-17T01",
+   "index_id": "audit-id",
+   "index_name": "audit",
+   "org_name": "example-org",
+   "public_id": "abc123",
+   "retention": 90
+  },
+  {
+   "event_count": 150000,
+   "hour": "2026-10-17T02",
+   "index_id": "audit-id",
+   "index_name": "audit",
+   "org_name": "example-org",
+   "public_id": "abc123",
+   "retention": 90
+  },
+  {
+   "event_count": 150000,
+   "hour": "2026-10-17T03",
+   "index_id": "audit-id",
+   "index_name": "audit",
+   "org_name": "example-org",
+   "public_id": "abc123",
+   "retention": 90
+  },
+  {
+   "event_count": 5000,
+   "hour": "2026-10-17T00",
+   "index_id": "security-id",
+   "index_name": "security",
+   "org_name": "example-org",
+   "public_id": "abc123",
+   "retention": 30
+  },
+  {
+   "event_count": 5000,
+   "hour": "2026-10-17T01",
+   "index_id": "security-id",
+   "index_name": "security",
+   "org_name": "example-org",
+   "public_id": "abc123",
+   "retention": 30
+  },
+  {
+   "event_count": 5000,
+   "hour": "2026-10-17T02",
+   "index_id": "security-id",
+   "index_name": "security",
+   "org_name": "example-org",
+   "public_id": "abc123",
+   "retention": 30
+  },
+  {
+   "event_count": 5000,
+   "hour": "2026-10-17T03",
+   "index_id": "security-id",
+   "index_name": "security",
+   "org_name": "example-org",
+   "public_id": "abc123",
+   "retention": 30
+  }
+ ]
+}

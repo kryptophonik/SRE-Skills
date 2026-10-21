@@ -1,0 +1,1 @@
+[{"ns":"kube-system","name":"kindnet","desired":2,"ready":2,"images":["docker.io/kindest/kindnetd:v20251212-v0.29.0-alpha-105-g20ccfc88"]},{"ns":"kube-system","name":"kube-proxy","desired":2,"ready":2,"images":["registry.k8s.io/kube-proxy:v1.31.14"]}]

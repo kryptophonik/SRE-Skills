@@ -1,0 +1,1 @@
+[{"name":"pvc-pg1","zones":["us-central1-a"]},{"name":"pvc-pg2","zones":["us-central1-b"]},{"name":"pvc-pg3","zones":["us-central1-c"]},{"name":"pvc-solo","zones":["us-central1-a"]},{"name":"pvc-k0","zones":["us-central1-a"]},{"name":"pvc-k1","zones":["us-central1-b"]},{"name":"pvc-c0","zones":[]}]

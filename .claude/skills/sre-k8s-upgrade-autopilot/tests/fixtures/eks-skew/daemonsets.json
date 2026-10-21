@@ -1,0 +1,1 @@
+[{"ns":"kube-system","name":"kube-proxy","desired":4,"ready":3,"images":["example.dkr.ecr.us-west-2.amazonaws.com/eks/kube-proxy:v1.28.15-minimal-eksbuild.1"]},{"ns":"kube-system","name":"aws-node","desired":4,"ready":3,"images":["example.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni:v1.19.0-eksbuild.1"]}]

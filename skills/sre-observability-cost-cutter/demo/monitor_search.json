@@ -1,0 +1,192 @@
+{
+ "metadata": {
+  "page": 0,
+  "page_count": 1,
+  "per_page": 100,
+  "total_count": 26
+ },
+ "monitors": [
+  {
+   "id": 5001,
+   "last_triggered_ts": 1789891200,
+   "name": "[frontend] p95 latency high",
+   "status": "OK",
+   "type": "query alert"
+  },
+  {
+   "id": 5002,
+   "last_triggered_ts": 1789891200,
+   "name": "[cart] p95 latency high",
+   "status": "OK",
+   "type": "query alert"
+  },
+  {
+   "id": 5003,
+   "last_triggered_ts": 1789891200,
+   "name": "[catalog] p95 latency high",
+   "status": "OK",
+   "type": "query alert"
+  },
+  {
+   "id": 5004,
+   "last_triggered_ts": 1789891200,
+   "name": "[search] p95 latency high",
+   "status": "OK",
+   "type": "query alert"
+  },
+  {
+   "id": 5005,
+   "last_triggered_ts": 1789718400,
+   "name": "[cart] p95 latency high (old)",
+   "status": "OK",
+   "type": "query alert"
+  },
+  {
+   "id": 5006,
+   "last_triggered_ts": 1789718400,
+   "name": "Cart latency - team view",
+   "status": "OK",
+   "type": "query alert"
+  },
+  {
+   "id": 5007,
+   "last_triggered_ts": 1790668800,
+   "name": "[accounts] error ratio",
+   "status": "OK",
+   "type": "query alert"
+  },
+  {
+   "id": 5008,
+   "last_triggered_ts": 1790668800,
+   "name": "[inventory] error ratio",
+   "status": "OK",
+   "type": "query alert"
+  },
+  {
+   "id": 5009,
+   "last_triggered_ts": 1790668800,
+   "name": "[pricing] error ratio",
+   "status": "OK",
+   "type": "query alert"
+  },
+  {
+   "id": 5010,
+   "last_triggered_ts": 1790668800,
+   "name": "Accounts error ratio (dup)",
+   "status": "OK",
+   "type": "query alert"
+  },
+  {
+   "id": 5011,
+   "last_triggered_ts": null,
+   "name": "[notifications] queue lag",
+   "status": "OK",
+   "type": "query alert"
+  },
+  {
+   "id": 5012,
+   "last_triggered_ts": null,
+   "name": "[inventory] worker jobs stalled",
+   "status": "No Data",
+   "type": "query alert"
+  },
+  {
+   "id": 5013,
+   "last_triggered_ts": 1762070400,
+   "name": "Legacy importer rows dropped",
+   "status": "No Data",
+   "type": "query alert"
+  },
+  {
+   "id": 5014,
+   "last_triggered_ts": null,
+   "name": "Old API v1 traffic spike",
+   "status": "OK",
+   "type": "query alert"
+  },
+  {
+   "id": 5015,
+   "last_triggered_ts": 1773302400,
+   "name": "Migration progress stuck",
+   "status": "No Data",
+   "type": "query alert"
+  },
+  {
+   "id": 5016,
+   "last_triggered_ts": 1790323200,
+   "name": "Search latency anomaly",
+   "status": "OK",
+   "type": "query alert"
+  },
+  {
+   "id": 5017,
+   "last_triggered_ts": 1790496000,
+   "name": "Catalog cache hit rate low",
+   "status": "OK",
+   "type": "query alert"
+  },
+  {
+   "id": 5018,
+   "last_triggered_ts": 1790755200,
+   "name": "Payments 5xx log spike",
+   "status": "OK",
+   "type": "log alert"
+  },
+  {
+   "id": 5019,
+   "last_triggered_ts": null,
+   "name": "Sandbox load test running",
+   "status": "OK",
+   "type": "query alert"
+  },
+  {
+   "id": 5020,
+   "last_triggered_ts": 1789200000,
+   "name": "Frontend request rate drop",
+   "status": "OK",
+   "type": "query alert"
+  },
+  {
+   "id": 5021,
+   "last_triggered_ts": 1790409600,
+   "name": "Pricing DB query slow",
+   "status": "OK",
+   "type": "query alert"
+  },
+  {
+   "id": 5022,
+   "last_triggered_ts": null,
+   "name": "TLS certificate expiry on www.example.com",
+   "status": "OK",
+   "type": "query alert"
+  },
+  {
+   "id": 5023,
+   "last_triggered_ts": null,
+   "name": "Nightly database backup failed",
+   "status": "OK",
+   "type": "query alert"
+  },
+  {
+   "id": 5024,
+   "last_triggered_ts": 1756166400,
+   "name": "Standby region replication lag",
+   "status": "OK",
+   "type": "query alert"
+  },
+  {
+   "id": 5025,
+   "last_triggered_ts": 1784678400,
+   "name": "[search] indexer error rate",
+   "status": "OK",
+   "type": "query alert"
+  },
+  {
+   "id": 5026,
+   "last_triggered_ts": 1788998400,
+   "name": "[pricing] cache refresh slow",
+   "status": "OK",
+   "type": "query alert"
+  }
+ ]
+}

@@ -1,0 +1,1 @@
+[{"ns":"default","service":"kubernetes","ready":1},{"ns":"kube-system","service":"kube-dns","ready":2}]

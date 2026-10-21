@@ -1,0 +1,1 @@
+[{"name":"v1.apps","service":null,"available":"True","reason":"Local"},{"name":"v1beta1.metrics.k8s.io","service":{"namespace":"kube-system","name":"metrics-server","port":443},"available":"False","reason":"MissingEndpoints"}]

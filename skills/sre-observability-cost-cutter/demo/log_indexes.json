@@ -1,0 +1,129 @@
+{
+ "indexes": [
+  {
+   "daily_limit": null,
+   "exclusion_filters": [],
+   "filter": {
+    "query": "*"
+   },
+   "is_rate_limited": false,
+   "name": "main",
+   "num_flex_logs_retention_days": null,
+   "num_retention_days": 15,
+   "tags": [
+    "owner:platform"
+   ]
+  },
+  {
+   "daily_limit": null,
+   "exclusion_filters": [],
+   "filter": {
+    "query": "source:web-proxy OR source:edge-proxy"
+   },
+   "is_rate_limited": false,
+   "name": "web-access",
+   "num_flex_logs_retention_days": null,
+   "num_retention_days": 15,
+   "tags": [
+    "owner:platform"
+   ]
+  },
+  {
+   "daily_limit": 20000000,
+   "exclusion_filters": [
+    {
+     "filter": {
+      "query": "@http.status_code:[200 TO 299]",
+      "sample_rate": 0.8
+     },
+     "is_enabled": true,
+     "name": "sample 2xx"
+    }
+   ],
+   "filter": {
+    "query": "service:(cart OR accounts)"
+   },
+   "is_rate_limited": false,
+   "name": "payments",
+   "num_flex_logs_retention_days": null,
+   "num_retention_days": 30,
+   "tags": [
+    "owner:platform"
+   ]
+  },
+  {
+   "daily_limit": null,
+   "exclusion_filters": [
+    {
+     "filter": {
+      "query": "@reason:(Scheduled OR Pulled OR Created OR Started)",
+      "sample_rate": 1.0
+     },
+     "is_enabled": false,
+     "name": "drop normal events"
+    }
+   ],
+   "filter": {
+    "query": "source:cluster-agent"
+   },
+   "is_rate_limited": false,
+   "name": "cluster-events",
+   "num_flex_logs_retention_days": null,
+   "num_retention_days": 30,
+   "tags": [
+    "owner:platform"
+   ]
+  },
+  {
+   "daily_limit": null,
+   "exclusion_filters": [],
+   "filter": {
+    "query": "status:debug"
+   },
+   "is_rate_limited": false,
+   "name": "debug",
+   "num_flex_logs_retention_days": null,
+   "num_retention_days": 3,
+   "tags": [
+    "owner:platform"
+   ]
+  },
+  {
+   "daily_limit": null,
+   "exclusion_filters": [
+    {
+     "filter": {
+      "query": "@http.url_details.path:/healthz",
+      "sample_rate": 1.0
+     },
+     "is_enabled": true,
+     "name": "drop health probes"
+    }
+   ],
+   "filter": {
+    "query": "source:audit"
+   },
+   "is_rate_limited": false,
+   "name": "audit",
+   "num_flex_logs_retention_days": null,
+   "num_retention_days": 90,
+   "tags": [
+    "owner:platform"
+   ]
+  },
+  {
+   "daily_limit": null,
+   "exclusion_filters": [],
+   "filter": {
+    "query": "source:(firewall OR sign-in)"
+   },
+   "is_rate_limited": false,
+   "name": "security",
+   "num_flex_logs_retention_days": null,
+   "num_retention_days": 90,
+   "tags": [
+    "owner:platform"
+   ]
+  }
+ ]
+}

@@ -1,0 +1,70 @@
+{
+ "indexes": [
+  {
+   "daily_limit": null,
+   "exclusion_filters": [],
+   "filter": {
+    "query": "*"
+   },
+   "is_rate_limited": false,
+   "name": "main",
+   "num_flex_logs_retention_days": null,
+   "num_retention_days": 15,
+   "tags": []
+  },
+  {
+   "daily_limit": null,
+   "exclusion_filters": [
+    {
+     "filter": {
+      "query": "status:debug",
+      "sample_rate": 1.0
+     },
+     "is_enabled": false,
+     "name": "drop debug"
+    }
+   ],
+   "filter": {
+    "query": "service:example-*"
+   },
+   "is_rate_limited": false,
+   "name": "apps",
+   "num_flex_logs_retention_days": null,
+   "num_retention_days": 30,
+   "tags": []
+  },
+  {
+   "daily_limit": 5000000,
+   "exclusion_filters": [
+    {
+     "filter": {
+      "query": "@http.url_details.path:/health",
+      "sample_rate": 0.9
+     },
+     "is_enabled": true,
+     "name": "sample health checks"
+    }
+   ],
+   "filter": {
+    "query": "source:audit"
+   },
+   "is_rate_limited": false,
+   "name": "audit",
+   "num_flex_logs_retention_days": null,
+   "num_retention_days": 90,
+   "tags": []
+  },
+  {
+   "daily_limit": null,
+   "exclusion_filters": [],
+   "filter": {
+    "query": "source:security"
+   },
+   "is_rate_limited": false,
+   "name": "security",
+   "num_flex_logs_retention_days": null,
+   "num_retention_days": 30,
+   "tags": []
+  }
+ ]
+}

@@ -1,0 +1,8 @@
+{
+ "as_of": "2026-10-01",
+ "label": "Example Corp is a fictional org invented for this demo. Every metric, index, monitor, volume and dollar amount was generated; none of it describes a real company, tenant or account.",
+ "month": "2026-09",
+ "org": "Example Corp",
+ "pulled_at": "2026-10-01T14:00:00Z",
+ "synthetic": true
+}

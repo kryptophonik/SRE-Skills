@@ -1,0 +1,26 @@
+{
+ "apm_host_top99p_sum": 40,
+ "container_avg_sum": 600,
+ "custom_ts_sum": 50000,
+ "end_date": "2026-09-30T23:00:00+00:00",
+ "infra_host_top99p_sum": 120,
+ "ingested_events_bytes_agg_sum": 5000000000000,
+ "logs_by_retention": {
+  "usage": [
+   {
+    "logs_indexed_logs_usage_agg_sum": 900000000,
+    "logs_live_indexed_logs_usage_agg_sum": 900000000,
+    "logs_rehydrated_indexed_logs_usage_agg_sum": 0,
+    "retention": "15"
+   },
+   {
+    "logs_indexed_logs_usage_agg_sum": 300000000,
+    "logs_live_indexed_logs_usage_agg_sum": 300000000,
+    "logs_rehydrated_indexed_logs_usage_agg_sum": 0,
+    "retention": "30"
+   }
+  ]
+ },
+ "start_date": "2026-09-01T00:00:00+00:00",
+ "trace_search_indexed_events_count_agg_sum": 200000000
+}

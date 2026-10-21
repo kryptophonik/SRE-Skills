@@ -1,0 +1,1 @@
+[{"ns":"stream","name":"kafka","replicas":2,"ready":2,"images":["docker.io/bitnami/kafka:3.7"]},{"ns":"stream","name":"cache","replicas":1,"ready":1,"images":["docker.io/library/redis:7.2"]}]

@@ -1,0 +1,72 @@
+{
+ "data": [
+  {
+   "attributes": {
+    "charges": [
+     {
+      "charge_type": "committed",
+      "cost": 3000.0,
+      "product_name": "infra_host"
+     },
+     {
+      "charge_type": "on_demand",
+      "cost": 0.0,
+      "product_name": "infra_host"
+     },
+     {
+      "charge_type": "total",
+      "cost": 3000.0,
+      "product_name": "infra_host"
+     },
+     {
+      "charge_type": "total",
+      "cost": 1500.0,
+      "product_name": "apm_host"
+     },
+     {
+      "charge_type": "committed",
+      "cost": 1500.0,
+      "product_name": "apm_host"
+     },
+     {
+      "charge_type": "total",
+      "cost": 2500.0,
+      "product_name": "custom_metrics"
+     },
+     {
+      "charge_type": "on_demand",
+      "cost": 2500.0,
+      "product_name": "custom_metrics"
+     },
+     {
+      "charge_type": "total",
+      "cost": 1000.0,
+      "product_name": "logs_ingested"
+     },
+     {
+      "charge_type": "total",
+      "cost": 1200.0,
+      "product_name": "logs_indexed_15day"
+     },
+     {
+      "charge_type": "total",
+      "cost": 600.0,
+      "product_name": "logs_indexed_30day"
+     },
+     {
+      "charge_type": "total",
+      "cost": 200.0,
+      "product_name": "logs_indexed_90day"
+     }
+    ],
+    "date": "2026-09-01T00:00:00Z",
+    "org_name": "example-org",
+    "public_id": "abc123",
+    "region": "us",
+    "total_cost": 10000.0
+   },
+   "id": "example",
+   "type": "cost_by_org"
+  }
+ ]
+}

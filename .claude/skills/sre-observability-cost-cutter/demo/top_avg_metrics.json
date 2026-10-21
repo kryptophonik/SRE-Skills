@@ -1,0 +1,354 @@
+{
+ "metadata": {
+  "month": "2026-09-01T00:00:00Z",
+  "pagination": {
+   "limit": 500,
+   "next_record_id": null,
+   "total_number_of_records": 57
+  }
+ },
+ "usage": [
+  {
+   "avg_metric_hour": 16000,
+   "max_metric_hour": 20000,
+   "metric_category": "custom",
+   "metric_name": "demo.search.request.duration"
+  },
+  {
+   "avg_metric_hour": 12500,
+   "max_metric_hour": 15625,
+   "metric_category": "custom",
+   "metric_name": "demo.cart.request.duration"
+  },
+  {
+   "avg_metric_hour": 11000,
+   "max_metric_hour": 13750,
+   "metric_category": "custom",
+   "metric_name": "demo.legacy.importer.rows"
+  },
+  {
+   "avg_metric_hour": 9800,
+   "max_metric_hour": 12250,
+   "metric_category": "custom",
+   "metric_name": "demo.frontend.request.count"
+  },
+  {
+   "avg_metric_hour": 8800,
+   "max_metric_hour": 11000,
+   "metric_category": "custom",
+   "metric_name": "demo.debug.trace.samples"
+  },
+  {
+   "avg_metric_hour": 7800,
+   "max_metric_hour": 9750,
+   "metric_category": "custom",
+   "metric_name": "demo.frontend.worker.jobs"
+  },
+  {
+   "avg_metric_hour": 7800,
+   "max_metric_hour": 9750,
+   "metric_category": "custom",
+   "metric_name": "demo.catalog.request.duration"
+  },
+  {
+   "avg_metric_hour": 7800,
+   "max_metric_hour": 9750,
+   "metric_category": "custom",
+   "metric_name": "demo.pricing.request.duration"
+  },
+  {
+   "avg_metric_hour": 7800,
+   "max_metric_hour": 9750,
+   "metric_category": "custom",
+   "metric_name": "demo.pricing.db.query.time"
+  },
+  {
+   "avg_metric_hour": 7400,
+   "max_metric_hour": 9250,
+   "metric_category": "custom",
+   "metric_name": "demo.catalog.db.query.time"
+  },
+  {
+   "avg_metric_hour": 6400,
+   "max_metric_hour": 8000,
+   "metric_category": "custom",
+   "metric_name": "demo.batch.reconcile.duration"
+  },
+  {
+   "avg_metric_hour": 5200,
+   "max_metric_hour": 6500,
+   "metric_category": "custom",
+   "metric_name": "demo.frontend.db.query.time"
+  },
+  {
+   "avg_metric_hour": 5200,
+   "max_metric_hour": 6500,
+   "metric_category": "custom",
+   "metric_name": "demo.cart.queue.lag"
+  },
+  {
+   "avg_metric_hour": 5200,
+   "max_metric_hour": 6500,
+   "metric_category": "custom",
+   "metric_name": "demo.accounts.cache.hits"
+  },
+  {
+   "avg_metric_hour": 5200,
+   "max_metric_hour": 6500,
+   "metric_category": "custom",
+   "metric_name": "demo.inventory.worker.jobs"
+  },
+  {
+   "avg_metric_hour": 4300,
+   "max_metric_hour": 5375,
+   "metric_category": "custom",
+   "metric_name": "demo.experiment.flag.evals"
+  },
+  {
+   "avg_metric_hour": 3600,
+   "max_metric_hour": 4500,
+   "metric_category": "custom",
+   "metric_name": "demo.frontend.cache.hits"
+  },
+  {
+   "avg_metric_hour": 3600,
+   "max_metric_hour": 4500,
+   "metric_category": "custom",
+   "metric_name": "demo.notifications.worker.jobs"
+  },
+  {
+   "avg_metric_hour": 3600,
+   "max_metric_hour": 4500,
+   "metric_category": "custom",
+   "metric_name": "demo.inventory.request.count"
+  },
+  {
+   "avg_metric_hour": 2400,
+   "max_metric_hour": 3000,
+   "metric_category": "custom",
+   "metric_name": "demo.search.queue.lag"
+  },
+  {
+   "avg_metric_hour": 2400,
+   "max_metric_hour": 3000,
+   "metric_category": "custom",
+   "metric_name": "demo.search.cache.hits"
+  },
+  {
+   "avg_metric_hour": 2400,
+   "max_metric_hour": 3000,
+   "metric_category": "custom",
+   "metric_name": "demo.inventory.cache.hits"
+  },
+  {
+   "avg_metric_hour": 2400,
+   "max_metric_hour": 3000,
+   "metric_category": "custom",
+   "metric_name": "demo.pricing.request.count"
+  },
+  {
+   "avg_metric_hour": 2400,
+   "max_metric_hour": 3000,
+   "metric_category": "custom",
+   "metric_name": "demo.pricing.worker.jobs"
+  },
+  {
+   "avg_metric_hour": 2100,
+   "max_metric_hour": 2625,
+   "metric_category": "custom",
+   "metric_name": "demo.legacy.importer.errors"
+  },
+  {
+   "avg_metric_hour": 1700,
+   "max_metric_hour": 2125,
+   "metric_category": "custom",
+   "metric_name": "demo.old.api.v1.calls"
+  },
+  {
+   "avg_metric_hour": 1500,
+   "max_metric_hour": 1875,
+   "metric_category": "custom",
+   "metric_name": "demo.catalog.worker.jobs"
+  },
+  {
+   "avg_metric_hour": 1500,
+   "max_metric_hour": 1875,
+   "metric_category": "custom",
+   "metric_name": "demo.notifications.request.duration"
+  },
+  {
+   "avg_metric_hour": 1500,
+   "max_metric_hour": 1875,
+   "metric_category": "custom",
+   "metric_name": "demo.inventory.request.duration"
+  },
+  {
+   "avg_metric_hour": 1500,
+   "max_metric_hour": 1875,
+   "metric_category": "custom",
+   "metric_name": "demo.inventory.db.query.time"
+  },
+  {
+   "avg_metric_hour": 900,
+   "max_metric_hour": 1125,
+   "metric_category": "custom",
+   "metric_name": "demo.frontend.queue.lag"
+  },
+  {
+   "avg_metric_hour": 900,
+   "max_metric_hour": 1125,
+   "metric_category": "custom",
+   "metric_name": "demo.accounts.request.count"
+  },
+  {
+   "avg_metric_hour": 900,
+   "max_metric_hour": 1125,
+   "metric_category": "custom",
+   "metric_name": "demo.notifications.queue.lag"
+  },
+  {
+   "avg_metric_hour": 900,
+   "max_metric_hour": 1125,
+   "metric_category": "custom",
+   "metric_name": "demo.search.worker.jobs"
+  },
+  {
+   "avg_metric_hour": 900,
+   "max_metric_hour": 1125,
+   "metric_category": "custom",
+   "metric_name": "demo.tmp.migration.progress"
+  },
+  {
+   "avg_metric_hour": 600,
+   "max_metric_hour": 750,
+   "metric_category": "custom",
+   "metric_name": "demo.accounts.db.query.time"
+  },
+  {
+   "avg_metric_hour": 600,
+   "max_metric_hour": 750,
+   "metric_category": "custom",
+   "metric_name": "demo.accounts.worker.jobs"
+  },
+  {
+   "avg_metric_hour": 600,
+   "max_metric_hour": 750,
+   "metric_category": "custom",
+   "metric_name": "demo.search.request.count"
+  },
+  {
+   "avg_metric_hour": 350,
+   "max_metric_hour": 437,
+   "metric_category": "custom",
+   "metric_name": "demo.debug.gc.pauses"
+  },
+  {
+   "avg_metric_hour": 300,
+   "max_metric_hour": 375,
+   "metric_category": "custom",
+   "metric_name": "demo.frontend.request.duration"
+  },
+  {
+   "avg_metric_hour": 300,
+   "max_metric_hour": 375,
+   "metric_category": "custom",
+   "metric_name": "demo.cart.db.query.time"
+  },
+  {
+   "avg_metric_hour": 300,
+   "max_metric_hour": 375,
+   "metric_category": "custom",
+   "metric_name": "demo.accounts.request.duration"
+  },
+  {
+   "avg_metric_hour": 300,
+   "max_metric_hour": 375,
+   "metric_category": "custom",
+   "metric_name": "demo.accounts.queue.lag"
+  },
+  {
+   "avg_metric_hour": 300,
+   "max_metric_hour": 375,
+   "metric_category": "custom",
+   "metric_name": "demo.notifications.request.count"
+  },
+  {
+   "avg_metric_hour": 300,
+   "max_metric_hour": 375,
+   "metric_category": "custom",
+   "metric_name": "demo.notifications.db.query.time"
+  },
+  {
+   "avg_metric_hour": 150,
+   "max_metric_hour": 187,
+   "metric_category": "custom",
+   "metric_name": "demo.cart.cache.hits"
+  },
+  {
+   "avg_metric_hour": 150,
+   "max_metric_hour": 187,
+   "metric_category": "custom",
+   "metric_name": "demo.catalog.request.count"
+  },
+  {
+   "avg_metric_hour": 150,
+   "max_metric_hour": 187,
+   "metric_category": "custom",
+   "metric_name": "demo.catalog.cache.hits"
+  },
+  {
+   "avg_metric_hour": 150,
+   "max_metric_hour": 187,
+   "metric_category": "custom",
+   "metric_name": "demo.search.db.query.time"
+  },
+  {
+   "avg_metric_hour": 80,
+   "max_metric_hour": 100,
+   "metric_category": "custom",
+   "metric_name": "demo.cart.request.count"
+  },
+  {
+   "avg_metric_hour": 80,
+   "max_metric_hour": 100,
+   "metric_category": "custom",
+   "metric_name": "demo.cart.worker.jobs"
+  },
+  {
+   "avg_metric_hour": 80,
+   "max_metric_hour": 100,
+   "metric_category": "custom",
+   "metric_name": "demo.pricing.queue.lag"
+  },
+  {
+   "avg_metric_hour": 80,
+   "max_metric_hour": 100,
+   "metric_category": "custom",
+   "metric_name": "demo.pricing.cache.hits"
+  },
+  {
+   "avg_metric_hour": 60,
+   "max_metric_hour": 75,
+   "metric_category": "custom",
+   "metric_name": "demo.sandbox.load.test"
+  },
+  {
+   "avg_metric_hour": 40,
+   "max_metric_hour": 50,
+   "metric_category": "custom",
+   "metric_name": "demo.catalog.queue.lag"
+  },
+  {
+   "avg_metric_hour": 40,
+   "max_metric_hour": 50,
+   "metric_category": "custom",
+   "metric_name": "demo.notifications.cache.hits"
+  },
+  {
+   "avg_metric_hour": 40,
+   "max_metric_hour": 50,
+   "metric_category": "custom",
+   "metric_name": "demo.inventory.queue.lag"
+  }
+ ]
+}

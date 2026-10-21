@@ -1,0 +1,1 @@
+[{"ns":"","name":"system-leader-election","last_applied":"","writers":[{"manager":"api-priority-and-fairness-config-producer-v1","api_version":"flowcontrol.apiserver.k8s.io/v1"}]}]

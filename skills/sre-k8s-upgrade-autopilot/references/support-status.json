@@ -1,0 +1,63 @@
+{
+  "checked": "2026-10-18",
+  "note": "Support dates per Kubernetes minor, copied from the linked pages on the checked date. Dates are YYYY-MM-DD, YYYY-MM (month only, as AKS publishes them) or YYYY-Qn (a GKE estimate). Re-check before quoting; providers move dates.",
+  "sources": {
+    "upstream": "https://kubernetes.io/releases/",
+    "eks": "https://docs.aws.amazon.com/eks/latest/userguide/kubernetes-versions.html",
+    "eks_pricing": "https://aws.amazon.com/eks/pricing/",
+    "gke": "https://cloud.google.com/kubernetes-engine/docs/release-schedule",
+    "gke_pricing": "https://cloud.google.com/kubernetes-engine/pricing",
+    "aks": "https://learn.microsoft.com/en-us/azure/aks/supported-kubernetes-versions",
+    "aks_lts": "https://learn.microsoft.com/en-us/azure/aks/long-term-support",
+    "aks_pricing": "https://azure.microsoft.com/en-us/pricing/details/kubernetes-service/",
+    "kubeadm_coredns": "https://github.com/kubernetes/kubernetes/blob/release-1.32/cmd/kubeadm/app/constants/constants.go"
+  },
+  "upstream_eol": {
+    "1.22": "2022-12-08", "1.23": "2023-02-28", "1.24": "2023-07-28", "1.25": "2023-10-28", "1.26": "2024-02-28",
+    "1.27": "2024-07-16", "1.28": "2024-10-22", "1.29": "2025-02-28", "1.30": "2025-07-15", "1.31": "2025-11-11",
+    "1.32": "2026-02-28", "1.33": "2026-06-28", "1.34": "2026-10-27", "1.35": "2027-02-28", "1.36": "2027-06-28",
+    "1.37": "2027-10-28"
+  },
+  "eks": {
+    "per_cluster_hour_usd": {"standard": 0.10, "extended": 0.60},
+    "versions": {
+      "1.31": {"end_standard": "2025-11-26", "end_extended": "2026-11-26"},
+      "1.32": {"end_standard": "2026-03-23", "end_extended": "2027-03-23"},
+      "1.33": {"end_standard": "2026-07-29", "end_extended": "2027-07-29"},
+      "1.34": {"end_standard": "2026-12-02", "end_extended": "2027-12-02"},
+      "1.35": {"end_standard": "2027-03-27", "end_extended": "2028-03-27"},
+      "1.36": {"end_standard": "2027-08-02", "end_extended": "2028-08-02"},
+      "1.37": {"end_standard": "2027-12-01", "end_extended": "2028-12-01"}
+    }
+  },
+  "gke": {
+    "per_cluster_hour_usd": {"standard": 0.10, "extended": 0.60},
+    "versions": {
+      "1.30": {"end_standard": "2025-09-30", "end_extended": "2026-07-30"},
+      "1.31": {"end_standard": "2026-01-16", "end_extended": "2026-10-22"},
+      "1.32": {"end_standard": "2026-04-27", "end_extended": "2027-02-11"},
+      "1.33": {"end_standard": "2026-08-12", "end_extended": "2027-06-12"},
+      "1.34": {"end_standard": "2027-01-25", "end_extended": "2027-11-25"},
+      "1.35": {"end_standard": "2027-04-11", "end_extended": "2028-02-11"},
+      "1.36": {"end_standard": "2027-08-09", "end_extended": "2028-06-09"},
+      "1.37": {"end_standard": "2027-Q4", "end_extended": "2028-Q4"}
+    }
+  },
+  "aks": {
+    "per_cluster_hour_usd": {"standard": 0.10, "lts": 0.60},
+    "versions": {
+      "1.30": {"end_standard": "2025-08-22", "end_lts": "2026-07"},
+      "1.31": {"end_standard": "2025-11-01", "end_lts": "2026-11"},
+      "1.32": {"end_standard": "2026-03", "end_lts": "2027-03"},
+      "1.33": {"end_standard": "2026-07", "end_lts": "2027-07"},
+      "1.34": {"end_standard": "2026-11", "end_lts": "2027-11"},
+      "1.35": {"end_standard": "2027-03", "end_lts": "2028-03"},
+      "1.36": {"end_standard": "2027-06", "end_lts": "2028-06"},
+      "1.37": {"end_standard": "2027-10", "end_lts": "2028-10"}
+    }
+  },
+  "kubeadm_coredns": {
+    "1.30": "v1.11.3", "1.31": "v1.11.3", "1.32": "v1.11.3", "1.33": "v1.12.0", "1.34": "v1.12.1",
+    "1.35": "v1.13.1", "1.36": "v1.14.2", "1.37": "v1.14.6"
+  }
+}

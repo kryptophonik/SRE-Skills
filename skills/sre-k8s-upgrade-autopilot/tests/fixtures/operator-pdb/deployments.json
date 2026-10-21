@@ -1,0 +1,1 @@
+[{"ns":"shop","name":"cart","replicas":3,"ready":3,"images":["example.com/shop/cart:1.0.0"]}]

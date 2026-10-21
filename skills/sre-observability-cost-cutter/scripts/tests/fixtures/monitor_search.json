@@ -1,0 +1,73 @@
+{
+ "metadata": {
+  "page": 0,
+  "page_count": 1,
+  "per_page": 100,
+  "total_count": 9
+ },
+ "monitors": [
+  {
+   "id": 1001,
+   "last_triggered_ts": 1791633600,
+   "name": "High CPU on {{host.name}}",
+   "status": "OK",
+   "type": "query alert"
+  },
+  {
+   "id": 1002,
+   "last_triggered_ts": 1791633600,
+   "name": "CPU high (copy)",
+   "status": "OK",
+   "type": "query alert"
+  },
+  {
+   "id": 1003,
+   "last_triggered_ts": null,
+   "name": "Checkout error ratio",
+   "status": "OK",
+   "type": "query alert"
+  },
+  {
+   "id": 1004,
+   "last_triggered_ts": null,
+   "name": "Queue depth growing",
+   "status": "OK",
+   "type": "query alert"
+  },
+  {
+   "id": 1005,
+   "last_triggered_ts": 1768478400,
+   "name": "Latency anomaly",
+   "status": "OK",
+   "type": "query alert"
+  },
+  {
+   "id": 1006,
+   "last_triggered_ts": null,
+   "name": "Batch job silent",
+   "status": "No Data",
+   "type": "query alert"
+  },
+  {
+   "id": 1007,
+   "last_triggered_ts": 1792065600,
+   "name": "Error logs spike",
+   "status": "OK",
+   "type": "log alert"
+  },
+  {
+   "id": 1008,
+   "last_triggered_ts": 1791979200,
+   "name": "Disk almost full",
+   "status": "OK",
+   "type": "query alert"
+  },
+  {
+   "id": 1009,
+   "last_triggered_ts": 1791806400,
+   "name": "Request rate drop",
+   "status": "OK",
+   "type": "query alert"
+  }
+ ]
+}

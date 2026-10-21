@@ -1,0 +1,1 @@
+[{"name":"kube-proxy","want":3,"ready":3},{"name":"aws-node","want":3,"ready":2}]

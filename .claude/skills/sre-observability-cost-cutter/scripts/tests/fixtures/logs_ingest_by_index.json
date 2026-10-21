@@ -1,0 +1,136 @@
+{
+ "res_type": "time_series",
+ "series": [
+  {
+   "metric": "datadog.estimated_usage.logs.ingested_events",
+   "pointlist": [
+    [
+     1760000000000,
+     500000
+    ],
+    [
+     1760003600000,
+     500000
+    ],
+    [
+     1760007200000,
+     500000
+    ],
+    [
+     1760010800000,
+     500000
+    ]
+   ],
+   "scope": "datadog_index:main,datadog_is_excluded:false",
+   "tag_set": [
+    "datadog_index:main",
+    "datadog_is_excluded:false"
+   ]
+  },
+  {
+   "metric": "datadog.estimated_usage.logs.ingested_events",
+   "pointlist": [
+    [
+     1760000000000,
+     300000
+    ],
+    [
+     1760003600000,
+     300000
+    ],
+    [
+     1760007200000,
+     300000
+    ],
+    [
+     1760010800000,
+     300000
+    ]
+   ],
+   "scope": "datadog_index:apps,datadog_is_excluded:false",
+   "tag_set": [
+    "datadog_index:apps",
+    "datadog_is_excluded:false"
+   ]
+  },
+  {
+   "metric": "datadog.estimated_usage.logs.ingested_events",
+   "pointlist": [
+    [
+     1760000000000,
+     150000
+    ],
+    [
+     1760003600000,
+     150000
+    ],
+    [
+     1760007200000,
+     150000
+    ],
+    [
+     1760010800000,
+     150000
+    ]
+   ],
+   "scope": "datadog_index:audit,datadog_is_excluded:false",
+   "tag_set": [
+    "datadog_index:audit",
+    "datadog_is_excluded:false"
+   ]
+  },
+  {
+   "metric": "datadog.estimated_usage.logs.ingested_events",
+   "pointlist": [
+    [
+     1760000000000,
+     1350000
+    ],
+    [
+     1760003600000,
+     1350000
+    ],
+    [
+     1760007200000,
+     1350000
+    ],
+    [
+     1760010800000,
+     1350000
+    ]
+   ],
+   "scope": "datadog_index:audit,datadog_is_excluded:true",
+   "tag_set": [
+    "datadog_index:audit",
+    "datadog_is_excluded:true"
+   ]
+  },
+  {
+   "metric": "datadog.estimated_usage.logs.ingested_events",
+   "pointlist": [
+    [
+     1760000000000,
+     5000
+    ],
+    [
+     1760003600000,
+     5000
+    ],
+    [
+     1760007200000,
+     5000
+    ],
+    [
+     1760010800000,
+     5000
+    ]
+   ],
+   "scope": "datadog_index:security,datadog_is_excluded:false",
+   "tag_set": [
+    "datadog_index:security",
+    "datadog_is_excluded:false"
+   ]
+  }
+ ],
+ "status": "ok"
+}

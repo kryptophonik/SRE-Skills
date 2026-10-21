@@ -1,0 +1,225 @@
+[
+ {
+  "created": "2025-01-10T00:00:00.000000+00:00",
+  "id": 1001,
+  "message": "{{#is_alert}}CPU is {{value}}% on {{host.name}} (threshold {{threshold}}).{{/is_alert}} @pagerduty-example-team",
+  "modified": "2025-01-10T00:00:00.000000+00:00",
+  "name": "High CPU on {{host.name}}",
+  "options": {
+   "notify_no_data": false,
+   "thresholds": {
+    "critical": 90,
+    "warning": 80
+   }
+  },
+  "overall_state": "OK",
+  "priority": 2,
+  "query": "avg(last_5m):avg:system.cpu.user{env:prod,service:example-api} by {host} > 90",
+  "tags": [
+   "team:example"
+  ],
+  "type": "query alert"
+ },
+ {
+  "created": "2025-01-10T00:00:00.000000+00:00",
+  "id": 1002,
+  "message": "Duplicate of the CPU monitor @slack-example-alerts",
+  "modified": "2025-01-10T00:00:00.000000+00:00",
+  "name": "CPU high (copy)",
+  "options": {
+   "notify_no_data": false,
+   "thresholds": {
+    "critical": 90,
+    "warning": 80
+   }
+  },
+  "overall_state": "OK",
+  "priority": null,
+  "query": "avg(last_5m):avg:system.cpu.user{service:example-api, env:prod} by {host} > 90",
+  "tags": [
+   "team:example"
+  ],
+  "type": "query alert"
+ },
+ {
+  "created": "2026-09-20T00:00:00+00:00",
+  "id": 1003,
+  "message": "Error ratio is {{value}}. Runbook: https://runbooks.example.com/checkout",
+  "modified": "2026-09-20T00:00:00+00:00",
+  "name": "Checkout error ratio",
+  "options": {
+   "notify_no_data": false,
+   "thresholds": {
+    "critical": 0.05
+   }
+  },
+  "overall_state": "OK",
+  "priority": null,
+  "query": "sum(last_5m):sum:trace.http.request.errors{env:prod,service:example-checkout}.as_count() / sum:trace.http.request.hits{env:prod,service:example-checkout}.as_count() > 0.05",
+  "tags": [
+   "team:example"
+  ],
+  "type": "query alert"
+ },
+ {
+  "created": "2025-01-10T00:00:00.000000+00:00",
+  "id": 1004,
+  "message": "Queue grew by {{value}} in an hour.",
+  "modified": "2025-01-10T00:00:00.000000+00:00",
+  "name": "Queue depth growing",
+  "options": {
+   "notify_no_data": false,
+   "thresholds": {
+    "critical": 1000
+   }
+  },
+  "overall_state": "OK",
+  "priority": null,
+  "query": "change(avg(last_10m),1h_ago):max:example.queue.depth{env:prod,queue:orders} > 1000",
+  "tags": [
+   "team:example"
+  ],
+  "type": "query alert"
+ },
+ {
+  "created": "2025-01-10T00:00:00.000000+00:00",
+  "id": 1005,
+  "message": "Anomalous latency",
+  "modified": "2025-01-10T00:00:00.000000+00:00",
+  "name": "Latency anomaly",
+  "options": {
+   "notify_no_data": false,
+   "thresholds": {
+    "critical": 1
+   }
+  },
+  "overall_state": "OK",
+  "priority": null,
+  "query": "avg(last_15m):anomalies(avg:example.http.request.latency{env:prod}, 'agile', 2) >= 1",
+  "tags": [
+   "team:example"
+  ],
+  "type": "query alert"
+ },
+ {
+  "created": "2025-01-10T00:00:00.000000+00:00",
+  "id": 1006,
+  "message": "Batch runs too long",
+  "modified": "2025-01-10T00:00:00.000000+00:00",
+  "name": "Batch job silent",
+  "options": {
+   "evaluation_delay": 300,
+   "no_data_timeframe": 60,
+   "notify_no_data": true,
+   "thresholds": {
+    "critical": 3600
+   }
+  },
+  "overall_state": "No Data",
+  "priority": null,
+  "query": "max(last_30m):sum:example.legacy.batch.duration{env:prod,job IN (nightly,hourly)} > 3600",
+  "tags": [
+   "team:example"
+  ],
+  "type": "query alert"
+ },
+ {
+  "created": "2025-01-10T00:00:00.000000+00:00",
+  "id": 1007,
+  "message": "Too many error logs",
+  "modified": "2025-01-10T00:00:00.000000+00:00",
+  "name": "Error logs spike",
+  "options": {
+   "notify_no_data": false,
+   "thresholds": {
+    "critical": 100
+   }
+  },
+  "overall_state": "OK",
+  "priority": null,
+  "query": "logs(\"status:error env:prod\").index(\"*\").rollup(\"count\").last(\"5m\") > 100",
+  "tags": [
+   "team:example"
+  ],
+  "type": "log alert"
+ },
+ {
+  "created": "2025-01-10T00:00:00.000000+00:00",
+  "id": 1008,
+  "message": "Disk {{device.name}} on {{host.name}} at {{value}}",
+  "modified": "2025-01-10T00:00:00.000000+00:00",
+  "name": "Disk almost full",
+  "options": {
+   "notify_no_data": false,
+   "thresholds": {
+    "critical": 0.9
+   }
+  },
+  "overall_state": "OK",
+  "priority": null,
+  "query": "max(last_5m):max:system.disk.in_use{env:prod,!device:tmpfs,mount:/data*} by {host,device} > 0.9",
+  "tags": [
+   "team:example"
+  ],
+  "type": "query alert"
+ },
+ {
+  "created": "2025-01-10T00:00:00.000000+00:00",
+  "id": 1009,
+  "message": "Traffic dropped",
+  "modified": "2025-01-10T00:00:00.000000+00:00",
+  "name": "Request rate drop",
+  "options": {
+   "notify_no_data": false,
+   "thresholds": {
+    "critical": 5
+   }
+  },
+  "overall_state": "OK",
+  "priority": null,
+  "query": "avg(last_10m):sum:example.requests{env:prod}.as_rate() < 5",
+  "tags": [
+   "team:example"
+  ],
+  "type": "query alert"
+ },
+ {
+  "created": "2026-09-01T00:00:00+00:00",
+  "id": 1010,
+  "message": "Memory low on {{host.name}}",
+  "modified": "2026-09-01T00:00:00+00:00",
+  "name": "Memory pressure with recovery",
+  "options": {
+   "thresholds": {
+    "critical": 0.1,
+    "critical_recovery": 0.2
+   }
+  },
+  "overall_state": "OK",
+  "priority": 3,
+  "query": "avg(last_5m):avg:system.mem.pct_usable{env:prod} by {host} < 0.1",
+  "tags": [
+   "env:prod"
+  ],
+  "type": "query alert"
+ },
+ {
+  "created": "2026-09-01T00:00:00+00:00",
+  "id": 1011,
+  "message": "Error ratio high",
+  "modified": "2026-09-01T00:00:00+00:00",
+  "name": "Errors per host vs service",
+  "options": {
+   "thresholds": {
+    "critical": 0.1
+   }
+  },
+  "overall_state": "OK",
+  "priority": 3,
+  "query": "avg(last_5m):avg:example.errors{env:prod} by {host} / avg:example.requests{env:prod} by {service} > 0.1",
+  "tags": [
+   "env:prod"
+  ],
+  "type": "query alert"
+ }
+]
