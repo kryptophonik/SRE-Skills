@@ -1,0 +1,1 @@
+[{"ns":"db","name":"pg-ha-1","volume":"pvc-pg1"},{"ns":"db","name":"pg-ha-2","volume":"pvc-pg2"},{"ns":"db","name":"pg-ha-3","volume":"pvc-pg3"},{"ns":"db","name":"pg-solo-1","volume":"pvc-solo"},{"ns":"stream","name":"data-kafka-0","volume":"pvc-k0"},{"ns":"stream","name":"data-kafka-1","volume":"pvc-k1"},{"ns":"stream","name":"data-cache-0","volume":"pvc-c0"}]

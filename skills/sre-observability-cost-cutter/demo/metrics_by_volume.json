@@ -1,0 +1,698 @@
+{
+ "data": [
+  {
+   "id": "demo.search.request.duration",
+   "type": "metrics"
+  },
+  {
+   "id": "demo.cart.request.duration",
+   "type": "metrics"
+  },
+  {
+   "id": "demo.legacy.importer.rows",
+   "type": "metrics"
+  },
+  {
+   "id": "demo.frontend.request.count",
+   "type": "metrics"
+  },
+  {
+   "id": "demo.debug.trace.samples",
+   "type": "metrics"
+  },
+  {
+   "id": "demo.frontend.worker.jobs",
+   "type": "metrics"
+  },
+  {
+   "id": "demo.catalog.request.duration",
+   "type": "metrics"
+  },
+  {
+   "id": "demo.pricing.request.duration",
+   "type": "metrics"
+  },
+  {
+   "id": "demo.pricing.db.query.time",
+   "type": "metrics"
+  },
+  {
+   "id": "demo.catalog.db.query.time",
+   "type": "metrics"
+  },
+  {
+   "id": "demo.batch.reconcile.duration",
+   "type": "metrics"
+  },
+  {
+   "id": "demo.frontend.db.query.time",
+   "type": "metrics"
+  },
+  {
+   "id": "demo.cart.queue.lag",
+   "type": "metrics"
+  },
+  {
+   "id": "demo.accounts.cache.hits",
+   "type": "metrics"
+  },
+  {
+   "id": "demo.inventory.worker.jobs",
+   "type": "metrics"
+  },
+  {
+   "id": "demo.experiment.flag.evals",
+   "type": "metrics"
+  },
+  {
+   "id": "demo.frontend.cache.hits",
+   "type": "metrics"
+  },
+  {
+   "id": "demo.notifications.worker.jobs",
+   "type": "metrics"
+  },
+  {
+   "id": "demo.inventory.request.count",
+   "type": "metrics"
+  },
+  {
+   "id": "demo.search.queue.lag",
+   "type": "metrics"
+  },
+  {
+   "id": "demo.search.cache.hits",
+   "type": "metrics"
+  },
+  {
+   "id": "demo.inventory.cache.hits",
+   "type": "metrics"
+  },
+  {
+   "id": "demo.pricing.request.count",
+   "type": "metrics"
+  },
+  {
+   "id": "demo.pricing.worker.jobs",
+   "type": "metrics"
+  },
+  {
+   "id": "demo.legacy.importer.errors",
+   "type": "metrics"
+  },
+  {
+   "id": "demo.old.api.v1.calls",
+   "type": "metrics"
+  },
+  {
+   "id": "demo.catalog.worker.jobs",
+   "type": "metrics"
+  },
+  {
+   "id": "demo.notifications.request.duration",
+   "type": "metrics"
+  },
+  {
+   "id": "demo.inventory.request.duration",
+   "type": "metrics"
+  },
+  {
+   "id": "demo.inventory.db.query.time",
+   "type": "metrics"
+  },
+  {
+   "id": "demo.frontend.queue.lag",
+   "type": "metrics"
+  },
+  {
+   "id": "demo.accounts.request.count",
+   "type": "metrics"
+  },
+  {
+   "id": "demo.notifications.queue.lag",
+   "type": "metrics"
+  },
+  {
+   "id": "demo.search.worker.jobs",
+   "type": "metrics"
+  },
+  {
+   "id": "demo.tmp.migration.progress",
+   "type": "metrics"
+  },
+  {
+   "id": "demo.accounts.db.query.time",
+   "type": "metrics"
+  },
+  {
+   "id": "demo.accounts.worker.jobs",
+   "type": "metrics"
+  },
+  {
+   "id": "demo.search.request.count",
+   "type": "metrics"
+  },
+  {
+   "id": "demo.debug.gc.pauses",
+   "type": "metrics"
+  },
+  {
+   "id": "demo.frontend.request.duration",
+   "type": "metrics"
+  },
+  {
+   "id": "demo.cart.db.query.time",
+   "type": "metrics"
+  },
+  {
+   "id": "demo.accounts.request.duration",
+   "type": "metrics"
+  },
+  {
+   "id": "demo.accounts.queue.lag",
+   "type": "metrics"
+  },
+  {
+   "id": "demo.notifications.request.count",
+   "type": "metrics"
+  },
+  {
+   "id": "demo.notifications.db.query.time",
+   "type": "metrics"
+  },
+  {
+   "id": "demo.cart.cache.hits",
+   "type": "metrics"
+  },
+  {
+   "id": "demo.catalog.request.count",
+   "type": "metrics"
+  },
+  {
+   "id": "demo.catalog.cache.hits",
+   "type": "metrics"
+  },
+  {
+   "id": "demo.search.db.query.time",
+   "type": "metrics"
+  },
+  {
+   "id": "demo.cart.request.count",
+   "type": "metrics"
+  },
+  {
+   "id": "demo.cart.worker.jobs",
+   "type": "metrics"
+  },
+  {
+   "id": "demo.pricing.queue.lag",
+   "type": "metrics"
+  },
+  {
+   "id": "demo.pricing.cache.hits",
+   "type": "metrics"
+  },
+  {
+   "id": "demo.sandbox.load.test",
+   "type": "metrics"
+  },
+  {
+   "id": "demo.catalog.queue.lag",
+   "type": "metrics"
+  },
+  {
+   "id": "demo.notifications.cache.hits",
+   "type": "metrics"
+  },
+  {
+   "id": "demo.inventory.queue.lag",
+   "type": "metrics"
+  }
+ ],
+ "included": [
+  {
+   "attributes": {
+    "indexed_volume": 16000,
+    "ingested_volume": 0
+   },
+   "id": "demo.search.request.duration",
+   "type": "metric_volumes"
+  },
+  {
+   "attributes": {
+    "indexed_volume": 12500,
+    "ingested_volume": 0
+   },
+   "id": "demo.cart.request.duration",
+   "type": "metric_volumes"
+  },
+  {
+   "attributes": {
+    "indexed_volume": 11000,
+    "ingested_volume": 0
+   },
+   "id": "demo.legacy.importer.rows",
+   "type": "metric_volumes"
+  },
+  {
+   "attributes": {
+    "indexed_volume": 9800,
+    "ingested_volume": 0
+   },
+   "id": "demo.frontend.request.count",
+   "type": "metric_volumes"
+  },
+  {
+   "attributes": {
+    "indexed_volume": 8800,
+    "ingested_volume": 0
+   },
+   "id": "demo.debug.trace.samples",
+   "type": "metric_volumes"
+  },
+  {
+   "attributes": {
+    "indexed_volume": 7800,
+    "ingested_volume": 0
+   },
+   "id": "demo.frontend.worker.jobs",
+   "type": "metric_volumes"
+  },
+  {
+   "attributes": {
+    "indexed_volume": 7800,
+    "ingested_volume": 0
+   },
+   "id": "demo.catalog.request.duration",
+   "type": "metric_volumes"
+  },
+  {
+   "attributes": {
+    "indexed_volume": 7800,
+    "ingested_volume": 0
+   },
+   "id": "demo.pricing.request.duration",
+   "type": "metric_volumes"
+  },
+  {
+   "attributes": {
+    "indexed_volume": 7800,
+    "ingested_volume": 0
+   },
+   "id": "demo.pricing.db.query.time",
+   "type": "metric_volumes"
+  },
+  {
+   "attributes": {
+    "indexed_volume": 7400,
+    "ingested_volume": 0
+   },
+   "id": "demo.catalog.db.query.time",
+   "type": "metric_volumes"
+  },
+  {
+   "attributes": {
+    "indexed_volume": 6400,
+    "ingested_volume": 0
+   },
+   "id": "demo.batch.reconcile.duration",
+   "type": "metric_volumes"
+  },
+  {
+   "attributes": {
+    "indexed_volume": 5200,
+    "ingested_volume": 0
+   },
+   "id": "demo.frontend.db.query.time",
+   "type": "metric_volumes"
+  },
+  {
+   "attributes": {
+    "indexed_volume": 5200,
+    "ingested_volume": 0
+   },
+   "id": "demo.cart.queue.lag",
+   "type": "metric_volumes"
+  },
+  {
+   "attributes": {
+    "indexed_volume": 5200,
+    "ingested_volume": 0
+   },
+   "id": "demo.accounts.cache.hits",
+   "type": "metric_volumes"
+  },
+  {
+   "attributes": {
+    "indexed_volume": 5200,
+    "ingested_volume": 0
+   },
+   "id": "demo.inventory.worker.jobs",
+   "type": "metric_volumes"
+  },
+  {
+   "attributes": {
+    "indexed_volume": 4300,
+    "ingested_volume": 0
+   },
+   "id": "demo.experiment.flag.evals",
+   "type": "metric_volumes"
+  },
+  {
+   "attributes": {
+    "indexed_volume": 3600,
+    "ingested_volume": 0
+   },
+   "id": "demo.frontend.cache.hits",
+   "type": "metric_volumes"
+  },
+  {
+   "attributes": {
+    "indexed_volume": 3600,
+    "ingested_volume": 0
+   },
+   "id": "demo.notifications.worker.jobs",
+   "type": "metric_volumes"
+  },
+  {
+   "attributes": {
+    "indexed_volume": 3600,
+    "ingested_volume": 0
+   },
+   "id": "demo.inventory.request.count",
+   "type": "metric_volumes"
+  },
+  {
+   "attributes": {
+    "indexed_volume": 2400,
+    "ingested_volume": 0
+   },
+   "id": "demo.search.queue.lag",
+   "type": "metric_volumes"
+  },
+  {
+   "attributes": {
+    "indexed_volume": 2400,
+    "ingested_volume": 0
+   },
+   "id": "demo.search.cache.hits",
+   "type": "metric_volumes"
+  },
+  {
+   "attributes": {
+    "indexed_volume": 2400,
+    "ingested_volume": 0
+   },
+   "id": "demo.inventory.cache.hits",
+   "type": "metric_volumes"
+  },
+  {
+   "attributes": {
+    "indexed_volume": 2400,
+    "ingested_volume": 0
+   },
+   "id": "demo.pricing.request.count",
+   "type": "metric_volumes"
+  },
+  {
+   "attributes": {
+    "indexed_volume": 2400,
+    "ingested_volume": 0
+   },
+   "id": "demo.pricing.worker.jobs",
+   "type": "metric_volumes"
+  },
+  {
+   "attributes": {
+    "indexed_volume": 2100,
+    "ingested_volume": 0
+   },
+   "id": "demo.legacy.importer.errors",
+   "type": "metric_volumes"
+  },
+  {
+   "attributes": {
+    "indexed_volume": 1700,
+    "ingested_volume": 0
+   },
+   "id": "demo.old.api.v1.calls",
+   "type": "metric_volumes"
+  },
+  {
+   "attributes": {
+    "indexed_volume": 1500,
+    "ingested_volume": 0
+   },
+   "id": "demo.catalog.worker.jobs",
+   "type": "metric_volumes"
+  },
+  {
+   "attributes": {
+    "indexed_volume": 1500,
+    "ingested_volume": 0
+   },
+   "id": "demo.notifications.request.duration",
+   "type": "metric_volumes"
+  },
+  {
+   "attributes": {
+    "indexed_volume": 1500,
+    "ingested_volume": 0
+   },
+   "id": "demo.inventory.request.duration",
+   "type": "metric_volumes"
+  },
+  {
+   "attributes": {
+    "indexed_volume": 1500,
+    "ingested_volume": 0
+   },
+   "id": "demo.inventory.db.query.time",
+   "type": "metric_volumes"
+  },
+  {
+   "attributes": {
+    "indexed_volume": 900,
+    "ingested_volume": 0
+   },
+   "id": "demo.frontend.queue.lag",
+   "type": "metric_volumes"
+  },
+  {
+   "attributes": {
+    "indexed_volume": 900,
+    "ingested_volume": 0
+   },
+   "id": "demo.accounts.request.count",
+   "type": "metric_volumes"
+  },
+  {
+   "attributes": {
+    "indexed_volume": 900,
+    "ingested_volume": 0
+   },
+   "id": "demo.notifications.queue.lag",
+   "type": "metric_volumes"
+  },
+  {
+   "attributes": {
+    "indexed_volume": 900,
+    "ingested_volume": 0
+   },
+   "id": "demo.search.worker.jobs",
+   "type": "metric_volumes"
+  },
+  {
+   "attributes": {
+    "indexed_volume": 900,
+    "ingested_volume": 0
+   },
+   "id": "demo.tmp.migration.progress",
+   "type": "metric_volumes"
+  },
+  {
+   "attributes": {
+    "indexed_volume": 600,
+    "ingested_volume": 0
+   },
+   "id": "demo.accounts.db.query.time",
+   "type": "metric_volumes"
+  },
+  {
+   "attributes": {
+    "indexed_volume": 600,
+    "ingested_volume": 0
+   },
+   "id": "demo.accounts.worker.jobs",
+   "type": "metric_volumes"
+  },
+  {
+   "attributes": {
+    "indexed_volume": 600,
+    "ingested_volume": 0
+   },
+   "id": "demo.search.request.count",
+   "type": "metric_volumes"
+  },
+  {
+   "attributes": {
+    "indexed_volume": 350,
+    "ingested_volume": 0
+   },
+   "id": "demo.debug.gc.pauses",
+   "type": "metric_volumes"
+  },
+  {
+   "attributes": {
+    "indexed_volume": 300,
+    "ingested_volume": 0
+   },
+   "id": "demo.frontend.request.duration",
+   "type": "metric_volumes"
+  },
+  {
+   "attributes": {
+    "indexed_volume": 300,
+    "ingested_volume": 0
+   },
+   "id": "demo.cart.db.query.time",
+   "type": "metric_volumes"
+  },
+  {
+   "attributes": {
+    "indexed_volume": 300,
+    "ingested_volume": 0
+   },
+   "id": "demo.accounts.request.duration",
+   "type": "metric_volumes"
+  },
+  {
+   "attributes": {
+    "indexed_volume": 300,
+    "ingested_volume": 0
+   },
+   "id": "demo.accounts.queue.lag",
+   "type": "metric_volumes"
+  },
+  {
+   "attributes": {
+    "indexed_volume": 300,
+    "ingested_volume": 0
+   },
+   "id": "demo.notifications.request.count",
+   "type": "metric_volumes"
+  },
+  {
+   "attributes": {
+    "indexed_volume": 300,
+    "ingested_volume": 0
+   },
+   "id": "demo.notifications.db.query.time",
+   "type": "metric_volumes"
+  },
+  {
+   "attributes": {
+    "indexed_volume": 150,
+    "ingested_volume": 0
+   },
+   "id": "demo.cart.cache.hits",
+   "type": "metric_volumes"
+  },
+  {
+   "attributes": {
+    "indexed_volume": 150,
+    "ingested_volume": 0
+   },
+   "id": "demo.catalog.request.count",
+   "type": "metric_volumes"
+  },
+  {
+   "attributes": {
+    "indexed_volume": 150,
+    "ingested_volume": 0
+   },
+   "id": "demo.catalog.cache.hits",
+   "type": "metric_volumes"
+  },
+  {
+   "attributes": {
+    "indexed_volume": 150,
+    "ingested_volume": 0
+   },
+   "id": "demo.search.db.query.time",
+   "type": "metric_volumes"
+  },
+  {
+   "attributes": {
+    "indexed_volume": 80,
+    "ingested_volume": 0
+   },
+   "id": "demo.cart.request.count",
+   "type": "metric_volumes"
+  },
+  {
+   "attributes": {
+    "indexed_volume": 80,
+    "ingested_volume": 0
+   },
+   "id": "demo.cart.worker.jobs",
+   "type": "metric_volumes"
+  },
+  {
+   "attributes": {
+    "indexed_volume": 80,
+    "ingested_volume": 0
+   },
+   "id": "demo.pricing.queue.lag",
+   "type": "metric_volumes"
+  },
+  {
+   "attributes": {
+    "indexed_volume": 80,
+    "ingested_volume": 0
+   },
+   "id": "demo.pricing.cache.hits",
+   "type": "metric_volumes"
+  },
+  {
+   "attributes": {
+    "indexed_volume": 60,
+    "ingested_volume": 0
+   },
+   "id": "demo.sandbox.load.test",
+   "type": "metric_volumes"
+  },
+  {
+   "attributes": {
+    "indexed_volume": 40,
+    "ingested_volume": 0
+   },
+   "id": "demo.catalog.queue.lag",
+   "type": "metric_volumes"
+  },
+  {
+   "attributes": {
+    "indexed_volume": 40,
+    "ingested_volume": 0
+   },
+   "id": "demo.notifications.cache.hits",
+   "type": "metric_volumes"
+  },
+  {
+   "attributes": {
+    "indexed_volume": 40,
+    "ingested_volume": 0
+   },
+   "id": "demo.inventory.queue.lag",
+   "type": "metric_volumes"
+  }
+ ],
+ "meta": {
+  "pagination": {
+   "cursor": null,
+   "limit": 1000,
+   "next_cursor": null,
+   "type": "cursor_limit"
+  }
+ }
+}

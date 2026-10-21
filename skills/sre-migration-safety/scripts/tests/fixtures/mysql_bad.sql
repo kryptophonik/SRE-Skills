@@ -1,0 +1,12 @@
+# MySQL hash comment; with a semicolon
+ALTER TABLE orders MODIFY COLUMN id BIGINT NOT NULL AUTO_INCREMENT;
+ALTER TABLE orders CONVERT TO CHARACTER SET utf8mb4;
+ALTER TABLE orders DROP PRIMARY KEY, ADD PRIMARY KEY (id, region);
+ALTER TABLE orders ADD FULLTEXT INDEX ft_note (note);
+ALTER TABLE orders ADD CONSTRAINT fk_cust FOREIGN KEY (customer_id) REFERENCES customers (id);
+ALTER TABLE orders ADD COLUMN note TEXT, ALGORITHM=COPY;
+ALTER TABLE orders DROP COLUMN legacy_flag;
+ALTER TABLE orders RENAME COLUMN ref TO reference;
+OPTIMIZE TABLE orders;
+DELETE FROM sessions;
+DROP TABLE orders_archive;

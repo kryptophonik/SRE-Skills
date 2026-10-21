@@ -1,0 +1,36 @@
+{
+ "metadata": {
+  "month": "2026-09-01T00:00:00Z",
+  "pagination": {
+   "limit": 25,
+   "next_record_id": null,
+   "total_number_of_records": 4
+  }
+ },
+ "usage": [
+  {
+   "avg_metric_hour": 9000,
+   "max_metric_hour": 12000,
+   "metric_category": "custom",
+   "metric_name": "example.http.request.latency"
+  },
+  {
+   "avg_metric_hour": 6000,
+   "max_metric_hour": 6500,
+   "metric_category": "custom",
+   "metric_name": "example.legacy.batch.duration"
+  },
+  {
+   "avg_metric_hour": 2500,
+   "max_metric_hour": 3000,
+   "metric_category": "custom",
+   "metric_name": "example.queue.depth"
+  },
+  {
+   "avg_metric_hour": 1500,
+   "max_metric_hour": 1800,
+   "metric_category": "custom",
+   "metric_name": "example.debug.cache.hits"
+  }
+ ]
+}

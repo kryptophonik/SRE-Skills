@@ -1,0 +1,1 @@
+[{"ns":"shop","name":"cart-1","node":"gke-dev-default-pool-00000000-abcd","phase":"Running","owner":{"kind":"ReplicaSet","name":"cart-5f"},"mirror":false,"empty_dir":[],"host_path":[]}]

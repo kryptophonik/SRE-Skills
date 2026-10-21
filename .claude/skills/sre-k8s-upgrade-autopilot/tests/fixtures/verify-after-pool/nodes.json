@@ -1,0 +1,1 @@
+[{"name":"ip-10-0-1-10","kubelet":"v1.32.9-eks-0000000","pool":"ng-a","unschedulable":false,"ready":"True"},{"name":"ip-10-0-1-11","kubelet":"v1.32.9-eks-0000000","pool":"ng-a","unschedulable":false,"ready":"True"},{"name":"ip-10-0-2-10","kubelet":"v1.31.13-eks-0000000","pool":"ng-b","unschedulable":true,"ready":"True"}]

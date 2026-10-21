@@ -1,0 +1,134 @@
+# Seed objects for the throwaway kind test cluster only. Never apply to a real cluster.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: upgrade-test
+---
+# Two replicas guarded by a PDB that allows no evictions: a drain blocker.
+apiVersion: apps/v1
+kind: Deployment
+metadata: {name: web, namespace: upgrade-test}
+spec:
+  replicas: 2
+  selector: {matchLabels: {app: web}}
+  template:
+    metadata: {labels: {app: web}}
+    spec:
+      containers: [{name: pause, image: "registry.k8s.io/pause:3.10"}]
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata: {name: web-pdb, namespace: upgrade-test}
+spec:
+  maxUnavailable: 0
+  selector: {matchLabels: {app: web}}
+---
+# A single-replica Deployment whose PDB demands all of its pods: minAvailable equals replicas.
+apiVersion: apps/v1
+kind: Deployment
+metadata: {name: solo, namespace: upgrade-test}
+spec:
+  replicas: 1
+  selector: {matchLabels: {app: solo}}
+  template:
+    metadata: {labels: {app: solo}}
+    spec:
+      containers: [{name: pause, image: "registry.k8s.io/pause:3.10"}]
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata: {name: solo-pdb, namespace: upgrade-test}
+spec:
+  minAvailable: 1
+  selector: {matchLabels: {app: solo}}
+---
+# A pod with no controller and an emptyDir volume.
+apiVersion: v1
+kind: Pod
+metadata: {name: bare, namespace: upgrade-test}
+spec:
+  containers:
+  - name: pause
+    image: "registry.k8s.io/pause:3.10"
+    volumeMounts: [{name: scratch, mountPath: /scratch}]
+  volumes: [{name: scratch, emptyDir: {}}]
+---
+# Written through flowcontrol.apiserver.k8s.io/v1beta3: served by 1.31, removed in 1.32.
+apiVersion: flowcontrol.apiserver.k8s.io/v1beta3
+kind: FlowSchema
+metadata: {name: upgrade-test-legacy}
+spec:
+  matchingPrecedence: 9000
+  priorityLevelConfiguration: {name: workload-low}
+  distinguisherMethod: {type: ByUser}
+  rules:
+  - subjects: [{kind: ServiceAccount, serviceAccount: {name: legacy-client, namespace: upgrade-test}}]
+    resourceRules: [{verbs: ["get"], apiGroups: [""], resources: ["configmaps"], namespaces: ["upgrade-test"]}]
+---
+# failurePolicy Fail pointing at a Service that does not exist. Scoped to a label nothing else uses.
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingWebhookConfiguration
+metadata: {name: upgrade-test-broken}
+webhooks:
+- name: broken.upgrade-test.example.com
+  failurePolicy: Fail
+  sideEffects: None
+  admissionReviewVersions: ["v1"]
+  clientConfig:
+    service: {namespace: upgrade-test, name: missing-webhook-svc, port: 443, path: /validate}
+  namespaceSelector: {matchLabels: {upgrade-test-webhook: "enabled"}}
+  rules:
+  - operations: ["CREATE"]
+    apiGroups: [""]
+    apiVersions: ["v1"]
+    resources: ["configmaps"]
+---
+# Two statically provisioned volumes: one pinned by node affinity to kind-zone-a, one carrying only the
+# legacy failure-domain zone label. The StatefulSet below claims both, so the preflight should name both zones.
+apiVersion: v1
+kind: PersistentVolume
+metadata: {name: upgrade-test-zonal-a}
+spec:
+  capacity: {storage: 1Mi}
+  accessModes: ["ReadWriteOnce"]
+  storageClassName: upgrade-test-zonal
+  persistentVolumeReclaimPolicy: Retain
+  hostPath: {path: /tmp/upgrade-test-zonal-a, type: DirectoryOrCreate}
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+      - matchExpressions: [{key: topology.kubernetes.io/zone, operator: In, values: ["kind-zone-a"]}]
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: upgrade-test-zonal-b
+  labels: {failure-domain.beta.kubernetes.io/zone: kind-zone-b}
+spec:
+  capacity: {storage: 1Mi}
+  accessModes: ["ReadWriteOnce"]
+  storageClassName: upgrade-test-zonal
+  persistentVolumeReclaimPolicy: Retain
+  hostPath: {path: /tmp/upgrade-test-zonal-b, type: DirectoryOrCreate}
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata: {name: zonal, namespace: upgrade-test}
+spec:
+  serviceName: zonal
+  replicas: 2
+  podManagementPolicy: Parallel
+  selector: {matchLabels: {app: zonal}}
+  template:
+    metadata: {labels: {app: zonal}}
+    spec:
+      containers:
+      - name: pause
+        image: "registry.k8s.io/pause:3.10"
+        volumeMounts: [{name: data, mountPath: /data}]
+  volumeClaimTemplates:
+  - metadata: {name: data}
+    spec:
+      accessModes: ["ReadWriteOnce"]
+      storageClassName: upgrade-test-zonal
+      resources: {requests: {storage: 1Mi}}

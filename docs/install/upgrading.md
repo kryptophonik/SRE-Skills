@@ -22,4 +22,4 @@ cp -r claude-sre/.claude/skills/sre-* ~/.claude/skills/
 ```
 
 4. Replace any `/sre-architect` or `/sre-tools-catalog` in your docs or aliases with `/sre-engineer`.
-5. Check: `ls ~/.claude/skills | grep -c '^sre-'` prints 34, and neither retired name is listed.
+5. Check: `ls ~/.claude/skills | grep -c '^sre-'` prints 37, and neither retired name is listed.

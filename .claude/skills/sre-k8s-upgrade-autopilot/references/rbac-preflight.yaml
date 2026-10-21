@@ -1,0 +1,93 @@
+# Least-privilege identity for scripts/upgrade-preflight.sh: get/list only, no Secrets, no ConfigMaps,
+# no exec/attach/port-forward, no writes. Applying this file is itself a change: it needs approval.
+# Bind it to a ServiceAccount, an IAM-mapped group (EKS access entry), a Google group (GKE) or an
+# Entra ID group (AKS).
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: upgrade-preflight-reader
+rules:
+- apiGroups: [""]
+  resources: ["nodes", "pods", "services", "persistentvolumeclaims", "persistentvolumes"]
+  verbs: ["get", "list"]
+- apiGroups: ["apps"]
+  resources: ["deployments", "statefulsets", "daemonsets"]
+  verbs: ["get", "list"]
+- apiGroups: ["policy"]
+  resources: ["poddisruptionbudgets"]
+  verbs: ["get", "list"]
+# PodSecurityPolicy (1.24 to 1.25 upgrades only). PSP was removed in 1.25, so this role leaves it out and a
+# 1.24 -> 1.25 preflight reports "could not check podsecuritypolicies.policy". To cover it, add the rule
+# below (uncommented) for that upgrade; otherwise accept the gap and check PSP use by hand or in your
+# provider's upgrade insights.
+# - apiGroups: ["policy"]
+#   resources: ["podsecuritypolicies"]
+#   verbs: ["get", "list"]
+- apiGroups: ["admissionregistration.k8s.io"]
+  resources: ["validatingwebhookconfigurations", "mutatingwebhookconfigurations"]
+  verbs: ["get", "list"]
+- apiGroups: ["discovery.k8s.io"]
+  resources: ["endpointslices"]
+  verbs: ["get", "list"]
+- apiGroups: ["apiregistration.k8s.io"]
+  resources: ["apiservices"]
+  verbs: ["get", "list"]
+# Resource types that appear in references/removed-apis.json, listed only when they fall in the upgrade window.
+- apiGroups: ["flowcontrol.apiserver.k8s.io"]
+  resources: ["flowschemas", "prioritylevelconfigurations"]
+  verbs: ["get", "list"]
+- apiGroups: ["storage.k8s.io"]
+  resources: ["csistoragecapacities", "csidrivers", "csinodes", "storageclasses", "volumeattachments"]
+  verbs: ["get", "list"]
+- apiGroups: ["autoscaling"]
+  resources: ["horizontalpodautoscalers"]
+  verbs: ["get", "list"]
+- apiGroups: ["batch"]
+  resources: ["cronjobs"]
+  verbs: ["get", "list"]
+- apiGroups: ["events.k8s.io"]
+  resources: ["events"]
+  verbs: ["get", "list"]
+- apiGroups: ["node.k8s.io"]
+  resources: ["runtimeclasses"]
+  verbs: ["get", "list"]
+- apiGroups: ["apiextensions.k8s.io"]
+  resources: ["customresourcedefinitions"]
+  verbs: ["get", "list"]
+- apiGroups: ["certificates.k8s.io"]
+  resources: ["certificatesigningrequests"]
+  verbs: ["get", "list"]
+- apiGroups: ["coordination.k8s.io"]
+  resources: ["leases"]
+  verbs: ["get", "list"]
+- apiGroups: ["networking.k8s.io"]
+  resources: ["ingresses", "ingressclasses"]
+  verbs: ["get", "list"]
+- apiGroups: ["rbac.authorization.k8s.io"]
+  resources: ["clusterroles", "clusterrolebindings", "roles", "rolebindings"]
+  verbs: ["get", "list"]
+- apiGroups: ["scheduling.k8s.io"]
+  resources: ["priorityclasses"]
+  verbs: ["get", "list"]
+# The apiserver_requested_deprecated_apis metric. Optional: drop this rule if your policy forbids /metrics.
+- nonResourceURLs: ["/metrics"]
+  verbs: ["get"]
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: upgrade-preflight
+  namespace: kube-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: upgrade-preflight-reader
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: upgrade-preflight-reader
+subjects:
+- kind: ServiceAccount
+  name: upgrade-preflight
+  namespace: kube-system

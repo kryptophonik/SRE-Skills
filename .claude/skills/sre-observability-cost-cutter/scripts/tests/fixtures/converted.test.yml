@@ -1,0 +1,61 @@
+# promtool unit test for rules generated from monitors.json + mapping.json.
+# The test runner writes converted.rules.yml next to a copy of this file, then runs
+# `promtool test rules converted.test.yml`.
+rule_files:
+  - converted.rules.yml
+evaluation_interval: 1m
+tests:
+  - interval: 1m
+    input_series:
+      # 10 errors and 100 requests per minute: ratio 0.1, above the 0.05 threshold
+      - series: 'http_requests_errors_total{env="prod",service="example-checkout"}'
+        values: '0+10x20'
+      - series: 'http_requests_total{env="prod",service="example-checkout"}'
+        values: '0+100x20'
+      # one real disk over 0.9, one tmpfs that the scope excludes
+      - series: 'node_filesystem_used_ratio{env="prod",instance="host-a",device="sda1",mountpoint="/data1"}'
+        values: '0.95x20'
+      - series: 'node_filesystem_used_ratio{env="prod",instance="host-b",device="tmpfs",mountpoint="/data2"}'
+        values: '0.99x20'
+      # CPU below both thresholds: no alert
+      - series: 'node_cpu_user_percent{env="prod",service="example-api",instance="host-a"}'
+        values: '50x20'
+    alert_rule_test:
+      - eval_time: 10m
+        alertname: CheckoutErrorRatio
+        exp_alerts:
+          - exp_labels:
+              severity: critical
+              source_monitor_id: "1003"
+            exp_annotations:
+              summary: "Checkout error ratio"
+              description: "Error ratio is 0.1. Runbook: https://runbooks.example.com/checkout"
+      - eval_time: 10m
+        alertname: DiskAlmostFull
+        exp_alerts:
+          - exp_labels:
+              severity: critical
+              source_monitor_id: "1008"
+              instance: host-a
+              device: sda1
+            exp_annotations:
+              summary: "Disk almost full"
+              description: "Disk sda1 on host-a at 0.95"
+      - eval_time: 10m
+        alertname: HighCPUOn
+        exp_alerts: []
+  - interval: 1m
+    input_series:
+      # queue depth rises by 2000 over the hour: change alert fires
+      - series: 'example_queue_depth{env="prod",queue="orders"}'
+        values: '100+40x80'
+    alert_rule_test:
+      - eval_time: 75m
+        alertname: QueueDepthGrowing
+        exp_alerts:
+          - exp_labels:
+              severity: critical
+              source_monitor_id: "1004"
+            exp_annotations:
+              summary: "Queue depth growing"
+              description: "Queue grew by 2400 in an hour."

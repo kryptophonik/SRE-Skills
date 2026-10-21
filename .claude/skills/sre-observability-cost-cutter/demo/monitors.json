@@ -1,0 +1,577 @@
+[
+ {
+  "created": "2025-06-01T09:00:00+00:00",
+  "id": 5001,
+  "message": "Latency on {{service.name}} is {{value}}s @oncall-frontend@example.com",
+  "modified": "2025-06-01T09:00:00+00:00",
+  "name": "[frontend] p95 latency high",
+  "options": {
+   "notify_no_data": false,
+   "thresholds": {
+    "critical": 0.8,
+    "warning": 0.5
+   }
+  },
+  "overall_state": "OK",
+  "priority": 3,
+  "query": "avg(last_10m):avg:demo.frontend.request.duration{env:prod} by {service} > 0.8",
+  "tags": [
+   "team:demo-platform",
+   "env:prod"
+  ],
+  "type": "query alert"
+ },
+ {
+  "created": "2025-06-01T09:00:00+00:00",
+  "id": 5002,
+  "message": "Latency on {{service.name}} is {{value}}s @oncall-cart@example.com",
+  "modified": "2025-06-01T09:00:00+00:00",
+  "name": "[cart] p95 latency high",
+  "options": {
+   "notify_no_data": false,
+   "thresholds": {
+    "critical": 0.8,
+    "warning": 0.5
+   }
+  },
+  "overall_state": "OK",
+  "priority": 3,
+  "query": "avg(last_10m):avg:demo.cart.request.duration{env:prod} by {service} > 0.8",
+  "tags": [
+   "team:demo-platform",
+   "env:prod"
+  ],
+  "type": "query alert"
+ },
+ {
+  "created": "2025-06-01T09:00:00+00:00",
+  "id": 5003,
+  "message": "Latency on {{service.name}} is {{value}}s @oncall-catalog@example.com",
+  "modified": "2025-06-01T09:00:00+00:00",
+  "name": "[catalog] p95 latency high",
+  "options": {
+   "notify_no_data": false,
+   "thresholds": {
+    "critical": 0.8,
+    "warning": 0.5
+   }
+  },
+  "overall_state": "OK",
+  "priority": 3,
+  "query": "avg(last_10m):avg:demo.catalog.request.duration{env:prod} by {service} > 0.8",
+  "tags": [
+   "team:demo-platform",
+   "env:prod"
+  ],
+  "type": "query alert"
+ },
+ {
+  "created": "2025-06-01T09:00:00+00:00",
+  "id": 5004,
+  "message": "Latency on {{service.name}} is {{value}}s @oncall-search@example.com",
+  "modified": "2025-06-01T09:00:00+00:00",
+  "name": "[search] p95 latency high",
+  "options": {
+   "notify_no_data": false,
+   "thresholds": {
+    "critical": 0.8,
+    "warning": 0.5
+   }
+  },
+  "overall_state": "OK",
+  "priority": 3,
+  "query": "avg(last_10m):avg:demo.search.request.duration{env:prod} by {service} > 0.8",
+  "tags": [
+   "team:demo-platform",
+   "env:prod"
+  ],
+  "type": "query alert"
+ },
+ {
+  "created": "2025-06-01T09:00:00+00:00",
+  "id": 5005,
+  "message": "copy kept from migration @oncall-alerts@example.com",
+  "modified": "2025-06-01T09:00:00+00:00",
+  "name": "[cart] p95 latency high (old)",
+  "options": {
+   "notify_no_data": false,
+   "thresholds": {
+    "critical": 0.8,
+    "warning": 0.5
+   }
+  },
+  "overall_state": "OK",
+  "priority": 3,
+  "query": "avg(last_10m):avg:demo.cart.request.duration{env:prod} by {service} > 0.8",
+  "tags": [
+   "team:demo-platform",
+   "env:prod"
+  ],
+  "type": "query alert"
+ },
+ {
+  "created": "2025-06-01T09:00:00+00:00",
+  "id": 5006,
+  "message": "team copy @oncall-cart@example.com",
+  "modified": "2025-06-01T09:00:00+00:00",
+  "name": "Cart latency - team view",
+  "options": {
+   "notify_no_data": false,
+   "thresholds": {
+    "critical": 0.8,
+    "warning": 0.5
+   }
+  },
+  "overall_state": "OK",
+  "priority": 3,
+  "query": "avg(last_10m):avg:demo.cart.request.duration{ env:prod } by {service} > 0.8",
+  "tags": [
+   "team:demo-platform",
+   "env:prod"
+  ],
+  "type": "query alert"
+ },
+ {
+  "created": "2025-06-01T09:00:00+00:00",
+  "id": 5007,
+  "message": "Error ratio {{value}}",
+  "modified": "2025-06-01T09:00:00+00:00",
+  "name": "[accounts] error ratio",
+  "options": {
+   "notify_no_data": false,
+   "thresholds": {
+    "critical": 0.02
+   }
+  },
+  "overall_state": "OK",
+  "priority": 3,
+  "query": "sum(last_5m):sum:demo.accounts.request.count{env:prod,status:error}.as_count() / sum:demo.accounts.request.count{env:prod}.as_count() > 0.02",
+  "tags": [
+   "team:demo-platform",
+   "env:prod"
+  ],
+  "type": "query alert"
+ },
+ {
+  "created": "2025-06-01T09:00:00+00:00",
+  "id": 5008,
+  "message": "Error ratio {{value}}",
+  "modified": "2025-06-01T09:00:00+00:00",
+  "name": "[inventory] error ratio",
+  "options": {
+   "notify_no_data": false,
+   "thresholds": {
+    "critical": 0.02
+   }
+  },
+  "overall_state": "OK",
+  "priority": 3,
+  "query": "sum(last_5m):sum:demo.inventory.request.count{env:prod,status:error}.as_count() / sum:demo.inventory.request.count{env:prod}.as_count() > 0.02",
+  "tags": [
+   "team:demo-platform",
+   "env:prod"
+  ],
+  "type": "query alert"
+ },
+ {
+  "created": "2025-06-01T09:00:00+00:00",
+  "id": 5009,
+  "message": "Error ratio {{value}}",
+  "modified": "2025-06-01T09:00:00+00:00",
+  "name": "[pricing] error ratio",
+  "options": {
+   "notify_no_data": false,
+   "thresholds": {
+    "critical": 0.02
+   }
+  },
+  "overall_state": "OK",
+  "priority": 3,
+  "query": "sum(last_5m):sum:demo.pricing.request.count{env:prod,status:error}.as_count() / sum:demo.pricing.request.count{env:prod}.as_count() > 0.02",
+  "tags": [
+   "team:demo-platform",
+   "env:prod"
+  ],
+  "type": "query alert"
+ },
+ {
+  "created": "2025-06-01T09:00:00+00:00",
+  "id": 5010,
+  "message": "duplicate",
+  "modified": "2025-06-01T09:00:00+00:00",
+  "name": "Accounts error ratio (dup)",
+  "options": {
+   "notify_no_data": false,
+   "thresholds": {
+    "critical": 0.02
+   }
+  },
+  "overall_state": "OK",
+  "priority": 3,
+  "query": "sum(last_5m):sum:demo.accounts.request.count{status:error,env:prod}.as_count() / sum:demo.accounts.request.count{env:prod}.as_count() > 0.02",
+  "tags": [
+   "team:demo-platform",
+   "env:prod"
+  ],
+  "type": "query alert"
+ },
+ {
+  "created": "2025-02-01T09:00:00+00:00",
+  "id": 5011,
+  "message": "Queue lag {{value}}s",
+  "modified": "2025-02-01T09:00:00+00:00",
+  "name": "[notifications] queue lag",
+  "options": {
+   "notify_no_data": false,
+   "thresholds": {
+    "critical": 600
+   }
+  },
+  "overall_state": "OK",
+  "priority": 3,
+  "query": "max(last_15m):max:demo.notifications.queue.lag{env:prod} > 600",
+  "tags": [
+   "team:demo-platform",
+   "env:prod"
+  ],
+  "type": "query alert"
+ },
+ {
+  "created": "2025-03-01T09:00:00+00:00",
+  "id": 5012,
+  "message": "No jobs processed",
+  "modified": "2025-03-01T09:00:00+00:00",
+  "name": "[inventory] worker jobs stalled",
+  "options": {
+   "no_data_timeframe": 30,
+   "notify_no_data": true,
+   "thresholds": {
+    "critical": 1
+   }
+  },
+  "overall_state": "No Data",
+  "priority": 3,
+  "query": "sum(last_30m):sum:demo.inventory.worker.jobs{env:prod}.as_count() < 1",
+  "tags": [
+   "team:demo-platform",
+   "env:prod"
+  ],
+  "type": "query alert"
+ },
+ {
+  "created": "2024-11-01T09:00:00+00:00",
+  "id": 5013,
+  "message": "importer quiet",
+  "modified": "2024-11-01T09:00:00+00:00",
+  "name": "Legacy importer rows dropped",
+  "options": {
+   "notify_no_data": false,
+   "thresholds": {
+    "critical": 10
+   }
+  },
+  "overall_state": "No Data",
+  "priority": 3,
+  "query": "avg(last_1h):avg:demo.legacy.importer.rows{env:prod} < 10",
+  "tags": [
+   "team:demo-platform",
+   "env:prod"
+  ],
+  "type": "query alert"
+ },
+ {
+  "created": "2024-08-01T09:00:00+00:00",
+  "id": 5014,
+  "message": "v1 spike",
+  "modified": "2024-08-01T09:00:00+00:00",
+  "name": "Old API v1 traffic spike",
+  "options": {
+   "notify_no_data": false,
+   "thresholds": {
+    "critical": 500
+   }
+  },
+  "overall_state": "OK",
+  "priority": 3,
+  "query": "avg(last_5m):sum:demo.old.api.v1.calls{env:prod}.as_rate() > 500",
+  "tags": [
+   "team:demo-platform",
+   "env:prod"
+  ],
+  "type": "query alert"
+ },
+ {
+  "created": "2025-12-01T09:00:00+00:00",
+  "id": 5015,
+  "message": "migration stalled",
+  "modified": "2025-12-01T09:00:00+00:00",
+  "name": "Migration progress stuck",
+  "options": {
+   "notify_no_data": false,
+   "thresholds": {
+    "critical": 1
+   }
+  },
+  "overall_state": "No Data",
+  "priority": 3,
+  "query": "change(avg(last_30m),1h_ago):avg:demo.tmp.migration.progress{env:prod} < 1",
+  "tags": [
+   "team:demo-platform",
+   "env:prod"
+  ],
+  "type": "query alert"
+ },
+ {
+  "created": "2025-06-01T09:00:00+00:00",
+  "id": 5016,
+  "message": "anomaly",
+  "modified": "2025-06-01T09:00:00+00:00",
+  "name": "Search latency anomaly",
+  "options": {
+   "notify_no_data": false,
+   "thresholds": {
+    "critical": 1
+   }
+  },
+  "overall_state": "OK",
+  "priority": 3,
+  "query": "avg(last_30m):anomalies(avg:demo.search.request.duration{env:prod}, 'agile', 2) >= 1",
+  "tags": [
+   "team:demo-platform",
+   "env:prod"
+  ],
+  "type": "query alert"
+ },
+ {
+  "created": "2025-06-01T09:00:00+00:00",
+  "id": 5017,
+  "message": "Cache hit {{value}} on {{host.name}}",
+  "modified": "2025-06-01T09:00:00+00:00",
+  "name": "Catalog cache hit rate low",
+  "options": {
+   "notify_no_data": false,
+   "thresholds": {
+    "critical": 0.7,
+    "warning": 0.8
+   }
+  },
+  "overall_state": "OK",
+  "priority": 3,
+  "query": "avg(last_15m):avg:demo.catalog.cache.hits{env:prod} by {host} < 0.7",
+  "tags": [
+   "team:demo-platform",
+   "env:prod"
+  ],
+  "type": "query alert"
+ },
+ {
+  "created": "2025-06-01T09:00:00+00:00",
+  "id": 5018,
+  "message": "5xx spike",
+  "modified": "2025-06-01T09:00:00+00:00",
+  "name": "Payments 5xx log spike",
+  "options": {
+   "notify_no_data": false,
+   "thresholds": {
+    "critical": 200
+   }
+  },
+  "overall_state": "OK",
+  "priority": 3,
+  "query": "logs(\"service:cart status:error\").index(\"payments\").rollup(\"count\").last(\"5m\") > 200",
+  "tags": [
+   "team:demo-platform",
+   "env:prod"
+  ],
+  "type": "log alert"
+ },
+ {
+  "created": "2025-01-15T09:00:00+00:00",
+  "id": 5019,
+  "message": "sandbox",
+  "modified": "2025-01-15T09:00:00+00:00",
+  "name": "Sandbox load test running",
+  "options": {
+   "notify_no_data": false,
+   "thresholds": {
+    "critical": 0
+   }
+  },
+  "overall_state": "OK",
+  "priority": 3,
+  "query": "avg(last_5m):avg:demo.sandbox.load.test{*} > 0",
+  "tags": [
+   "team:demo-platform",
+   "env:prod"
+  ],
+  "type": "query alert"
+ },
+ {
+  "created": "2025-06-01T09:00:00+00:00",
+  "id": 5020,
+  "message": "traffic drop",
+  "modified": "2025-06-01T09:00:00+00:00",
+  "name": "Frontend request rate drop",
+  "options": {
+   "notify_no_data": false,
+   "thresholds": {
+    "critical": 50
+   }
+  },
+  "overall_state": "OK",
+  "priority": 3,
+  "query": "avg(last_10m):sum:demo.frontend.request.count{env:prod}.as_rate() < 50",
+  "tags": [
+   "team:demo-platform",
+   "env:prod"
+  ],
+  "type": "query alert"
+ },
+ {
+  "created": "2025-06-01T09:00:00+00:00",
+  "id": 5021,
+  "message": "slow query on {{host.name}}",
+  "modified": "2025-06-01T09:00:00+00:00",
+  "name": "Pricing DB query slow",
+  "options": {
+   "notify_no_data": false,
+   "thresholds": {
+    "critical": 2,
+    "warning": 1
+   }
+  },
+  "overall_state": "OK",
+  "priority": 3,
+  "query": "max(last_10m):max:demo.pricing.db.query.time{env:prod} by {host} > 2",
+  "tags": [
+   "team:demo-platform",
+   "env:prod"
+  ],
+  "type": "query alert"
+ },
+ {
+  "created": "2024-10-01T09:00:00+00:00",
+  "id": 5022,
+  "message": "TLS certificate expiry on www.example.com. Runbook: https://runbooks.example.com/5022 @oncall-platform@example.com",
+  "modified": "2024-10-01T09:00:00+00:00",
+  "name": "TLS certificate expiry on www.example.com",
+  "options": {
+   "notify_no_data": false,
+   "thresholds": {
+    "critical": 14.0
+   }
+  },
+  "overall_state": "OK",
+  "priority": 2,
+  "query": "min(last_1h):min:demo.tls.days_left{host:www.example.com} < 14",
+  "tags": [
+   "team:demo-platform",
+   "env:prod"
+  ],
+  "type": "query alert"
+ },
+ {
+  "created": "2024-10-01T09:00:00+00:00",
+  "id": 5023,
+  "message": "Nightly database backup failed. Runbook: https://runbooks.example.com/5023 @oncall-platform@example.com",
+  "modified": "2024-10-01T09:00:00+00:00",
+  "name": "Nightly database backup failed",
+  "options": {
+   "notify_no_data": false,
+   "thresholds": {
+    "critical": 0.0
+   }
+  },
+  "overall_state": "OK",
+  "priority": 2,
+  "query": "sum(last_1d):sum:demo.db.backup.failures{env:prod}.as_count() > 0",
+  "tags": [
+   "team:demo-data",
+   "env:prod"
+  ],
+  "type": "query alert"
+ },
+ {
+  "created": "2024-10-01T09:00:00+00:00",
+  "id": 5024,
+  "message": "Standby region replication lag. Runbook: https://runbooks.example.com/5024 @oncall-platform@example.com",
+  "modified": "2024-10-01T09:00:00+00:00",
+  "name": "Standby region replication lag",
+  "options": {
+   "notify_no_data": false,
+   "thresholds": {
+    "critical": 900.0
+   }
+  },
+  "overall_state": "OK",
+  "priority": 2,
+  "query": "max(last_15m):max:demo.replica.lag_seconds{role:standby} > 900",
+  "tags": [
+   "team:demo-data",
+   "purpose:disaster-recovery"
+  ],
+  "type": "query alert"
+ },
+ {
+  "created": "2025-06-01T09:00:00+00:00",
+  "id": 5025,
+  "matching_downtimes": [
+   {
+    "end": null,
+    "id": 900101,
+    "scope": [
+     "env:prod"
+    ],
+    "start": 1785196800
+   }
+  ],
+  "message": "[search] indexer error rate. Runbook: https://runbooks.example.com/5025 @oncall-platform@example.com",
+  "modified": "2025-06-01T09:00:00+00:00",
+  "name": "[search] indexer error rate",
+  "options": {
+   "notify_no_data": false,
+   "thresholds": {
+    "critical": 5.0
+   }
+  },
+  "overall_state": "OK",
+  "priority": 2,
+  "query": "avg(last_10m):avg:demo.search.indexer.errors{env:prod} > 5",
+  "tags": [
+   "team:demo-search",
+   "env:prod"
+  ],
+  "type": "query alert"
+ },
+ {
+  "created": "2025-06-01T09:00:00+00:00",
+  "id": 5026,
+  "matching_downtimes": [
+   {
+    "end": 1791417600,
+    "id": 900102,
+    "scope": [
+     "env:prod"
+    ],
+    "start": 1790208000
+   }
+  ],
+  "message": "[pricing] cache refresh slow. Runbook: https://runbooks.example.com/5026 @oncall-platform@example.com",
+  "modified": "2025-06-01T09:00:00+00:00",
+  "name": "[pricing] cache refresh slow",
+  "options": {
+   "notify_no_data": false,
+   "thresholds": {
+    "critical": 30.0
+   }
+  },
+  "overall_state": "OK",
+  "priority": 2,
+  "query": "avg(last_10m):avg:demo.pricing.cache.refresh_seconds{env:prod} > 30",
+  "tags": [
+   "team:demo-pricing",
+   "env:prod"
+  ],
+  "type": "query alert"
+ }
+]

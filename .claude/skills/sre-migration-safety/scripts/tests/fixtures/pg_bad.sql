@@ -1,0 +1,25 @@
+-- Every statement here should be flagged.
+BEGIN;
+CREATE INDEX orders_created_idx ON orders (created_at);
+ALTER TABLE orders ADD COLUMN token uuid DEFAULT gen_random_uuid();
+ALTER TABLE orders ADD COLUMN seq bigserial;
+ALTER TABLE orders ADD COLUMN region text NOT NULL;
+ALTER TABLE orders ALTER COLUMN id TYPE bigint;
+ALTER TABLE orders ALTER COLUMN customer_id SET NOT NULL;
+ALTER TABLE orders ADD CONSTRAINT orders_customer_fk FOREIGN KEY (customer_id) REFERENCES customers (id);
+ALTER TABLE orders ADD CONSTRAINT orders_total_ck CHECK (total >= 0);
+ALTER TABLE orders ADD CONSTRAINT orders_ref_uq UNIQUE (ref);
+ALTER TABLE orders RENAME COLUMN ref TO reference;
+ALTER TABLE orders DROP COLUMN legacy_flag;
+UPDATE orders SET status = 'new';
+COMMIT;
+BEGIN;
+CREATE INDEX CONCURRENTLY orders_status_idx ON orders (status);
+COMMIT;
+DROP INDEX orders_old_idx;
+REINDEX TABLE orders;
+VACUUM FULL orders;
+CLUSTER orders USING orders_pkey;
+REFRESH MATERIALIZED VIEW daily_totals;
+DROP TABLE orders_archive;
+TRUNCATE audit_log;

@@ -1,0 +1,28 @@
+{
+ "labels": {
+  "device": "device",
+  "env": "env",
+  "host": "instance",
+  "job": "batch_job",
+  "mount": "mountpoint",
+  "queue": "queue",
+  "service": "service"
+ },
+ "metrics": {
+  "example.queue.depth": "example_queue_depth",
+  "example.requests": {
+   "counter": true,
+   "name": "example_requests_total"
+  },
+  "system.cpu.user": "node_cpu_user_percent",
+  "system.disk.in_use": "node_filesystem_used_ratio",
+  "trace.http.request.errors": {
+   "counter": true,
+   "name": "http_requests_errors_total"
+  },
+  "trace.http.request.hits": {
+   "counter": true,
+   "name": "http_requests_total"
+  }
+ }
+}

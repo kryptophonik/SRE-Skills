@@ -1,0 +1,1 @@
+[{"ns":"kube-system","name":"aws-node-abcde","node":"ip-10-0-1-10","phase":"Running","owner":{"kind":"DaemonSet","name":"aws-node"},"mirror":false,"empty_dir":[],"host_path":["cni-bin-dir"]},{"ns":"payments","name":"api-6d9f-1","node":"ip-10-0-1-10","phase":"Running","owner":{"kind":"ReplicaSet","name":"api-6d9f"},"mirror":false,"empty_dir":[],"host_path":[]}]

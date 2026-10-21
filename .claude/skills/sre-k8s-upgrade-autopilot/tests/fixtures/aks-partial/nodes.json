@@ -1,0 +1,1 @@
+[{"name":"aks-nodepool1-00000000-vmss000000","kubelet":"v1.33.5","provider_id":"azure:///subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/mc_rg/providers/Microsoft.Compute/virtualMachineScaleSets/aks-nodepool1-00000000-vmss/virtualMachines/0","pool":"nodepool1","unschedulable":false,"ready":"True"}]

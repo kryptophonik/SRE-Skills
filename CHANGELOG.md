@@ -2,6 +2,13 @@
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versions follow [SemVer](https://semver.org/). The version number lives only in `scripts/build-targets.py`.
 
+## [Unreleased]
+
+### Added
+- `sre-observability-cost-cutter`: read-only Datadog usage and cost audit, ranked savings report with approval-gated changes and rollbacks, monitor-to-Prometheus converter validated with `promtool`, offline/demo fixtures and tests.
+- `sre-migration-safety`: static SQL migration reviewer for PostgreSQL and MySQL/MariaDB (lock, rewrite and safer-pattern findings), with proof scripts and tests backed by real engine runs.
+- `sre-k8s-upgrade-autopilot`: scripted Kubernetes minor-version upgrade preflight and post-step verification (tested on kind), support-status check, gated EKS/GKE/AKS plan references.
+
 ## Planned
 
 1. Queue/stream triage (Kafka, SQS, Pub/Sub lag and backlog).

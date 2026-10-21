@@ -31,12 +31,18 @@ jobs:
       - name: Database triage script tests
         working-directory: .claude/skills/sre-database-triage
         run: bash tests/run-tests.sh
+      - name: Migration safety tests
+        run: python3 .claude/skills/sre-migration-safety/scripts/tests/test_lint.py
+      - name: Kubernetes upgrade autopilot tests
+        run: bash .claude/skills/sre-k8s-upgrade-autopilot/tests/run-tests.sh
       - name: Install promtool
         run: |
           curl -sSfL https://github.com/prometheus/prometheus/releases/download/v3.5.0/prometheus-3.5.0.linux-amd64.tar.gz | tar xz -C /tmp
           echo "PROMTOOL=/tmp/prometheus-3.5.0.linux-amd64/promtool" >> "$GITHUB_ENV"
       - name: Burn-rate rule generator tests
         run: bash .claude/skills/sre-prometheus-grafana/scripts/test-gen-burn-rate-rules.sh
+      - name: Observability cost cutter tests
+        run: REQUIRE_PROMTOOL=1 python3 .claude/skills/sre-observability-cost-cutter/scripts/tests/run_tests.py
       - name: PromQL snippets
         run: |
           PATH=/tmp/prometheus-3.5.0.linux-amd64:$PATH python3 .claude/skills/sre-prometheus-grafana/scripts/validate-promql-snippets.py \
@@ -78,6 +84,8 @@ jobs:
       - name: Database triage tests on bash 3.2
         working-directory: .claude/skills/sre-database-triage
         run: bash tests/run-tests.sh
+      - name: Kubernetes upgrade autopilot tests on bash 3.2
+        run: bash .claude/skills/sre-k8s-upgrade-autopilot/tests/run-tests.sh
       - name: Terraform tests on bash 3.2
         working-directory: .claude/skills/sre-terraform
         run: bash tests/run-tests.sh

@@ -1,0 +1,1 @@
+[{"ns":"upgrade-test","name":"solo-pdb","min_available":1,"max_unavailable":null,"expected":1,"healthy":1,"disruptions_allowed":0},{"ns":"upgrade-test","name":"web-pdb","min_available":null,"max_unavailable":0,"expected":2,"healthy":2,"disruptions_allowed":0}]

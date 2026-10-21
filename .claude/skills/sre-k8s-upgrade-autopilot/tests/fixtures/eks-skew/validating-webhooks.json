@@ -1,0 +1,1 @@
+[{"name":"policy-validator","webhooks":[{"name":"validate.policy.example.com","failure_policy":"Fail","service":{"namespace":"policy","name":"policy-svc","port":443},"url":null}]},{"name":"healthy-validator","webhooks":[{"name":"validate.web.example.com","failure_policy":"Fail","service":{"namespace":"web","name":"hook","port":443},"url":null}]}]

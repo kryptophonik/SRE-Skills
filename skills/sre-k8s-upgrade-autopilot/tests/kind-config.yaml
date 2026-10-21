@@ -1,0 +1,36 @@
+# Throwaway kind test cluster with API audit logging, so the tests can prove which verbs the preflight used.
+# The audit policy path is filled in by tests/run-tests.sh (kind needs an absolute hostPath).
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+nodes:
+- role: control-plane
+  kubeadmConfigPatches:
+  - |
+    kind: ClusterConfiguration
+    apiServer:
+      extraArgs:
+        audit-log-path: /var/log/kubernetes/kube-apiserver-audit.log
+        audit-policy-file: /etc/kubernetes/policies/audit-policy.yaml
+      extraVolumes:
+      - name: audit-policies
+        hostPath: /etc/kubernetes/policies
+        mountPath: /etc/kubernetes/policies
+        readOnly: true
+        pathType: DirectoryOrCreate
+      - name: audit-logs
+        hostPath: /var/log/kubernetes
+        mountPath: /var/log/kubernetes
+        readOnly: false
+        pathType: DirectoryOrCreate
+  extraMounts:
+  - hostPath: AUDIT_POLICY_PATH
+    containerPath: /etc/kubernetes/policies/audit-policy.yaml
+    readOnly: true
+- role: worker
+  # A zone label so the seeded zonal PersistentVolume can bind and its pod can schedule.
+  labels:
+    topology.kubernetes.io/zone: kind-zone-a
+- role: worker
+  # Second zone: the scheduler honours the legacy zone label on the second seeded PV, so its pod needs a node here.
+  labels:
+    topology.kubernetes.io/zone: kind-zone-b

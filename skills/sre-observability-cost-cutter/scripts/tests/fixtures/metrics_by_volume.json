@@ -1,0 +1,74 @@
+{
+ "data": [
+  {
+   "id": "example.http.request.latency",
+   "type": "metrics"
+  },
+  {
+   "id": "example.legacy.batch.duration",
+   "type": "metrics"
+  },
+  {
+   "id": "example.queue.depth",
+   "type": "metrics"
+  },
+  {
+   "id": "example.debug.cache.hits",
+   "type": "metrics"
+  },
+  {
+   "id": "example.small.metric",
+   "type": "metrics"
+  }
+ ],
+ "included": [
+  {
+   "attributes": {
+    "indexed_volume": 9000,
+    "ingested_volume": 0
+   },
+   "id": "example.http.request.latency",
+   "type": "metric_volumes"
+  },
+  {
+   "attributes": {
+    "indexed_volume": 6000,
+    "ingested_volume": 0
+   },
+   "id": "example.legacy.batch.duration",
+   "type": "metric_volumes"
+  },
+  {
+   "attributes": {
+    "indexed_volume": 2500,
+    "ingested_volume": 0
+   },
+   "id": "example.queue.depth",
+   "type": "metric_volumes"
+  },
+  {
+   "attributes": {
+    "indexed_volume": 1500,
+    "ingested_volume": 0
+   },
+   "id": "example.debug.cache.hits",
+   "type": "metric_volumes"
+  },
+  {
+   "attributes": {
+    "indexed_volume": 50,
+    "ingested_volume": 0
+   },
+   "id": "example.small.metric",
+   "type": "metric_volumes"
+  }
+ ],
+ "meta": {
+  "pagination": {
+   "cursor": null,
+   "limit": 1000,
+   "next_cursor": null,
+   "type": "cursor_limit"
+  }
+ }
+}

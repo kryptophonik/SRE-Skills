@@ -1,0 +1,1 @@
+{"error":"Error from server (Forbidden): pods is forbidden: User \"reader\" cannot list resource \"pods\" in API group \"\" at the cluster scope"}

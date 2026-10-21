@@ -1,0 +1,1 @@
+[{"name":"optional-mutator","webhooks":[{"name":"mutate.tools.example.com","failure_policy":"Ignore","service":{"namespace":"tools","name":"gone","port":443},"url":null}]}]

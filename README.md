@@ -110,7 +110,7 @@ cat claude-sre/.github/copilot-instructions.md >> <your-repo>/.github/copilot-in
 
 ## Skills
 
-All 34 skills. The "What it does" column is each skill's frontmatter `description`. Invocation is `manual only` when frontmatter sets `disable-model-invocation: true` (the same two skills [SKILLS.md](SKILLS.md) marks manual only), `reference` when frontmatter sets `user-invocable: false` (the [reference skills](SKILLS.md)), and `auto` otherwise. Order follows the [SKILLS.md](SKILLS.md) routing table, then the tool adapters, then the reference skills.
+All 37 skills. The "What it does" column is each skill's frontmatter `description`. Invocation is `manual only` when frontmatter sets `disable-model-invocation: true` (the same two skills [SKILLS.md](SKILLS.md) marks manual only), `reference` when frontmatter sets `user-invocable: false` (the [reference skills](SKILLS.md)), and `auto` otherwise. Order follows the [SKILLS.md](SKILLS.md) routing table, then the tool adapters, then the reference skills.
 
 | Skill | What it does | Invocation |
 |---|---|---|
@@ -119,7 +119,9 @@ All 34 skills. The "What it does" column is each skill's frontmatter `descriptio
 | [`sre-engineer`](.claude/skills/sre-engineer/SKILL.md) | Use for live problems (incident, alert, latency or 5xx, gated remediation, runbook walk) and for SRE design: observability architecture, reliability reviews, on-call program design, and choosing tools. | auto |
 | [`sre-k8s-triage`](.claude/skills/sre-k8s-triage/SKILL.md) | Use when a Kubernetes workload or node is unhealthy: CrashLoopBackOff, Pending, OOMKilled, ImagePullBackOff, node pressure, DNS, probes, stuck rollouts, Helm, and whether a restart is safe. Read-only decision tree. | auto |
 | [`sre-k8s-safe-remediation`](.claude/skills/sre-k8s-safe-remediation/SKILL.md) | Use when a fix from sre-k8s-triage needs a kubectl or helm write (rollback, restart, scale, pod delete, Helm rollback): evidence, GitOps/HPA ownership check, preview, explicit approval, verify. | manual only |
+| [`sre-k8s-upgrade-autopilot`](.claude/skills/sre-k8s-upgrade-autopilot/SKILL.md) | Plan a Kubernetes minor-version upgrade - scripted preflight, support-status check, go/no-go, gated EKS/GKE/AKS steps, verification after every step. Scripts tested on kind. Use for "upgrade our cluster to 1.xx". | auto |
 | [`sre-database-triage`](.claude/skills/sre-database-triage/SKILL.md) | Use when Postgres, MySQL/MariaDB or Redis is slow or failing: connection exhaustion, locks, long or slow queries, replication lag, disk/WAL/bloat, Redis memory/eviction, DB CPU. Read-only; kill and failover are gated. | auto |
+| [`sre-migration-safety`](.claude/skills/sre-migration-safety/SKILL.md) | Review a SQL schema migration for PostgreSQL or MySQL/MariaDB before it merges. Says which statements lock, rewrite or block writes, and gives the safe pattern for each. Never connects to production. | auto |
 | [`sre-diagnostics`](.claude/skills/sre-diagnostics/SKILL.md) | Use to investigate a live issue read-only: logs/metrics/traces queries, correlation, hypothesis testing, profiling and bottleneck identification. Gives exact commands when tools are unavailable. | auto |
 | [`sre-incident-communication`](.claude/skills/sre-incident-communication/SKILL.md) | Use when an incident update or stakeholder message is needed: announcements, status updates, resolution notices, executive summaries with severity cadence. Drafts only until approved. | auto |
 | [`sre-postmortem-templates`](.claude/skills/sre-postmortem-templates/SKILL.md) | Use after an incident is resolved to draft or facilitate a blameless postmortem / incident review / RCA with a timeline from paging, monitoring and deploy history. Not for active incidents. | auto |
@@ -136,6 +138,7 @@ All 34 skills. The "What it does" column is each skill's frontmatter `descriptio
 | [`sre-expiry-audit`](.claude/skills/sre-expiry-audit/SKILL.md) | Use when asked what expires soon: TLS certs (endpoints, cert-manager), domain registrations, ACM/IAM certs, Secrets Manager rotation, GCP Secret/Certificate Manager, Azure Key Vault. Read-only metadata; flags 30/14/7 days. | auto |
 | [`sre-toil-review`](.claude/skills/sre-toil-review/SKILL.md) | Use for quarterly ops reviews or when on-call load is high: inventory repetitive manual work, score frequency x time x risk, and pick automation candidates. | auto |
 | [`sre-cloud-cost-review`](.claude/skills/sre-cloud-cost-review/SKILL.md) | Use for cloud or observability cost reviews and spend spikes: idle/oversized resources, storage sprawl, data transfer, commitments, ingest/retention. Read-only; never deletes or resizes without approval. | auto |
+| [`sre-observability-cost-cutter`](.claude/skills/sre-observability-cost-cutter/SKILL.md) | Use to reduce observability spend. Read-only usage and cost audit (works with Datadog), a ranked savings report with approval-gated changes and rollbacks, and conversion of metric monitors to Prometheus rules checked by promtool. | auto |
 | [`sre-observability-query-cookbook`](.claude/skills/sre-observability-query-cookbook/SKILL.md) | Use when you need a correct query for golden signals, RED/USE, saturation, error ratio, latency percentiles or SLO burn rate in PromQL, DQL, Datadog or LogQL. | auto |
 | [`sre-chaos-engineering`](.claude/skills/sre-chaos-engineering/SKILL.md) | Use to design or run a chaos / fault-injection experiment or game day, with hard no-go rules, approval and abort criteria. Manual invocation only. Not for live incident response. | manual only |
 | [`sre-dynatrace`](.claude/skills/sre-dynatrace/SKILL.md) | Use when data lives in Dynatrace: DQL for problems, logs, metrics and entities, Davis problem triage, SLO and health checks. Read-only MCP or DQL for Notebooks. | auto |
@@ -169,7 +172,19 @@ python3 scripts/build-targets.py --check
 python3 scripts/validate.py
 find .claude -name '*.sh' -exec bash -n {} \; && shellcheck -S warning $(find .claude -name '*.sh')
 .claude/skills/sre-pagerduty-opsgenie/scripts/tests/run_tests.sh
+REQUIRE_PROMTOOL=1 python3 .claude/skills/sre-observability-cost-cutter/scripts/tests/run_tests.py
+python3 .claude/skills/sre-migration-safety/scripts/tests/test_lint.py
+bash .claude/skills/sre-k8s-upgrade-autopilot/tests/run-tests.sh
 ```
+
+
+## Operational disclaimer
+
+These skills are operational runbooks. Test every change in non-production first. The operator approves every production-changing command, MCP write or external post; nothing is applied automatically. Savings figures and cost estimates are estimates, not guarantees.
+
+## Trademarks
+
+Datadog, Prometheus, Grafana, Dynatrace, Kubernetes, Amazon EKS, Google Kubernetes Engine, Azure Kubernetes Service, AWS, Google Cloud, Microsoft Azure, PagerDuty, Opsgenie, Atlassian, PostgreSQL, MySQL, MariaDB, Redis, Terraform and HashiCorp are trademarks or registered trademarks of their respective owners. They are used here only to describe compatibility. This project is not affiliated with, sponsored by or endorsed by any of them.
 
 ## Project files
 
