@@ -7,7 +7,7 @@ You need the Grok Build CLI (`grok`) installed and signed in; see the CLI refere
 ## Whole pack as a plugin
 
 ```bash
-grok plugin marketplace add kryptophonik/claude-sre
+grok plugin marketplace add kryptophonik/SRE-Skills
 grok plugin install sre@claude-sre
 ```
 
@@ -18,16 +18,16 @@ You can also install `sre` from the Marketplace tab in the TUI. If you already a
 Every copy command below runs from the folder that contains your clone, so clone once:
 
 ```bash
-git clone https://github.com/kryptophonik/claude-sre.git
+git clone https://github.com/kryptophonik/SRE-Skills.git
 ```
 
-Then `cd` to the folder that holds `claude-sre/`. Replace `<your-repo>` with the path to the repository you want the skills in.
+Then `cd` to the folder that holds `SRE-Skills/`. Replace `<your-repo>` with the path to the repository you want the skills in.
 
 ## Whole pack as project skills
 
 ```bash
 mkdir -p <your-repo>/.claude/skills
-cp -r claude-sre/.claude/skills/sre-* <your-repo>/.claude/skills/
+cp -r SRE-Skills/.claude/skills/sre-* <your-repo>/.claude/skills/
 ```
 
 Grok reads `.claude/skills` through Claude compatibility; `.grok/skills/` works too. For the always-on gate rules:
@@ -35,21 +35,21 @@ Grok reads `.claude/skills` through Claude compatibility; `.grok/skills/` works 
 `AGENTS.md` carries the always-on gate rules. Append it rather than copying over it, so an existing `AGENTS.md` isn't overwritten (run this once):
 
 ```bash
-cat claude-sre/AGENTS.md >> <your-repo>/AGENTS.md
+cat SRE-Skills/AGENTS.md >> <your-repo>/AGENTS.md
 ```
 
 ## Personal
 
 ```bash
 mkdir -p ~/.grok/skills
-cp -r claude-sre/.claude/skills/sre-* ~/.grok/skills/
+cp -r SRE-Skills/.claude/skills/sre-* ~/.grok/skills/
 ```
 
 ## Single skill
 
 ```bash
 mkdir -p ~/.grok/skills
-cp -r claude-sre/.claude/skills/sre-safety-gates claude-sre/.claude/skills/<skill> ~/.grok/skills/
+cp -r SRE-Skills/.claude/skills/sre-safety-gates SRE-Skills/.claude/skills/<skill> ~/.grok/skills/
 ```
 
 Some skills need another skill's scripts: `sre-oncall-audit` and `sre-oncall-handoff` need `sre-pagerduty-opsgenie`, `sre-slo-burn-rate-rules` needs `sre-prometheus-grafana`, and `sre-k8s-safe-remediation` needs `sre-k8s-triage`. The full list is under "Install profiles" in [SKILLS.md](../../SKILLS.md).

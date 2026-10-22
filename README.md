@@ -45,7 +45,7 @@ See **[INSTALL.md](INSTALL.md)**. It covers Claude Code, Gemini CLI, Cursor, Gro
 Quick start (Claude Code plugin):
 
 ```text
-/plugin marketplace add kryptophonik/claude-sre
+/plugin marketplace add kryptophonik/SRE-Skills
 /plugin install sre@claude-sre
 ```
 
@@ -53,25 +53,25 @@ Plugin skills are namespaced, for example `/sre:sre-incident-command`. Verify wi
 
 ## Quick start
 
-Commands and copy steps below are the whole-pack install from each guide. Copy steps assume you ran `git clone https://github.com/kryptophonik/claude-sre.git` and are in the folder that contains `claude-sre/`. Follow the linked doc for a single skill, personal scope, and how the gates stay attached.
+Commands and copy steps below are the whole-pack install from each guide. Copy steps assume you ran `git clone https://github.com/kryptophonik/SRE-Skills.git` and are in the folder that contains `SRE-Skills/`. Follow the linked doc for a single skill, personal scope, and how the gates stay attached.
 
 ### Claude Code
 
 [docs/install/claude-code.md](docs/install/claude-code.md)
 
 ```text
-/plugin marketplace add kryptophonik/claude-sre
+/plugin marketplace add kryptophonik/SRE-Skills
 /plugin install sre@claude-sre
 ```
 
-Or from your shell: `claude plugin marketplace add kryptophonik/claude-sre`, then `claude plugin install sre@claude-sre`.
+Or from your shell: `claude plugin marketplace add kryptophonik/SRE-Skills`, then `claude plugin install sre@claude-sre`.
 
 ### Gemini CLI
 
 [docs/install/gemini-cli.md](docs/install/gemini-cli.md)
 
 ```bash
-gemini extensions install https://github.com/kryptophonik/claude-sre
+gemini extensions install https://github.com/kryptophonik/SRE-Skills
 ```
 
 Don't pin `--ref`: a pinned tag never updates. The install asks you to trust the current folder and to confirm the skill list; `--consent` skips the second prompt.
@@ -82,15 +82,15 @@ Don't pin `--ref`: a pinned tag never updates. The install asks you to trust the
 
 ```bash
 mkdir -p <your-repo>/.claude/skills <your-repo>/.cursor/rules
-cp -r claude-sre/.claude/skills/sre-* <your-repo>/.claude/skills/
-cp claude-sre/.cursor/rules/sre-safety-gates.mdc <your-repo>/.cursor/rules/
+cp -r SRE-Skills/.claude/skills/sre-* <your-repo>/.claude/skills/
+cp SRE-Skills/.cursor/rules/sre-safety-gates.mdc <your-repo>/.cursor/rules/
 ```
 
 ### Grok
 
 [docs/install/grok.md](docs/install/grok.md)
 
-Run `grok plugin marketplace add kryptophonik/claude-sre`, then `grok plugin install sre@claude-sre` (or install `sre` from the TUI Marketplace tab). To try it without installing, run `grok --plugin-dir <path-to-clone>`.
+Run `grok plugin marketplace add kryptophonik/SRE-Skills`, then `grok plugin install sre@claude-sre` (or install `sre` from the TUI Marketplace tab). To try it without installing, run `grok --plugin-dir <path-to-clone>`.
 
 ### Codex CLI
 
@@ -98,8 +98,8 @@ Run `grok plugin marketplace add kryptophonik/claude-sre`, then `grok plugin ins
 
 ```bash
 mkdir -p <your-repo>/.agents/skills
-cp -r claude-sre/skills/sre-* <your-repo>/.agents/skills/
-cat claude-sre/AGENTS.md >> <your-repo>/AGENTS.md    # appends; never overwrites your AGENTS.md (run once)
+cp -r SRE-Skills/skills/sre-* <your-repo>/.agents/skills/
+cat SRE-Skills/AGENTS.md >> <your-repo>/AGENTS.md    # appends; never overwrites your AGENTS.md (run once)
 ```
 
 ### GitHub Copilot
@@ -108,8 +108,8 @@ cat claude-sre/AGENTS.md >> <your-repo>/AGENTS.md    # appends; never overwrites
 
 ```bash
 mkdir -p <your-repo>/.claude/skills <your-repo>/.github
-cp -r claude-sre/.claude/skills/sre-* <your-repo>/.claude/skills/
-cat claude-sre/.github/copilot-instructions.md >> <your-repo>/.github/copilot-instructions.md   # appends (run once)
+cp -r SRE-Skills/.claude/skills/sre-* <your-repo>/.claude/skills/
+cat SRE-Skills/.github/copilot-instructions.md >> <your-repo>/.github/copilot-instructions.md   # appends (run once)
 ```
 
 ## What's inside

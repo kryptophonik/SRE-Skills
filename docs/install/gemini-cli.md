@@ -9,7 +9,7 @@ Docs (checked 2026-10-17): extensions reference https://geminicli.com/docs/exten
 No clone needed:
 
 ```bash
-gemini extensions install https://github.com/kryptophonik/claude-sre
+gemini extensions install https://github.com/kryptophonik/SRE-Skills
 ```
 
 Don't pass `--ref <tag>`: a pinned ref stays on that release, and `gemini extensions update sre` then reports "already up to date". Without `--ref` you get the default branch, and `update` moves you to the latest release. Add `--auto-update` to update automatically.
@@ -40,8 +40,8 @@ Extensions install for the user and are enabled globally. To scope one to a proj
 Extensions load as a whole. For one skill, use Gemini's own skills command and always install `sre-safety-gates` first:
 
 ```bash
-gemini skills install https://github.com/kryptophonik/claude-sre.git --path skills/sre-safety-gates
-gemini skills install https://github.com/kryptophonik/claude-sre.git --path skills/<skill>
+gemini skills install https://github.com/kryptophonik/SRE-Skills.git --path skills/sre-safety-gates
+gemini skills install https://github.com/kryptophonik/SRE-Skills.git --path skills/<skill>
 ```
 
 Add `--scope workspace` for a project install (the default is `user`), and `--consent` to skip the confirmation prompt. Verify with `gemini skills list`. Some skills need another skill's scripts: `sre-oncall-audit` and `sre-oncall-handoff` need `sre-pagerduty-opsgenie`, `sre-slo-burn-rate-rules` needs `sre-prometheus-grafana`, and `sre-k8s-safe-remediation` needs `sre-k8s-triage`. The full list is under "Install profiles" in [SKILLS.md](../../SKILLS.md).

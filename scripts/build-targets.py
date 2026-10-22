@@ -28,7 +28,7 @@ PACK = {
     "version": "3.1.0",  # single source of truth for the pack version
     "description": "Generic SRE skills with shared approval gates: incident command, diagnosis, database triage (Postgres, MySQL, Redis), certificate and domain expiry audits, gated remediation, SLOs, DR, capacity, cost, and read-only adapters for Kubernetes, AWS, Azure, GCP, Terraform, Dynatrace, Prometheus/Grafana, Datadog and PagerDuty/Opsgenie.",
     "author": {"name": "Mike May", "email": "mike48229@gmail.com"},
-    "repository": "https://github.com/kryptophonik/claude-sre",
+    "repository": "https://github.com/kryptophonik/SRE-Skills",
     "license": "MIT",
     "keywords": ["sre", "incident-response", "kubernetes", "observability", "on-call", "slo"],
 }

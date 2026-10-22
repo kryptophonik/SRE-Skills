@@ -9,17 +9,17 @@ Cursor discovers skills in `.cursor/skills/`, `.agents/skills/`, `~/.cursor/skil
 Every copy command below runs from the folder that contains your clone, so clone once:
 
 ```bash
-git clone https://github.com/kryptophonik/claude-sre.git
+git clone https://github.com/kryptophonik/SRE-Skills.git
 ```
 
-Then `cd` to the folder that holds `claude-sre/`. Replace `<your-repo>` with the path to the repository you want the skills in.
+Then `cd` to the folder that holds `SRE-Skills/`. Replace `<your-repo>` with the path to the repository you want the skills in.
 
 ## Whole pack, project
 
 ```bash
 mkdir -p <your-repo>/.claude/skills <your-repo>/.cursor/rules
-cp -r claude-sre/.claude/skills/sre-* <your-repo>/.claude/skills/
-cp claude-sre/.cursor/rules/sre-safety-gates.mdc <your-repo>/.cursor/rules/
+cp -r SRE-Skills/.claude/skills/sre-* <your-repo>/.claude/skills/
+cp SRE-Skills/.cursor/rules/sre-safety-gates.mdc <your-repo>/.cursor/rules/
 ```
 
 Cursor reads `.claude/skills` directly, so no conversion is needed. Optionally, add `AGENTS.md` too, which other tools in the same repo also read:
@@ -27,23 +27,23 @@ Cursor reads `.claude/skills` directly, so no conversion is needed. Optionally, 
 `AGENTS.md` carries the always-on gate rules. Append it rather than copying over it, so an existing `AGENTS.md` isn't overwritten (run this once):
 
 ```bash
-cat claude-sre/AGENTS.md >> <your-repo>/AGENTS.md
+cat SRE-Skills/AGENTS.md >> <your-repo>/AGENTS.md
 ```
 
 ## Personal
 
 ```bash
 mkdir -p ~/.cursor/skills
-cp -r claude-sre/.claude/skills/sre-* ~/.cursor/skills/
+cp -r SRE-Skills/.claude/skills/sre-* ~/.cursor/skills/
 ```
 
-Then add the gate text from `claude-sre/.cursor/rules/sre-safety-gates.mdc` as a User Rule in Cursor's settings, because user-level `.mdc` files aren't documented.
+Then add the gate text from `SRE-Skills/.cursor/rules/sre-safety-gates.mdc` as a User Rule in Cursor's settings, because user-level `.mdc` files aren't documented.
 
 ## Single skill
 
 ```bash
 mkdir -p <your-repo>/.claude/skills
-cp -r claude-sre/.claude/skills/sre-safety-gates claude-sre/.claude/skills/<skill> <your-repo>/.claude/skills/
+cp -r SRE-Skills/.claude/skills/sre-safety-gates SRE-Skills/.claude/skills/<skill> <your-repo>/.claude/skills/
 ```
 
 Some skills need another skill's scripts: `sre-oncall-audit` and `sre-oncall-handoff` need `sre-pagerduty-opsgenie`, `sre-slo-burn-rate-rules` needs `sre-prometheus-grafana`, and `sre-k8s-safe-remediation` needs `sre-k8s-triage`. The full list is under "Install profiles" in [SKILLS.md](../../SKILLS.md).

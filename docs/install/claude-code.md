@@ -7,11 +7,11 @@ Docs (checked 2026-10-17): skills https://code.claude.com/docs/en/skills · plug
 No clone needed. Inside Claude Code:
 
 ```text
-/plugin marketplace add kryptophonik/claude-sre
+/plugin marketplace add kryptophonik/SRE-Skills
 /plugin install sre@claude-sre
 ```
 
-Or from your shell: `claude plugin marketplace add kryptophonik/claude-sre`, then `claude plugin install sre@claude-sre`. The plugin loads the generated `skills/` mirror. Install scope is user by default; pass `--scope project` to record it in the project settings.
+Or from your shell: `claude plugin marketplace add kryptophonik/SRE-Skills`, then `claude plugin install sre@claude-sre`. The plugin loads the generated `skills/` mirror. Install scope is user by default; pass `--scope project` to record it in the project settings.
 
 **Plugin skills are namespaced.** Type `/sre:sre-incident-command`, not `/sre-incident-command`. The two manual-only skills are `/sre:sre-k8s-safe-remediation` and `/sre:sre-chaos-engineering`.
 
@@ -29,16 +29,16 @@ Then start a new session and send a test prompt such as "pods in namespace payme
 Every copy command below runs from the folder that contains your clone, so clone once:
 
 ```bash
-git clone https://github.com/kryptophonik/claude-sre.git
+git clone https://github.com/kryptophonik/SRE-Skills.git
 ```
 
-Then `cd` to the folder that holds `claude-sre/`. Replace `<your-repo>` with the path to the repository you want the skills in.
+Then `cd` to the folder that holds `SRE-Skills/`. Replace `<your-repo>` with the path to the repository you want the skills in.
 
 ## Whole pack as project skills
 
 ```bash
 mkdir -p <your-repo>/.claude/skills
-cp -r claude-sre/.claude/skills/sre-* <your-repo>/.claude/skills/
+cp -r SRE-Skills/.claude/skills/sre-* <your-repo>/.claude/skills/
 ```
 
 Commit the folder. Project skills also load in cloud sessions. Names aren't namespaced here (`/sre-k8s-safe-remediation`), and a personal skill with the same name overrides a project one, so check for collisions with `/skills`.
@@ -47,7 +47,7 @@ Commit the folder. Project skills also load in cloud sessions. Names aren't name
 
 ```bash
 mkdir -p ~/.claude/skills
-cp -r claude-sre/.claude/skills/sre-* ~/.claude/skills/
+cp -r SRE-Skills/.claude/skills/sre-* ~/.claude/skills/
 ```
 
 Personal skills override project skills with the same name.
@@ -58,7 +58,7 @@ Always copy `sre-safety-gates` with it. For example, for `sre-aws`:
 
 ```bash
 mkdir -p ~/.claude/skills
-cp -r claude-sre/.claude/skills/sre-safety-gates claude-sre/.claude/skills/sre-aws ~/.claude/skills/
+cp -r SRE-Skills/.claude/skills/sre-safety-gates SRE-Skills/.claude/skills/sre-aws ~/.claude/skills/
 ```
 
 Some skills need another skill's scripts: `sre-oncall-audit` and `sre-oncall-handoff` need `sre-pagerduty-opsgenie`, `sre-slo-burn-rate-rules` needs `sre-prometheus-grafana`, and `sre-k8s-safe-remediation` needs `sre-k8s-triage`. The full list is under "Install profiles" in [SKILLS.md](../../SKILLS.md).

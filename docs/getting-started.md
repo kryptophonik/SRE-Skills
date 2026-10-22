@@ -140,12 +140,12 @@ Replace the placeholders. Every prompt names its target, because the skills neve
 
 ## Running the bundled scripts yourself
 
-Several skills ship scripts you can run without an assistant. They're read-only, need an explicit target, and write their output outside the repo. Paths are relative to your clone (`claude-sre/`); after a copy install they're in the same place under your skills folder. Run each one from its skill folder, as shown.
+Several skills ship scripts you can run without an assistant. They're read-only, need an explicit target, and write their output outside the repo. Paths are relative to your clone (`SRE-Skills/`); after a copy install they're in the same place under your skills folder. Run each one from its skill folder, as shown.
 
 **Kubernetes upgrade preflight** (`sre-k8s-upgrade-autopilot`). Exit 0 GO, 1 NO-GO, 2 refused, 3 unreachable.
 
 ```bash
-cd claude-sre/.claude/skills/sre-k8s-upgrade-autopilot
+cd SRE-Skills/.claude/skills/sre-k8s-upgrade-autopilot
 bash scripts/upgrade-preflight.sh --context <ctx> --target 1.33
 bash scripts/verify-step.sh --context <ctx> --expect-control-plane 1.33      # after each upgrade step
 bash scripts/upgrade-preflight.sh --context demo --target 1.32 --fixtures tests/fixtures/kind-1.31   # recorded data, no cluster
@@ -154,7 +154,7 @@ bash scripts/upgrade-preflight.sh --context demo --target 1.32 --fixtures tests/
 **Kubernetes triage** (`sre-k8s-triage`). The preflight exits 1 if the identity can read Secrets, exec, port-forward or write, so an admin context (such as kind's default) fails it on purpose.
 
 ```bash
-cd claude-sre/.claude/skills/sre-k8s-triage
+cd SRE-Skills/.claude/skills/sre-k8s-triage
 bash scripts/k8s-preflight.sh --context <ctx> -n <ns>
 bash scripts/k8s-triage-snapshot.sh --context <ctx> -n <ns>
 ```
@@ -162,7 +162,7 @@ bash scripts/k8s-triage-snapshot.sh --context <ctx> -n <ns>
 **Migration lint** (`sre-migration-safety`). Never connects to a database. Exit 0 clean, 1 warnings, 2 blockers.
 
 ```bash
-cd claude-sre/.claude/skills/sre-migration-safety
+cd SRE-Skills/.claude/skills/sre-migration-safety
 python3 scripts/migration-lint.py --engine pg <path-to>/migration.sql
 python3 scripts/migration-lint.py --engine mysql --format json <path-to>/migrate.sql
 ```
@@ -170,7 +170,7 @@ python3 scripts/migration-lint.py --engine mysql --format json <path-to>/migrate
 **Observability cost audit** (`sre-observability-cost-cutter`). Try it on the synthetic demo data first. A live run needs read-only `DD_API_KEY`, `DD_APP_KEY` and `DD_SITE` exported in your shell; see the skill's Inputs.
 
 ```bash
-cd claude-sre/.claude/skills/sre-observability-cost-cutter
+cd SRE-Skills/.claude/skills/sre-observability-cost-cutter
 W="$(mktemp -d "${TMPDIR:-/tmp}/obcost-demo.XXXXXX")"
 python3 scripts/dd_cost_audit.py --input-dir demo --dollar-estimates --out "$W/demo-report.md"
 ```
@@ -178,7 +178,7 @@ python3 scripts/dd_cost_audit.py --input-dir demo --dollar-estimates --out "$W/d
 **SLO burn-rate rules** (`sre-slo-burn-rate-rules` uses the generator in `sre-prometheus-grafana`):
 
 ```bash
-cd claude-sre/.claude/skills/sre-prometheus-grafana
+cd SRE-Skills/.claude/skills/sre-prometheus-grafana
 python3 scripts/gen-burn-rate-rules.py --slo-name checkout-availability --objective 0.999 \
   --errors 'http_requests_total{job="checkout",code=~"5.."}' --total 'http_requests_total{job="checkout"}' \
   --out /tmp/slo-checkout.rules.yml
@@ -188,7 +188,7 @@ promtool check rules --lint=all --lint-fatal /tmp/slo-checkout.rules.yml
 **PagerDuty and Opsgenie** (`sre-pagerduty-opsgenie`). Export `PD_API_KEY` or `OG_API_KEY` in your shell first; set `PD_REGION=eu` or `OG_REGION=eu` for EU accounts.
 
 ```bash
-cd claude-sre/.claude/skills/sre-pagerduty-opsgenie
+cd SRE-Skills/.claude/skills/sre-pagerduty-opsgenie
 bash scripts/pd_oncall.sh
 bash scripts/pd_incidents.sh --since <ISO8601> --until <ISO8601>
 bash scripts/og_oncall.sh --schedule <schedule-name>
