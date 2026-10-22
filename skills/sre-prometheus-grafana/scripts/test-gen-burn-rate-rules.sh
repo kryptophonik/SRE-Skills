@@ -54,5 +54,15 @@ expect_fail "rejected: selector with [range]" "$GEN" --slo-name x --objective 0.
 expect_fail "rejected: unbalanced braces" "$GEN" --slo-name x --objective 0.999 --errors 'http_requests_total{job="a"' --total "$TOT"
 expect_fail "rejected: quote in --slo-name" gen --slo-name 'x"y' --objective 0.999
 
+# 7. Rule and alert names in the skill docs match what the generator emits.
+for doc in "$HERE/../SKILL.md" "$HERE/../../sre-slo-alerting/SKILL.md"; do
+  [ -f "$doc" ] || continue
+  d="$(basename "$(cd "$(dirname "$doc")" && pwd)")"
+  expect_fail "$d: no stale rule names (job:slo_errors_per_request, SvcErrorBudgetBurn)" grep -Eq 'job:slo_errors_per_request|SvcErrorBudgetBurn' "$doc"
+  while IFS= read -r n; do
+    expect_ok "$d: '$n' exists in generator output" grep -q -- "$n" "$T/ref.yml"
+  done < <(grep -Eo 'slo:sli_error:ratio_rate[0-9]+[mhd]|SLOErrorBudgetBurn[A-Za-z]+' "$doc" | sort -u)
+done
+
 echo "== $pass passed, $fail failed"
 [ "$fail" -eq 0 ]

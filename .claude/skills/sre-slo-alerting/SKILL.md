@@ -131,12 +131,12 @@ Reference for `sre-engineer` when a burn-rate alert fires; designing the alerts 
 | Slow burn | 3x (1d / 2h) | 10% | 10 days | Chronic degradation | Ticket: next business day |
 | Very slow burn | 1x (3d / 6h) | 10% | 30 days | On track to spend exactly the budget | Ticket |
 
-Read-only checks (example for a 99.9% SLO and the recording rules in Part 2; use your SLO and rule names):
+Read-only checks (example for a 99.9% SLO with rules from `sre-prometheus-grafana`'s `gen-burn-rate-rules.py`, which fire `SLOErrorBudgetBurnFast` / `SLOErrorBudgetBurnSlow`; use your SLO name):
 
 ```promql
 # current burn rate; above the tier's threshold = still burning
-job:slo_errors_per_request:ratio_rate5m{job="<svc>"} / (1 - 0.999)   # short window
-job:slo_errors_per_request:ratio_rate1h{job="<svc>"} / (1 - 0.999)   # long window
+slo:sli_error:ratio_rate5m{slo="<slo>"} / (1 - 0.999)   # short window
+slo:sli_error:ratio_rate1h{slo="<slo>"} / (1 - 0.999)   # long window
 ```
 
 **Fast or medium burn (page), first 15 minutes:**
@@ -165,8 +165,8 @@ SLO [<slo>, e.g. 99.9%] over [30d] is burning budget. Impact: [user-facing sympt
         OR (ratio_6h > 6*(1-<slo>) AND ratio_30m > 6*(1-<slo>))
 - **Ticket:** (ratio_1d > 3*(1-<slo>) AND ratio_2h > 3*(1-<slo>))
         OR (ratio_3d > 1*(1-<slo>) AND ratio_6h > 1*(1-<slo>))
-- **Ratios:** recording rules `job:slo_errors_per_request:ratio_rate<window>` with `job="<svc>"`
-- **for:** 0m (or a short noise filter only)
+- **Ratios:** recording rules `slo:sli_error:ratio_rate<window>` with `slo="<slo>"` (from `gen-burn-rate-rules.py`)
+- **for:** none (the generator default), or a short noise filter only
 
 ## 3. Runbook Link
 [Link to sre-runbook-templates output]
