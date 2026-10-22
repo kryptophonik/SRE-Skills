@@ -15,14 +15,16 @@
 
 ## Lab setup (about 3 minutes, no cloud)
 
-You need Docker, [kind](https://kind.sigs.k8s.io/) and kubectl. The image is pulled on the host and loaded into the node, so the cluster doesn't need to reach a registry.
+You need Docker, [kind](https://kind.sigs.k8s.io/) and kubectl. The image is pulled on the host and loaded into the node, so the cluster doesn't need to reach a registry. `kubectl create deployment` already sets `imagePullPolicy: IfNotPresent` for a tagged image, so the node uses the loaded copy.
+
+> **Kubeconfig.** `kind create cluster` adds a context to your kubeconfig and makes it the **current** context, so a later `kubectl` without `--context` would hit the lab, and one with your usual habits could hit something real. Keep the lab in its own file: run `export KUBECONFIG=$(mktemp)` in this shell first, and close the shell (or `unset KUBECONFIG`) when you're done. Every command below also names `--context kind-sre-demo`.
 
 ```console
+$ export KUBECONFIG=$(mktemp)
 $ kind create cluster --name sre-demo --wait 120s
 $ docker pull nginx:1.27 && kind load docker-image nginx:1.27 --name sre-demo
 $ kubectl --context kind-sre-demo create namespace demo
 $ kubectl --context kind-sre-demo -n demo create deployment web --image=nginx:1.27 --replicas=2 --port=80
-$ kubectl --context kind-sre-demo -n demo patch deployment web --type=json -p='[{"op":"add","path":"/spec/template/spec/containers/0/imagePullPolicy","value":"IfNotPresent"}]'
 $ kubectl --context kind-sre-demo -n demo annotate deployment web kubernetes.io/change-cause='v1: nginx 1.27' --overwrite
 $ kubectl --context kind-sre-demo -n demo expose deployment web --port=80
 $ kubectl --context kind-sre-demo -n demo rollout status deployment/web --timeout=120s
@@ -52,7 +54,7 @@ web-d8d5b7f7d-l2q72    0/1     Error     3 (29s ago)   46s
 **1. Pin the target, then look at pods and Warning events.** These come first because they tell you which pod and which kind of failure you have.
 
 ```console
-$ kubectl config get-contexts
+$ kubectl config get-contexts kind-sre-demo
 CURRENT   NAME            CLUSTER         AUTHINFO        NAMESPACE
 *         kind-sre-demo   kind-sre-demo   kind-sre-demo
 $ kubectl --context kind-sre-demo -n demo events --types=Warning | tail -n 50
@@ -100,9 +102,10 @@ $ kubectl --context kind-sre-demo -n demo get deployment/web -o jsonpath='desire
 desired=2 ready=2 updated=1
 ```
 
-**5. Check access, then save evidence.** On kind you're cluster admin, so the preflight fails on purpose: it warns you that this identity could read Secrets and write. On a real cluster, use a read-only identity (see [example 4](04-k8s-failure-modes.md)).
+**5. Check access, then save evidence.** On kind you're cluster admin, so the preflight fails on purpose: it warns you that this identity could read Secrets and write. On a real cluster, use a read-only identity (see [example 4](04-k8s-failure-modes.md)). The scripts live in the triage skill, so run them from there:
 
 ```console
+$ cd "$(git rev-parse --show-toplevel)/.claude/skills/sre-k8s-triage"
 $ bash scripts/k8s-preflight.sh --context kind-sre-demo -n demo
 OK    can-i get pods                     => yes (want yes)
 FAIL  can-i get secrets                  => yes (want no)
@@ -136,8 +139,17 @@ Before proposing anything, the remediation skill previews the change on the serv
 ```console
 $ kubectl --context kind-sre-demo -n demo rollout undo deployment/web --to-revision=1 --dry-run=server
 deployment.apps/web rolled back (server dry run)
-$ diff <(kubectl ... rollout history deployment/web --revision=2) <(kubectl ... rollout history deployment/web --revision=1)
-...
+$ diff <(kubectl --context kind-sre-demo -n demo rollout history deployment/web --revision=2) <(kubectl --context kind-sre-demo -n demo rollout history deployment/web --revision=1)
+1c1
+< deployment.apps/web with revision #2
+---
+> deployment.apps/web with revision #1
+4,5c4,5
+< 	pod-template-hash=d8d5b7f7d
+<   Annotations:	kubernetes.io/change-cause: v2: new entrypoint
+---
+> 	pod-template-hash=7fc7749b56
+>   Annotations:	kubernetes.io/change-cause: v1: nginx 1.27
 11,14d10
 <     Command:
 <       sh
@@ -185,6 +197,7 @@ Revision 1 comes back as revision 3. That's normal: a rollback creates a new rev
 ```console
 $ kind delete cluster --name sre-demo
 $ rm -rf /tmp/k8s-triage/kind-sre-demo_demo_*   # the snapshot holds raw logs
+$ rm -f "$KUBECONFIG"; unset KUBECONFIG
 ```
 
 ## What to take from this

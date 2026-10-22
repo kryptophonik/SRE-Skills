@@ -15,9 +15,17 @@
 
 ## Lab setup (kind, no cloud)
 
-The workloads are in [lab/k8s-failure-modes.yaml](lab/k8s-failure-modes.yaml). Run from the skill folder (`.claude/skills/sre-k8s-triage`):
+The workloads are in [lab/k8s-failure-modes.yaml](lab/k8s-failure-modes.yaml).
+
+> **Kubeconfig.** `kind create cluster` adds a context to your kubeconfig and makes it the **current** context. Keep the lab in its own file: `export KUBECONFIG=$(mktemp)` in this shell first, and close the shell (or `unset KUBECONFIG`) when you're done. Every command below also names `--context kind-sre-show`.
+
+Run from the skill folder, and define `RO`, the read-only service account every triage command impersonates:
 
 ```console
+$ cd "$(git rev-parse --show-toplevel)/.claude/skills/sre-k8s-triage"
+$ export KUBECONFIG=$(mktemp)
+$ RO=system:serviceaccount:sre-agent:sre-agent-readonly
+$ EVID=$(mktemp -d)   # evidence goes here, not into your clone
 $ kind create cluster --name sre-show --wait 120s
 $ docker pull nginx:1.27 && docker pull busybox:1.36 && kind load docker-image nginx:1.27 busybox:1.36 --name sre-show
 $ kubectl --context kind-sre-show create namespace shop
@@ -58,7 +66,7 @@ OK    can-i patch deployments            => no  (want no)
 [exit 0]
 ```
 
-Every command below adds `--as system:serviceaccount:sre-agent:sre-agent-readonly`, shortened here to `--as $RO`.
+Every command below adds `--as $RO`, the service account defined in the setup.
 
 **2. Pods and Warning events.** One pass shows all four faults:
 
@@ -101,7 +109,7 @@ storefront-dg2fp   false,false
 
 `logs --previous` for report-gen returned "unable to retrieve container logs": the container restarts every few seconds. `top` failed with "Metrics API not available" (kind has no metrics-server). The skill says both can happen and moves on.
 
-**4. Is it safe to restart storefront?** It runs the read-only checklist: `desired=2 ready=` (none), no PDB, no HPA, RollingUpdate 25%/25%. Then `k8s-triage-snapshot.sh -o ./incident/k8s-shop` saves the evidence (5 unhealthy pods captured).
+**4. Is it safe to restart storefront?** It runs the read-only checklist: `desired=2 ready=` (none), no PDB, no HPA, RollingUpdate 25%/25%. Then `k8s-triage-snapshot.sh -o "$EVID/k8s-shop"` saves the evidence (5 unhealthy pods captured).
 
 ## The diagnosis and approval stop (written in the skill's format)
 
@@ -155,7 +163,8 @@ gpu-api stays Pending on purpose: it was escalated, not "fixed".
 
 ```console
 $ kind delete cluster --name sre-show
-$ rm -rf ./incident/k8s-shop
+$ rm -rf "$EVID"   # the snapshot from step 4 holds raw logs
+$ rm -f "$KUBECONFIG"; unset KUBECONFIG
 ```
 
 ## What to take from this
