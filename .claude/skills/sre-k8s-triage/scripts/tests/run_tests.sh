@@ -29,6 +29,7 @@ case "$1 ${2:-}" in
   "get --raw") echo '{"gitVersion":"v1.35.0"}' ;;
   "auth can-i") case "$3" in get|list) [ "$4" = secrets ] && { echo no; exit 1; }; echo yes ;; *) echo no; exit 1 ;; esac ;;
   "get pods") case "$*" in *jsonpath*) printf 'crashy-1\tRunning\tfalse,3 \n' ;; *) echo "NAME READY STATUS"; echo "crashy-1 0/1 Error" ;; esac ;;
+  "get hpa"|"get pvc") echo "No resources found in demo namespace." >&2 ;;
   *) echo "stub: $*" ;;
 esac
 STUB
@@ -55,5 +56,6 @@ grep -q "^done" "$T/err" && { fail=$((fail+1)); echo "FAIL snapshot unreachable 
 t "snapshot ok"              0 "" bash "$S/k8s-triage-snapshot.sh" --context up -n demo -o "$T/snap-up"
 grep -q "1 unhealthy pods captured" "$T/err" && [ -s "$T/snap-up/01-pods.txt" ] && [ -e "$T/snap-up/pods/crashy-1.log" ] \
   && pass=$((pass+1)) || { fail=$((fail+1)); echo "FAIL snapshot ok contents"; cat "$T/err"; }
+ls "$T/snap-up"/*.err >/dev/null 2>&1 && { fail=$((fail+1)); echo "FAIL empty-list noise kept as .err:"; ls "$T/snap-up"/*.err; } || pass=$((pass+1))
 echo "$pass/$((pass+fail)) passed"
 [ "$fail" = 0 ]

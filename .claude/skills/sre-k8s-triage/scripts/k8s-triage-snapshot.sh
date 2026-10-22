@@ -46,11 +46,13 @@ redact_describe() {
     {print}' | sed -E 's/((password|passwd|token|secret|apikey|api_key|authorization)[^:=]*[:=])[[:space:]]*[^[:space:]]+/\1 <redacted>/Ig'
 }
 
+# kubectl prints "No resources found" on stderr for an empty list; that is not an error.
+drop_noise() { grep -qv '^No resources found' "$1" 2>/dev/null || rm -f "$1"; }
 FAILED=0
 section() { # name, command...; failure of one section never aborts the run
   local name="$1"; shift
   if ! "$@" >"$OUT/$name.txt" 2>"$OUT/$name.err"; then echo "[warn] $name failed (see $name.err)" >&2; FAILED=$((FAILED+1)); fi
-  [[ -s "$OUT/$name.err" ]] || rm -f "$OUT/$name.err"
+  drop_noise "$OUT/$name.err"
 }
 
 { echo "requested_context=$CTX namespace=$NS ts=$TS"; echo "kubeconfig_current_context=$(kubectl config current-context 2>/dev/null || echo none)"; } >"$OUT/00-context.txt"
@@ -67,6 +69,7 @@ section 08-pvc         kctl get pvc
 if ! kctl top pods --containers >"$OUT/09-top.txt" 2>"$OUT/09-top.err"; then
   echo "metrics unavailable (metrics-server missing?)" >>"$OUT/09-top.txt"
 fi
+drop_noise "$OUT/09-top.err"
 
 # Rollout status, non-blocking.
 mkdir -p "$OUT/rollouts"

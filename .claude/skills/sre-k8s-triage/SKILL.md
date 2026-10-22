@@ -43,7 +43,7 @@ kubectl --context <ctx> -n <ns> describe pod <pod>
 | Status / reason | Check | Common causes |
 |---|---|---|
 | `CrashLoopBackOff` (STATUS shows `Error` between back-offs) | `kubectl --context <ctx> -n <ns> logs <pod> -c <container> --previous --tail=200`; if `--previous` fails, drop it and read the current logs | app error at start, bad config/secret, failing dependency, wrong command |
-| `OOMKilled` (in `describe` Last State) | limits in `describe`; restart/OOM metrics (`top` shows current usage only, peak is gone) | memory limit too low, leak; capture heap before restart |
+| `OOMKilled` (in `describe` Last State) | limits and Last State in `describe` (logs `--previous` often fails here; see below); restart/OOM metrics (`top` shows current usage only, peak is gone) | memory limit too low, leak; capture heap before restart |
 | `Pending` | `describe` Events: `FailedScheduling` | insufficient CPU/memory, node selector/affinity/taints, unbound PVC, quota |
 | `ImagePullBackOff` / `ErrImagePull` | `describe` Events | wrong tag, registry auth (imagePullSecret), rate limit, private registry network |
 | `CreateContainerConfigError` | `describe` | missing ConfigMap/Secret key (check key names, not values) |
@@ -51,7 +51,7 @@ kubectl --context <ctx> -n <ns> describe pod <pod>
 | `Terminating` stuck | `kubectl --context <ctx> -n <ns> get pod <pod> -o jsonpath='{.metadata.finalizers}'` | finalizers, node unreachable (do not patch finalizers without SRE approval) |
 | `Evicted` | `kubectl --context <ctx> -n <ns> get pods --field-selector=status.phase=Failed` then filter `.status.reason=Evicted` with jsonpath/grep | node disk/memory pressure |
 
-`--previous` errors if the container never restarted, and on some runtimes (seen on kind v1.35) it fails with "unable to retrieve container logs" even after restarts. Both are harmless: drop `--previous` and read the current logs, which hold the latest crashed run until the next restart. `kubectl top` needs metrics-server.
+`--previous` errors if the container never restarted. In a fast crash or OOM loop it can also fail with "unable to retrieve container logs" (seen on kind v1.35 with containerd): the previous container is already gone. Both are harmless. Drop `--previous` and read the current logs (they hold the latest crashed run until the next restart), retry `--previous` right after RESTARTS goes up, or read the snapshot's `pods/<pod>.prev.log`. For OOMKilled, `describe` Last State (reason `OOMKilled`, exit code 137) is the evidence; the logs rarely are. `kubectl top` needs metrics-server.
 
 ## Nodes
 
