@@ -38,26 +38,55 @@ ALTER ROLE sre_ro SET lock_timeout = '1s';
 ALTER ROLE sre_ro SET idle_in_transaction_session_timeout = '10s';
 ```
 
-PG16+ only (the role does not exist before 16, where only superusers get reserved slots), so triage can log in during exhaustion:
-
-```sql
-GRANT pg_use_reserved_connections TO sre_ro;
-```
+On PG16+ also give it a reserved slot, so triage can log in during exhaustion: see "When every normal slot is taken" below.
 
 - Role settings are session **defaults**: a client that sends its own startup options (for example `PGOPTIONS='-c default_transaction_read_only=off'` outside the wrapper) overrides them (lab: Database Reviewer re-run). The wrapper refuses a preset `PGOPTIONS` and sets its guards in the connection string; the role settings cover PgBouncer and other clients, not a hostile environment.
 
 - Set the password with psql `\password sre_ro`, which sends it encrypted. A literal `CREATE/ALTER ROLE ... PASSWORD '...'` is stored in clear in `pg_stat_statements` (utility statements are tracked by default) and can reach the server log.
-- PG16+ `reserved_connections` (e.g. 2–3) is a server-start setting: changing it needs a **restart**, so set it ahead of time, never mid-incident. Its slots come out of `max_connections`, on top of `superuser_reserved_connections`.
 - Cloud SQL: create the role **with SQL** as above, not with `gcloud sql users create` or the console: users created that way are made members of `cloudsqlsuperuser`. Verify that the role belongs to nothing beyond `pg_monitor` (which itself includes `pg_read_all_settings`, `pg_read_all_stats` and `pg_stat_scan_tables`) and, on PG16+, `pg_use_reserved_connections`. The query lists anything else, so a correct setup returns **0 rows**:
 
 ```bash
 bash scripts/db-ro.sh pg -- "SELECT rolname FROM pg_roles WHERE pg_has_role('sre_ro', oid, 'member') AND rolname NOT IN ('sre_ro', 'pg_monitor', 'pg_read_all_settings', 'pg_read_all_stats', 'pg_stat_scan_tables', 'pg_use_reserved_connections') LIMIT 20"
 ```
-- Cancel/terminate rights (`pg_signal_backend`) belong to a separate operator role that a human uses after approval, not to the triage role. `pg_signal_backend` cannot signal superuser backends. Give the operator role `pg_read_all_stats` (or `pg_monitor`) too: without it, `pg_stat_activity` shows NULL `state`, `backend_type` and `query` for other users' sessions, so a filtered terminate (section 1) silently matches **0 rows** while the leak goes on (lab: PostgreSQL 17). The single-pid form in section 2 works without it. Setup: `CREATE ROLE <ops> LOGIN; GRANT pg_signal_backend, pg_read_all_stats TO <ops>;` ([predefined roles](https://www.postgresql.org/docs/current/predefined-roles.html), [pg_stat_activity visibility](https://www.postgresql.org/docs/current/monitoring-stats.html#MONITORING-STATS-VIEWS)).
+- Cancel/terminate rights (`pg_signal_backend`) belong to a separate operator role that a human uses after approval, not to the triage role. `pg_signal_backend` cannot signal superuser backends. Give the operator role `pg_read_all_stats` (or `pg_monitor`) too: without it, `pg_stat_activity` shows NULL `state`, `backend_type` and `query` for other users' sessions, so a filtered terminate (section 1) silently matches **0 rows** while the leak goes on (lab: PostgreSQL 17). The single-pid form in section 2 works without it. Setup: `CREATE ROLE <ops> LOGIN; GRANT pg_signal_backend, pg_read_all_stats TO <ops>;`, plus a reserved slot on PG16+ (below), or the operator can't log in to run an approved terminate during exhaustion ([predefined roles](https://www.postgresql.org/docs/current/predefined-roles.html), [pg_stat_activity visibility](https://www.postgresql.org/docs/current/monitoring-stats.html#MONITORING-STATS-VIEWS)).
 - Secrets: `~/.pgpass` (`chmod 0600`, libpq ignores it otherwise) or `PGPASSFILE`, or `PGSERVICE` with `pg_service.conf`. Never `PGPASSWORD`, never a password in a conninfo string or on the command line.
 - Connect to the database itself, not through PgBouncer: during exhaustion the pooler is often the bottleneck, and PgBouncer only accepts the startup parameters it tracks: with the default config the wrapper's `options` make it fail at connect (`unsupported startup parameter in options: default_transaction_read_only`, lab with PgBouncer 1.24.1). Only if the pooler's `ignore_startup_parameters` includes `options` does the connection go through, and then the wrapper's guards are silently ignored: the role settings above are what still hold.
 - `EXPLAIN` needs `SELECT` on the tables involved, which this role does not have. Use a separate read-only account with `SELECT` on the app schema only (on PG14+ avoid the cluster-wide `pg_read_all_data`), or hand the statement to the DB owner.
 - Managed services: see "Managed services" at the end (RDS/Aurora, Cloud SQL, Azure).
+
+### When every normal slot is taken (set up before you need it)
+
+During exhaustion an ordinary role gets `FATAL: remaining connection slots are reserved for roles with privileges of the "pg_use_reserved_connections" role` (PG16+), and so does the operator role unless it has a reserved slot: the approved terminate in section 1 then can't run at all (lab: PostgreSQL 17, operator refused until granted). Normal slots = `max_connections` − `superuser_reserved_connections` (default 3, superusers only) − `reserved_connections` (default 0). Both changes below are one-time setup through change review, never mid-incident.
+
+PG16 and later, self-hosted. `reserved_connections` can only be set at server start, so it needs a **restart**; it must be less than `max_connections` − `superuser_reserved_connections`, and applications get that many fewer slots. Two or three are enough for triage plus one operator:
+
+**Gate: approval required.**
+```sql
+-- one-time setup by the DB owner; takes effect after a restart. Rollback: ALTER SYSTEM RESET reserved_connections; then restart
+ALTER SYSTEM SET reserved_connections = 3;
+```
+
+Then let the triage and operator roles use those slots (immediate). Granting needs the ADMIN option on `pg_use_reserved_connections` (a superuser has it; `CREATEROLE` alone is refused, lab: PostgreSQL 17). The grant does nothing while `reserved_connections` is 0:
+
+**Gate: approval required.**
+```sql
+-- one-time setup by the DB owner. Rollback: REVOKE pg_use_reserved_connections FROM sre_ro, <ops>;
+GRANT pg_use_reserved_connections TO sre_ro, <ops>;
+```
+
+Managed services, PG16 and later (provider docs checked 2026-10-22; not tested on a managed instance here):
+
+- RDS for PostgreSQL and Aurora PostgreSQL: `reserved_connections` is set in the parameter group and replaces `rds.rds_superuser_reserved_connections` (deprecated in 16); static, so reboot to apply. `rds_superuser` is a member of `pg_use_reserved_connections` with ADMIN, so the master user can run the GRANT. Newer minor versions also keep separate `rds_reserved` slots for AWS's own admin users, which you can't use.
+- Cloud SQL: database flag `reserved_connections` (PG16+, restart required). Cloud SQL has no superuser, and its docs don't say whether `cloudsqlsuperuser` members can grant `pg_use_reserved_connections`: try the GRANT in change review, and if it is refused use the PG15 options below.
+- Azure Database for PostgreSQL flexible server: `reserved_connections` is read-only, fixed at 5, so there is nothing to set; authorized users can assign `pg_use_reserved_connections` since the March 2026 maintenance release, so only the GRANT is needed.
+
+PG15 and earlier have no `pg_use_reserved_connections`: the only reserved slots are `superuser_reserved_connections`, which only a superuser can use, and the triage and operator roles must never be superusers. The honest options, all set up ahead of time:
+
+- Cap the applications instead: `ALTER ROLE <app-db-user> CONNECTION LIMIT <n>` (any version, managed services too) or a pooler's pool size, so one leaking app can't take every normal slot and triage still fits.
+- Self-hosted: a break-glass superuser held by the DB owner, used only by a human after approval; it can take a superuser-reserved slot. RDS and Aurora 15 and earlier: `rds.rds_superuser_reserved_connections` (default 2) reserves slots for the master user. Using either is the incident lead's decision, not the assistant's.
+- Otherwise go app-side first: rolling back or restarting the leaking app frees its slots (section 1), and the provider's console or metrics show the connection count without logging in.
+
+Sources: [connection settings](https://www.postgresql.org/docs/current/runtime-config-connection.html) (`reserved_connections`, `superuser_reserved_connections`), [predefined roles](https://www.postgresql.org/docs/current/predefined-roles.html), [RDS for PostgreSQL 16 release notes](https://docs.aws.amazon.com/AmazonRDS/latest/PostgreSQLReleaseNotes/postgresql-versions.html), [Aurora PostgreSQL 16 release notes](https://docs.aws.amazon.com/AmazonRDS/latest/AuroraPostgreSQLReleaseNotes/AuroraPostgreSQL.Updates.html), [RDS roles](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Appendix.PostgreSQL.CommonDBATasks.Roles.View.html), [RDS parameters](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Appendix.PostgreSQL.CommonDBATasks.Parameters.html), [Cloud SQL flags](https://docs.cloud.google.com/sql/docs/postgres/flags), [Cloud SQL users](https://docs.cloud.google.com/sql/docs/postgres/users), [Azure connection parameters](https://learn.microsoft.com/en-us/azure/postgresql/server-parameters/param-connections-authentication-connection-settings), [Azure March 2026 maintenance](https://learn.microsoft.com/en-us/azure/postgresql/release-notes-maintenance/2026-march).
 
 ## 1. Connection exhaustion ("too many clients", "remaining connection slots are reserved", pool timeouts)
 
@@ -85,7 +114,7 @@ PG14 and later (waits up to 5 s for each session to exit):
 
 **Gate: approval required.**
 ```sql
--- operator role with pg_signal_backend AND pg_read_all_stats (else 0 rows match), NOT through scripts/db-ro.sh; same threshold as the preview; the approval names <app> and the previewed count
+-- operator role with pg_signal_backend AND pg_read_all_stats (else 0 rows match) and, during exhaustion, a reserved slot (Access), NOT through scripts/db-ro.sh; same threshold as the preview; the approval names <app> and the previewed count
 SELECT pid, pg_terminate_backend(pid, 5000) FROM pg_stat_activity WHERE backend_type = 'client backend' AND pid <> pg_backend_pid() AND usename = '<app-db-user>' AND application_name = '<app>' AND state = 'idle in transaction' AND now() - state_change > interval '5 minutes';
 ```
 
@@ -225,6 +254,7 @@ bash scripts/db-ro.sh pg -- "EXPLAIN SELECT <columns> FROM <table> WHERE <predic
 | Admin role | `rds_superuser` (not a real superuser) | `cloudsqlsuperuser` (no superuser attribute) | `azure_pg_admin` (`azuresu` is Microsoft's) |
 | Triage role | grant `pg_monitor` to a dedicated login | create it **in SQL** (Access above); console/gcloud users get `cloudsqlsuperuser` | grant `pg_monitor` to a dedicated login |
 | Query/load view | CloudWatch Database Insights (the Performance Insights console reached end of life 2026-07-31 and was migrated to it; the `aws pi get-resource-metrics` API still works) | Query insights | Query Store (`query_store.qs_view`) and Query Performance Insight |
+| Reserved slots (16+) | `reserved_connections` in the parameter group (reboot); master user can grant `pg_use_reserved_connections` | flag `reserved_connections` (restart); grant not documented | fixed at 5; grant allowed since the March 2026 maintenance |
 | Cancel/terminate | same functions; the admin role cannot signal the provider's own sessions (confirm live) | same | same |
 | Failover | `aws rds failover-db-cluster` (Aurora, Multi-AZ DB cluster) or `aws rds reboot-db-instance --force-failover` (Multi-AZ instance) | `gcloud sql instances failover` (HA instances) | `az postgres flexible-server restart --failover Planned` (or `Forced`), HA servers only |
 
