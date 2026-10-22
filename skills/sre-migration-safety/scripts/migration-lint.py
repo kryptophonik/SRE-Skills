@@ -3,14 +3,37 @@
 
 Reads SQL files (or stdin), splits them into statements and reports, per statement,
 the lock it takes, whether it rewrites or scans the table, and a safer pattern.
-It never connects to a database. Exit code: 0 clean or info only, 1 warnings, 2 blockers.
+It never connects to a database. Exit code: 0 clean or info only, 1 warnings, 2 blockers,
+3 usage or input error (bad arguments, file missing or unreadable).
 
   python3 scripts/migration-lint.py --engine pg migrations/0042_add_index.sql
   python3 scripts/migration-lint.py --engine mysql --format json migrate.sql
 """
-import argparse, json, re, sys
+import argparse, json, os, re, sys
 
 SEV_ORDER = {'blocker': 3, 'warn': 2, 'info': 1}
+EXIT_INPUT = 3  # distinct from 1 (warnings) and 2 (blockers)
+
+_ID = r'"?([A-Za-z_][\w$]*)"?'
+_TBL = r'ALTER TABLE (?:IF EXISTS )?(?:ONLY )?(?:"?[A-Za-z_][\w$]*"?\.)?' + _ID
+
+def track_checks(stmt, ctx):
+    """Remember CHECK constraints added earlier in the same input, and which (table, column)
+    a validated CHECK (col IS NOT NULL) covers, so the safe NOT NULL pattern isn't flagged."""
+    u = norm(stmt).upper()
+    t = re.match(_TBL, u)
+    if not t: return
+    table = t.group(1).lower()
+    for m in re.finditer(r'ADD CONSTRAINT ' + _ID + r' CHECK \(\s*\(?\s*' + _ID + r'\s*\)?\s+IS NOT NULL\s*\)( NOT VALID)?', u):
+        name, col = m.group(1).lower(), m.group(2).lower()
+        ctx['checks'][name] = (table, col)
+        if not m.group(3): ctx['notnull_ok'].add((table, col))
+    for m in re.finditer(r'ADD CONSTRAINT ' + _ID + r' CHECK\b', u):
+        ctx['checks'].setdefault(m.group(1).lower(), (table, None))
+    for m in re.finditer(r'VALIDATE CONSTRAINT ' + _ID, u):
+        tc = ctx['checks'].get(m.group(1).lower())
+        if tc and tc[1]: ctx['notnull_ok'].add(tc)
+
 
 def split_statements(sql):
     """Split on ; outside quotes, comments and dollar quotes. Returns [(line_no, text)]."""
@@ -100,7 +123,13 @@ def pg_rules(stmt, ctx):
             else:
                 add('PG-ALTER-TYPE', 'blocker', 'ACCESS EXCLUSIVE', 'usually rewrites the table and rebuilds its indexes',
                     'add a new column, backfill in batches, dual-write, then swap names in a short transaction; run the lab proof to check a specific change')
-        if re.search(r'ALTER (?:COLUMN )?"?\w+"? SET NOT NULL', u):
+        m_nn = re.search(r'ALTER (?:COLUMN )?' + _ID + r' SET NOT NULL', u)
+        m_tb = re.match(_TBL, u)
+        covered = m_nn and m_tb and (m_tb.group(1).lower(), m_nn.group(1).lower()) in ctx['notnull_ok']
+        if covered:
+            add('PG-SET-NOTNULL-COVERED', 'info', 'ACCESS EXCLUSIVE (brief)', 'a validated CHECK (col IS NOT NULL) earlier in this file covers it, so PostgreSQL 12+ skips the table scan',
+                'on PostgreSQL 11 or older it still scans; keep SET lock_timeout before it')
+        elif m_nn:
             add('PG-SET-NOTNULL', 'warn', 'ACCESS EXCLUSIVE', 'scans the whole table under the lock unless a validated CHECK (col IS NOT NULL) already exists',
                 'ADD CONSTRAINT c CHECK (col IS NOT NULL) NOT VALID; VALIDATE CONSTRAINT c; then SET NOT NULL (PostgreSQL 12+ skips the scan); then drop c')
         if re.search(r'ADD (CONSTRAINT \S+ )?FOREIGN KEY', u) and 'NOT VALID' not in u:
@@ -112,7 +141,9 @@ def pg_rules(stmt, ctx):
         if re.search(r'ADD (CONSTRAINT \S+ )?(UNIQUE|PRIMARY KEY)\b', u) and 'USING INDEX' not in u:
             add('PG-UNIQUE-BUILD', 'blocker', 'ACCESS EXCLUSIVE', 'builds the index while holding the lock',
                 'CREATE UNIQUE INDEX CONCURRENTLY idx ...; then ALTER TABLE ... ADD CONSTRAINT c UNIQUE USING INDEX idx')
-        if re.search(r'\bDROP (COLUMN|CONSTRAINT)\b', u):
+        dropped = [x.lower() for x in re.findall(r'\bDROP CONSTRAINT (?:IF EXISTS )?' + _ID, u)]
+        only_known_checks = dropped and all(x in ctx['checks'] for x in dropped) and not re.search(r'\bDROP COLUMN\b', u)
+        if re.search(r'\bDROP (COLUMN|CONSTRAINT)\b', u) and not only_known_checks:
             add('PG-DROP', 'warn', 'ACCESS EXCLUSIVE', 'destructive and irreversible without a restore; running app versions may still read it',
                 'deploy code that no longer uses it first; keep this behind an approval gate with a tested backup')
         if re.search(r'\bRENAME\b', u):
@@ -175,7 +206,7 @@ def my_rules(stmt, ctx):
 
 def review(sql, engine):
     global _MYSQL; _MYSQL = engine == 'mysql'
-    ctx = dict(in_txn=False, lock_timeout=False, lock_wait_timeout=False, fk_checks_off=False)
+    ctx = dict(in_txn=False, lock_timeout=False, lock_wait_timeout=False, fk_checks_off=False, checks={}, notnull_ok=set())
     results = []
     for line, stmt in split_statements(sql):
         u = norm(stmt).upper()
@@ -185,6 +216,7 @@ def review(sql, engine):
         if re.match(r"SET (SESSION )?LOCK_WAIT_TIMEOUT\s*=\s*\d", u): ctx['lock_wait_timeout'] = True
         if re.match(r'SET (SESSION )?FOREIGN_KEY_CHECKS\s*=\s*(0|OFF)', u): ctx['fk_checks_off'] = True
         found = (pg_rules if engine == 'pg' else my_rules)(stmt, ctx)
+        if engine == 'pg': track_checks(stmt, ctx)
         if found: results.append(dict(line=line, statement=norm(stmt)[:160], findings=found))
     return results
 
@@ -193,8 +225,16 @@ def main():
     ap.add_argument('--engine', choices=['pg', 'mysql'], required=True, help='pg = PostgreSQL; mysql = MySQL or MariaDB (InnoDB)')
     ap.add_argument('--format', choices=['text', 'json'], default='text')
     ap.add_argument('files', nargs='*', help='SQL files; reads stdin when none')
+    ap.error = lambda msg: (ap.print_usage(sys.stderr), print(f'migration-lint: error: {msg}', file=sys.stderr), sys.exit(EXIT_INPUT))
     a = ap.parse_args()
-    srcs = [(p, open(p, encoding='utf-8').read()) for p in a.files] or [('<stdin>', sys.stdin.read())]
+    srcs = []
+    for p in a.files:
+        try:
+            with open(p, encoding='utf-8') as fh: srcs.append((p, fh.read()))
+        except (OSError, UnicodeDecodeError) as e:
+            print(f'migration-lint: error: cannot read {p}: {getattr(e, "strerror", None) or e} (paths are relative to {os.getcwd()})', file=sys.stderr)
+            sys.exit(EXIT_INPUT)
+    srcs = srcs or [('<stdin>', sys.stdin.read())]
     report, worst = [], 0
     for path, sql in srcs:
         for r in review(sql, a.engine):

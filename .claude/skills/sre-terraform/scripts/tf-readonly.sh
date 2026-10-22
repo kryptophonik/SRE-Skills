@@ -7,6 +7,7 @@
 #
 # Allowed:
 #   version | validate | providers (no subcommand) | workspace show | workspace list
+#   (validate, fmt, init, plan and show always get -no-color, so pasted output has no ANSI codes)
 #   fmt              forced to -check (never rewrites files)
 #   init             forced to -input=false -lockfile=readonly; refuses -upgrade,
 #                    -migrate-state, -reconfigure, -force-copy, -from-module
@@ -43,9 +44,15 @@ require_cmd terraform
 guard_tf_cli_args
 init_tf "$dir"
 
+# Pasted evidence must not carry ANSI colour codes. Subcommands that print plan or
+# diagnostics get -no-color unless the caller already passed it.
+nc=(); has_flag '^-no-color$' "$@" || nc=(-no-color)
+
 case "$sub" in
-  version|validate)
-    exec "${TF[@]}" "$sub" "$@" ;;
+  version)
+    exec "${TF[@]}" version "$@" ;;
+  validate)
+    exec "${TF[@]}" validate ${nc[@]+"${nc[@]}"} "$@" ;;
   providers)
     [[ $# -eq 0 || ${1-} == -* ]] || { REASON="'providers $1' writes files (lock or mirror)."; refuse "$@"; }
     exec "${TF[@]}" providers "$@" ;;
@@ -56,18 +63,18 @@ case "$sub" in
     esac ;;
   fmt)
     has_flag '^-write(=true)?$' "$@" && { REASON="fmt may only check."; refuse "$@"; }
-    exec "${TF[@]}" fmt -check "$@" ;;
+    exec "${TF[@]}" fmt -check ${nc[@]+"${nc[@]}"} "$@" ;;
   init)
     has_flag '^-(upgrade|migrate-state|reconfigure|force-copy|from-module|lock=false)' "$@" \
       && { REASON="These init options change provider versions, backend config, or state location."; refuse "$@"; }
-    exec "${TF[@]}" init -input=false -lockfile=readonly "$@" ;;
+    exec "${TF[@]}" init -input=false -lockfile=readonly ${nc[@]+"${nc[@]}"} "$@" ;;
   plan)
     has_flag '^-(destroy|replace|target|lock=false|refresh=false|generate-config-out)' "$@" \
       && { REASON="Destroy, replace, or target plans and lock/refresh bypasses need human approval."; refuse "$@"; }
-    exec "${TF[@]}" plan -input=false "$@" ;;
+    exec "${TF[@]}" plan -input=false ${nc[@]+"${nc[@]}"} "$@" ;;
   show)
     has_flag '^-json$' "$@" && { REASON="show -json prints sensitive values in plain text (https://developer.hashicorp.com/terraform/cli/commands/show). Use scripts/plan-risk.sh."; refuse "$@"; }
-    exec "${TF[@]}" show "$@" ;;
+    exec "${TF[@]}" show ${nc[@]+"${nc[@]}"} "$@" ;;
   state)
     case "${1-}" in
       list) exec "${TF[@]}" state "$@" ;;

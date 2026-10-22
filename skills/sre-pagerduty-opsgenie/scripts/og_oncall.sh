@@ -9,11 +9,11 @@ while [ $# -gt 0 ]; do case "$1" in
   --schedule) sched=$2; shift 2;; --date) date_q="&date=$(urlenc "$2")"; shift 2;;
   --json) json=1; shift;; -h|--help) sed -n 2,4p "$0"; exit 0;;
   *) die "unknown arg $1";; esac; done
-base=$(og_base)
-if [ -n "$sched" ]; then names=$sched; else names=$(og_paginate "/v2/schedules" | jq -r .name); fi
+base=$(og_base) || exit 2
+if [ -n "$sched" ]; then names=$sched; else names=$(og_paginate "/v2/schedules" | jq -r .name) || exit 2; fi
 out=$(while read -r n; do [ -n "$n" ] || continue
   api_get GET og "$base/v2/schedules/$(urlenc "$n")/on-calls?scheduleIdentifierType=name&flat=true$date_q" \
-   | jq -c '{schedule:.data._parent.name, on_call:(.data.onCallRecipients // [])}'
-done <<<"$names")
+   | jq -c '{schedule:.data._parent.name, on_call:(.data.onCallRecipients // [])}' || exit 2
+done <<<"$names") || exit 2
 if [ "$json" = 1 ]; then echo "$out"; else
   echo "$out" | jq -r '[.schedule, (if (.on_call|length)==0 then "NOBODY (gap)" else (.on_call|join(", ")) end)] | @tsv' | (echo -e "SCHEDULE\tON_CALL"; cat); fi

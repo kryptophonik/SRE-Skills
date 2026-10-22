@@ -45,7 +45,7 @@ aws rds wait db-instance-available --db-instance-identifier drtest-<db>-<yyyymmd
 Record the start time and the time it became available. That gap is the RTO.
 
 ## 3. Validate (read-only against the drill instance)
-Compare row counts and checksums against the source. The newest record timestamp tells you the actual RPO. Connect with drill credentials only, never production application credentials.
+Compare row counts and checksums against the source. The recovery point is the snapshot's `SnapshotCreateTime` or the `--restore-time` you used (`LatestRestorableTime` with `--use-latest-restorable-time`); the newest record timestamp is only a lower bound (see SKILL.md step 6). Connect with drill credentials only, never production application credentials.
 
 ## 4. Cleanup (WRITE: irreversible, separate approval required)
 ```bash

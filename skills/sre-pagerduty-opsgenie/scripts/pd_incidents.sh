@@ -14,7 +14,7 @@ while [ $# -gt 0 ]; do case "$1" in
   -h|--help) sed -n 2,5p "$0"; exit 0;;
   *) die "unknown arg $1";; esac; done
 [ "$st" = 1 ] || q="$q&statuses%5B%5D=triggered&statuses%5B%5D=acknowledged"
-data=$(pd_paginate /incidents incidents "${q#&}")
+data=$(pd_paginate /incidents incidents "${q#&}") || exit 2
 if [ "$json" = 1 ]; then echo "$data"; exit 0; fi
 echo "$data" | jq -r '[.incident_number, .status, (.urgency // "-"), .service.summary, .created_at, .title, .html_url] | @tsv' \
   | (echo -e "NUM\tSTATUS\tURGENCY\tSERVICE\tCREATED\tTITLE\tURL"; cat)

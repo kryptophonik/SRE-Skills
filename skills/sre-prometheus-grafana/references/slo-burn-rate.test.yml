@@ -38,6 +38,12 @@ tests:
         exp_samples:
           - labels: 'slo:sli_error:ratio_rate5m{job="example-svc",slo="example-availability"}'
             value: 0.05
+      # The responder query from sre-slo-alerting returns the burn rate (0.05 / 0.001 = 50x, float rounding).
+      - expr: slo:sli_error:ratio_rate5m{slo="example-availability"} / (1 - 0.999)
+        eval_time: 10m
+        exp_samples:
+          - labels: '{job="example-svc",slo="example-availability"}'
+            value: 4.999999999999996E+01
     alert_rule_test:
       - eval_time: 10m
         alertname: SLOErrorBudgetBurnFast

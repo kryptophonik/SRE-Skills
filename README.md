@@ -1,8 +1,22 @@
-# SRE skill pack with approval gates
+# SRE-Skills: SRE skill pack with approval gates
 
 Generic Site Reliability Engineering skills in the open [Agent Skills](https://agentskills.io/specification) format (`SKILL.md` folders). They cover incident command, read-only diagnosis, gated remediation, SLOs and burn-rate alerting, DR drills, capacity, cost, toil, and read-only adapters for Kubernetes, AWS, Azure, GCP, Terraform, Dynatrace, Prometheus/Grafana, Datadog and PagerDuty/Opsgenie.
 
 Every skill follows one rule set: **read-only first → propose with risk and reversibility → explicit human approval → act → verify → stop and escalate if worse.** The full rules live in [`sre-safety-gates`](.claude/skills/sre-safety-gates/SKILL.md), and every skill also carries a short inline copy, so a partial install stays gated.
+
+## Getting started
+
+New to agent skills? **[docs/getting-started.md](docs/getting-started.md)** covers what to do after install: the CLIs and read-only access each skill needs, a first run end to end on a local kind cluster, prompts to copy, running the bundled scripts yourself, and troubleshooting.
+
+**See it in action:** [docs/examples/](docs/examples/README.md) walks through eight lab incidents run end to end on Docker or kind, with real command output, the approval stop and the verified fix, plus the incident lifecycle from declaration to postmortem.
+
+Try these prompts (replace the placeholders; always name the target):
+
+```text
+Pods in namespace <ns> on kube context <ctx> are CrashLoopBackOff since the last deploy. Triage it read-only.
+Review migrations/0042_add_index.sql for PostgreSQL 16 before I merge it. The orders table is about 200 GB and busy.
+Write Prometheus burn-rate alert rules for a 99.9% availability SLO on job checkout, using http_requests_total with code=~"5.." as errors.
+```
 
 ## Safety gates
 
@@ -33,7 +47,7 @@ See **[INSTALL.md](INSTALL.md)**. It covers Claude Code, Gemini CLI, Cursor, Gro
 Quick start (Claude Code plugin):
 
 ```text
-/plugin marketplace add kryptophonik/claude-sre
+/plugin marketplace add kryptophonik/SRE-Skills
 /plugin install sre@claude-sre
 ```
 
@@ -41,25 +55,25 @@ Plugin skills are namespaced, for example `/sre:sre-incident-command`. Verify wi
 
 ## Quick start
 
-Commands and copy steps below are the whole-pack install from each guide. Copy steps assume you ran `git clone https://github.com/kryptophonik/claude-sre.git` and are in the folder that contains `claude-sre/`. Follow the linked doc for a single skill, personal scope, and how the gates stay attached.
+Commands and copy steps below are the whole-pack install from each guide. Copy steps assume you ran `git clone https://github.com/kryptophonik/SRE-Skills.git` and are in the folder that contains `SRE-Skills/`. Follow the linked doc for a single skill, personal scope, and how the gates stay attached.
 
 ### Claude Code
 
 [docs/install/claude-code.md](docs/install/claude-code.md)
 
 ```text
-/plugin marketplace add kryptophonik/claude-sre
+/plugin marketplace add kryptophonik/SRE-Skills
 /plugin install sre@claude-sre
 ```
 
-Or from your shell: `claude plugin marketplace add kryptophonik/claude-sre`, then `claude plugin install sre@claude-sre`.
+Or from your shell: `claude plugin marketplace add kryptophonik/SRE-Skills`, then `claude plugin install sre@claude-sre`.
 
 ### Gemini CLI
 
 [docs/install/gemini-cli.md](docs/install/gemini-cli.md)
 
 ```bash
-gemini extensions install https://github.com/kryptophonik/claude-sre
+gemini extensions install https://github.com/kryptophonik/SRE-Skills
 ```
 
 Don't pin `--ref`: a pinned tag never updates. The install asks you to trust the current folder and to confirm the skill list; `--consent` skips the second prompt.
@@ -70,15 +84,15 @@ Don't pin `--ref`: a pinned tag never updates. The install asks you to trust the
 
 ```bash
 mkdir -p <your-repo>/.claude/skills <your-repo>/.cursor/rules
-cp -r claude-sre/.claude/skills/sre-* <your-repo>/.claude/skills/
-cp claude-sre/.cursor/rules/sre-safety-gates.mdc <your-repo>/.cursor/rules/
+cp -r SRE-Skills/.claude/skills/sre-* <your-repo>/.claude/skills/
+cp SRE-Skills/.cursor/rules/sre-safety-gates.mdc <your-repo>/.cursor/rules/
 ```
 
 ### Grok
 
 [docs/install/grok.md](docs/install/grok.md)
 
-Run `grok plugin marketplace add kryptophonik/claude-sre`, then `grok plugin install sre@claude-sre` (or install `sre` from the TUI Marketplace tab). To try it without installing, run `grok --plugin-dir <path-to-clone>`.
+Run `grok plugin marketplace add kryptophonik/SRE-Skills`, then `grok plugin install sre@claude-sre` (or install `sre` from the TUI Marketplace tab). To try it without installing, run `grok --plugin-dir <path-to-clone>`.
 
 ### Codex CLI
 
@@ -86,8 +100,8 @@ Run `grok plugin marketplace add kryptophonik/claude-sre`, then `grok plugin ins
 
 ```bash
 mkdir -p <your-repo>/.agents/skills
-cp -r claude-sre/skills/sre-* <your-repo>/.agents/skills/
-cat claude-sre/AGENTS.md >> <your-repo>/AGENTS.md    # appends; never overwrites your AGENTS.md (run once)
+cp -r SRE-Skills/skills/sre-* <your-repo>/.agents/skills/
+cat SRE-Skills/AGENTS.md >> <your-repo>/AGENTS.md    # appends; never overwrites your AGENTS.md (run once)
 ```
 
 ### GitHub Copilot
@@ -96,8 +110,8 @@ cat claude-sre/AGENTS.md >> <your-repo>/AGENTS.md    # appends; never overwrites
 
 ```bash
 mkdir -p <your-repo>/.claude/skills <your-repo>/.github
-cp -r claude-sre/.claude/skills/sre-* <your-repo>/.claude/skills/
-cat claude-sre/.github/copilot-instructions.md >> <your-repo>/.github/copilot-instructions.md   # appends (run once)
+cp -r SRE-Skills/.claude/skills/sre-* <your-repo>/.claude/skills/
+cat SRE-Skills/.github/copilot-instructions.md >> <your-repo>/.github/copilot-instructions.md   # appends (run once)
 ```
 
 ## What's inside
@@ -171,10 +185,15 @@ Needs Python 3.11 or newer (`validate.py` uses `tomllib`), PyYAML (`pip install 
 python3 scripts/build-targets.py --check
 python3 scripts/validate.py
 find .claude -name '*.sh' -exec bash -n {} \; && shellcheck -S warning $(find .claude -name '*.sh')
-.claude/skills/sre-pagerduty-opsgenie/scripts/tests/run_tests.sh
+bash .claude/skills/sre-pagerduty-opsgenie/scripts/tests/run_tests.sh
+bash .claude/skills/sre-prometheus-grafana/scripts/test-gen-burn-rate-rules.sh
 REQUIRE_PROMTOOL=1 python3 .claude/skills/sre-observability-cost-cutter/scripts/tests/run_tests.py
 python3 .claude/skills/sre-migration-safety/scripts/tests/test_lint.py
 bash .claude/skills/sre-k8s-upgrade-autopilot/tests/run-tests.sh
+bash .claude/skills/sre-k8s-triage/scripts/tests/run_tests.sh
+bash .claude/skills/sre-expiry-audit/scripts/tests/run_tests.sh
+(cd .claude/skills/sre-database-triage && bash tests/run-tests.sh)
+(cd .claude/skills/sre-terraform && bash tests/run-tests.sh)   # terraform 1.16+ and jq
 ```
 
 

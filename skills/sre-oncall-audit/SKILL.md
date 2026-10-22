@@ -23,6 +23,7 @@ Related: `sre-pagerduty-opsgenie` (adapter, scripts), `sre-oncall-handoff`; Opsg
    - PagerDuty: `bash ../sre-pagerduty-opsgenie/scripts/pd_audit_schedules.sh --since <ISO8601> --until <ISO8601>` (gaps, single-person layers, policies with no service, empty levels, users with no contact methods or notification rules)
    - Opsgenie: `bash ../sre-pagerduty-opsgenie/scripts/og_oncall.sh` (schedules with nobody on call now)
    - Env: `PD_API_KEY` / `OG_API_KEY` (read-only keys), `PD_REGION` / `OG_REGION` = `us|eu`
+   - Exit 2 (missing key, wrong region, unreachable API, HTTP error) means the audit didn't run: report it as not audited, never as "no findings".
 3. **Run the manual checks** in [schedule-escalation-audit.md](../sre-pagerduty-opsgenie/references/schedule-escalation-audit.md): time zones/DST, loops and repeat counts, overlapping overrides, timeouts, and the Opsgenie equivalents.
 4. **Rate each finding:** high means a service can page nobody; medium is single-person coverage or an unreachable user; low is cleanup.
 5. **Draft fixes** as proposals with risk and rollback. Don't apply them.

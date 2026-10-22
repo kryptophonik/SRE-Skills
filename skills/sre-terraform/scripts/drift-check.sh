@@ -15,7 +15,9 @@
 # Exit codes (same as -detailed-exitcode):
 #   0 = no drift (state matches the real objects and root outputs)
 #   1 = error
-#   2 = drift detected (see the list; nothing was changed)
+#   2 = drift detected (see the list; nothing was changed). It then lists the options:
+#       (a) change config, (b) revert reality, (c) accept into state. (c) is not offered when
+#       the provider reports a drifted object as gone, because accepting would drop it from state.
 #
 # Writes nothing: it never applies, never runs `terraform refresh`, and never runs
 # `apply -refresh-only` (both write state). It keeps the normal state lock. The plan is
@@ -70,11 +72,24 @@ case "$rc" in
     pr_args=(--drift-only); [[ -n $dir ]] && pr_args=(-C "$dir" --drift-only)
     "$here/plan-risk.sh" ${pr_args[@]+"${pr_args[@]}"} "$planfile" || true
     $show_log && { echo "--- terraform output ---"; cat "$TMPD/plan.log"; }
+    # Objects that no longer exist show as "delete" drift. Accepting that into state drops them.
+    gone="$("${TF[@]}" show -json -no-color "$planfile" 2>/dev/null \
+      | jq -r '(.resource_drift // [])[] | select(.change.actions == ["delete"]) | .address' 2>/dev/null)" || gone=""
     info ""
-    info "Next: find out why it drifted (incident fix, console change, another tool). Then either"
-    info "  (a) change the config to match and run a normal plan, or"
-    info "  (b) to accept the real values into state, a human approves"
-    info "      'terraform plan -refresh-only -out=tfplan' followed by 'terraform apply tfplan' (writes state)."
+    info "Next: find out why it drifted (incident fix, console change, another tool). Then propose one of:"
+    info "  (a) change the config to match reality, then run a normal plan review;"
+    info "  (b) revert reality: run a normal plan review and apply the approved saved plan, which puts"
+    info "      the real objects back to what the config says;"
+    if [[ -n $gone ]]; then
+      info "  (c) NOT OFFERED: the provider reports these objects as gone (\"delete\" drift), so accepting"
+      info "      the drift into state (apply -refresh-only) would remove them from state and Terraform"
+      info "      would stop tracking them:"
+      while IFS= read -r g; do info "        - $g"; done <<<"$gone"
+      info "      Use (b) to recreate them, or (a) to remove them from the config on purpose."
+    else
+      info "  (c) accept reality into state: a human approves 'terraform plan -refresh-only -out=tfplan',"
+      info "      reviewed like any plan, then 'terraform apply tfplan' (writes state)."
+    fi
     info "Never run 'terraform refresh' or 'apply -refresh-only -auto-approve'."
     exit 2 ;;
   *)

@@ -43,11 +43,13 @@ Use the bundled GET-only scripts. They send keys over stdin, retry HTTP 429, and
 ```bash
 bash scripts/pd_oncall.sh                                              # who is on call now
 bash scripts/pd_incidents.sh --status triggered --status acknowledged  # open incidents (table)
-bash scripts/pd_incidents.sh --since <ISO8601> --until <ISO8601> --json | wc -l   # page count for handoff/toil
+bash scripts/pd_incidents.sh --since <ISO8601> --until <ISO8601> --json > "$W/pages.jsonl" && grep -c . "$W/pages.jsonl"   # page count; W="$(mktemp -d)"
 bash scripts/pd_audit_schedules.sh --since <ISO8601> --until <ISO8601>  # see sre-oncall-audit
 bash scripts/og_alerts.sh --query 'status:open'
 bash scripts/og_oncall.sh --schedule <schedule-name>
 ```
+
+Every script exits 2 with nothing on stdout when the key is missing, the region is wrong, the API is unreachable or it returns an HTTP error. Treat that as "data unavailable", never as nobody on call or zero incidents.
 
 Raw REST calls (paginated, projected and capped helpers, plus marked writes): [references/api-reference-pagerduty.md](references/api-reference-pagerduty.md), [references/api-reference-opsgenie.md](references/api-reference-opsgenie.md). Run the offline tests with `bash scripts/tests/run_tests.sh`.
 

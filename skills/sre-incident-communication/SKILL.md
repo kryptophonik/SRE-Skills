@@ -44,10 +44,12 @@ Full rules: [sre-safety-gates](../sre-safety-gates/SKILL.md). Read-only MCP setu
 
 ### Initial announcement (internal)
 
+Use it for any severity. For SEV-3 and SEV-4, the internal announcement is usually the only post (see Update cadence); skip the status page unless customers can see the impact.
+
 ```markdown
 🚨 **NEW INCIDENT DECLARED** 🚨
 **Service:** [Service Name]
-**Severity:** [SEV-1/SEV-2]
+**Severity:** [SEV-1…SEV-4]
 **Impact:** [Who is affected and how, e.g., ~20% of checkout requests fail in EU]
 **Symptom:** [e.g., High 5xx rates on Checkout]
 **Incident Commander (IC):** [@User]
@@ -61,7 +63,7 @@ Full rules: [sre-safety-gates](../sre-safety-gates/SKILL.md). Read-only MCP setu
 ```markdown
 🔄 **INCIDENT UPDATE** ([Time] UTC)
 **Current Status:** [Investigating / Identified / Mitigating / Monitoring]
-**Severity:** [SEV-1/SEV-2, note any change]
+**Severity:** [SEV-1…SEV-4, note any change]
 **Impact:** [Current impact; say if it has grown or shrunk]
 **Actions Taken:** [e.g., Rolled back v1.2.3, scaling up K8s cluster]
 **Next Update:** [Time] UTC

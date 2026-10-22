@@ -18,13 +18,14 @@ while [ $# -gt 0 ]; do case "$1" in
   --since) since=$2; shift 2;; --until) until=$2; shift 2;;
   -h|--help) sed -n 2,7p "$0"; exit 0;;
   *) die "unknown arg $1";; esac; done
-base=$(pd_base)
+base=$(pd_base) || exit 2
+sids=$(pd_paginate /schedules schedules | jq -r .id) || exit 2
 findings=()
 add() { findings+=("$1"); }
 
 while read -r sid; do
   [ -n "$sid" ] || continue
-  s=$(api_get GET pd "$base/schedules/$sid?since=$(urlenc "$since")&until=$(urlenc "$until")&time_zone=UTC")
+  s=$(api_get GET pd "$base/schedules/$sid?since=$(urlenc "$since")&until=$(urlenc "$until")&time_zone=UTC") || exit 2
   while read -r f; do [ -n "$f" ] && add "$f"; done < <(jq -c --arg since "$since" --arg until "$until" '
     .schedule as $s
     | ([$s.final_schedule.rendered_schedule_entries[]? | {start,end}] | sort_by(.start)) as $e
@@ -37,7 +38,7 @@ while read -r sid; do
         end )[],
       ( $s.schedule_layers[]? | select((.users|length)==1)
         | {check:"single_person_layer",schedule:$s.name,id:$s.id,layer:.name,user:.users[0].user.summary} )' <<<"$s")
-done < <(pd_paginate /schedules schedules | jq -r .id)
+done <<<"$sids"
 
 while read -r f; do [ -n "$f" ] && add "$f"; done < <(pd_paginate /escalation_policies escalation_policies "include%5B%5D=services" | jq -c '
   (select((.services|length)==0) | {check:"policy_without_service",policy:.name,id:.id}),

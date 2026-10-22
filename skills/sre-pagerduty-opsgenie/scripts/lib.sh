@@ -6,6 +6,9 @@
 # - MAX_PAGES (default 20) caps pages per paginated call; HTTP 429 is retried with backoff (up to 3 times).
 # - PD_BASE_URL / OG_BASE_URL override the host (for tests); only https:// or http://127.0.0.1|localhost accepted.
 set -euo pipefail
+# Fail closed. Bash clears -e inside $(...) (outside POSIX mode; inherit_errexit needs bash 4.4),
+# so every capture of a helper below ends in `|| exit 2`. A missing key, an unreachable host or an
+# HTTP error must never look like an empty result (no on-call, zero incidents).
 
 die() { echo "ERROR: $*" >&2; exit 2; }
 need() { command -v "$1" >/dev/null 2>&1 || die "missing dependency: $1"; }
@@ -58,12 +61,12 @@ api_get() {
 # Ref: https://developer.pagerduty.com/docs/pagination
 pd_paginate() {
   local path=$1 key=$2 q=${3:-} off=0 base r pages=0 max=${MAX_PAGES:-20}
-  base=$(pd_base)
+  base=$(pd_base) || exit 2
   while :; do
     [ "$pages" -lt "$max" ] || { echo "WARN: stopped at MAX_PAGES=$max; narrow the window or raise MAX_PAGES" >&2; break; }
     pages=$((pages+1))
-    r=$(api_get GET pd "$base$path?limit=100&offset=$off${q:+&$q}")
-    jq -c --arg k "$key" '.[$k][]?' <<<"$r"
+    r=$(api_get GET pd "$base$path?limit=100&offset=$off${q:+&$q}") || exit 2
+    jq -c --arg k "$key" '.[$k][]?' <<<"$r" || die "unexpected response from $path"
     [ "$(jq -r '.more // false' <<<"$r")" = "true" ] || break
     off=$((off+100))
     [ "$off" -lt 10000 ] || die "offset limit reached (classic pagination caps at 10000); narrow the query"
@@ -74,12 +77,12 @@ pd_paginate() {
 # Ref: https://docs.opsgenie.com/docs/pagination
 og_paginate() {
   local base url r next pages=0 max=${MAX_PAGES:-20}
-  base=$(og_base); url="$base$1"
+  base=$(og_base) || exit 2; url="$base$1"
   while [ -n "$url" ]; do
     [ "$pages" -lt "$max" ] || { echo "WARN: stopped at MAX_PAGES=$max; narrow the query or raise MAX_PAGES" >&2; break; }
     pages=$((pages+1))
-    r=$(api_get GET og "$url")
-    jq -c 'if (.data|type)=="array" then .data[] else .data end' <<<"$r"
+    r=$(api_get GET og "$url") || exit 2
+    jq -c 'if (.data|type)=="array" then .data[] else .data end' <<<"$r" || die "unexpected response from ${url%%\?*}"
     next=$(jq -r '.paging.next // empty' <<<"$r")
     if [ -n "$next" ]; then
       case "$next" in "$base"/*) url=$next;; *) die "paging.next points to another host; refusing";; esac

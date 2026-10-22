@@ -20,7 +20,7 @@ Blameless postmortem templates and facilitation guidance. Gather the evidence fi
 
 1. **Confirm scope.** Get the incident ID, the service, and the window: from first symptom (often before the first page) to resolution. Check that the incident is resolved; if it's still active, stop and use `sre-incident-command`.
 2. **Collect from each source, in UTC.** Keep each source's own timestamps and link every entry to its source.
-   - **Alerts and pages:** the incident log from `sre-pagerduty-opsgenie` (trigger, acknowledge, escalate, resolve, notes): `bash ../sre-pagerduty-opsgenie/scripts/pd_incidents.sh --since <ISO8601> --until <ISO8601> --status resolved`, then that incident's log entries via [api-reference-pagerduty.md](../sre-pagerduty-opsgenie/references/api-reference-pagerduty.md). Also check alert history in the monitoring tool: when each alert first fired, including ones that fired before anyone was paged.
+   - **Alerts and pages:** the incident log from `sre-pagerduty-opsgenie` (trigger, acknowledge, escalate, resolve, notes): `bash ../sre-pagerduty-opsgenie/scripts/pd_incidents.sh --since <ISO8601> --until <ISO8601> --status resolved` (exit 2 means the data is unavailable, not that nothing happened), then that incident's log entries via [api-reference-pagerduty.md](../sre-pagerduty-opsgenie/references/api-reference-pagerduty.md). Also check alert history in the monitoring tool: when each alert first fired, including ones that fired before anyone was paged.
    - **Monitoring:** when the SLI first left normal and when it recovered (error rate, latency, saturation), and the error budget spent (`sre-slo-alerting`).
    - **Deploys and changes:** CI/CD deploy history, `kubectl --context <ctx> -n <ns> rollout history deployment/<name>`, `helm --kube-context <ctx> -n <ns> history <release>`, `git log --since=<ISO8601> --until=<ISO8601> --oneline | head -n 50` in the service and infrastructure repos, feature-flag and config change audit logs (`sre-change-safety`).
    - **Databases:** if a database was involved, the evidence bundle captured during the incident by `bash ../sre-database-triage/scripts/db-snapshot.sh` (locks, connections, replication lag, slow queries at that moment), plus the managed service's event log and failover history. Use [sre-database-triage](../sre-database-triage/SKILL.md) read-only if the bundle is missing.
@@ -91,4 +91,4 @@ Sources: [PagerDuty/Opsgenie incident ID], [dashboards], [deploy history], [data
 ## Output
 
 - Blameless postmortem draft (unpublished until approved) with a UTC timeline that cites its sources, time to detect / acknowledge / mitigate, and open questions
-- Every action item has an owner, due date, and ticket
+- Every action item has an owner, due date, and ticket before the postmortem is published. In a draft, write `[TBD]` for any that don't exist yet (tickets often don't), and list each `[TBD]` under open questions; publishing waits until none are left.

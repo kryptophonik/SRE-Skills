@@ -46,12 +46,12 @@ bash scripts/tf-readonly.sh -C <root-module-dir> fmt
 bash scripts/tf-readonly.sh -C <root-module-dir> init                   # read-only flags forced; the lock file isn't rewritten
 bash scripts/tf-readonly.sh -C <root-module-dir> validate
 bash scripts/tf-readonly.sh -C <root-module-dir> plan -out="$P"
-bash scripts/tf-readonly.sh -C <root-module-dir> show -no-color "$P"     # human review (masks values marked sensitive)
+bash scripts/tf-readonly.sh -C <root-module-dir> show "$P"               # human review (masks values marked sensitive)
 bash scripts/plan-risk.sh -C <root-module-dir> "$P"                      # machine review without values; exit 3 = approval required
 terraform -chdir=<root-module-dir> state list
 ```
 
-`tf-readonly.sh` forces the read-only flags and refuses writes. `terraform -chdir=<root-module-dir> state show '<address>'` prints attributes not marked sensitive in clear text; quote the address and don't paste the output.
+`tf-readonly.sh` forces the read-only flags (and `-no-color` on validate, fmt, init, plan and show, so pasted output has no ANSI codes) and refuses writes. `terraform -chdir=<root-module-dir> state show '<address>'` prints attributes not marked sensitive in clear text; quote the address and don't paste the output.
 
 1. Confirm the workspace and account match the intended environment. If anything looks off, stop.
 2. `plan-risk.sh` counts create/update/delete/replace/forget, lists deletes, replaces (with forcing attribute paths), imports, moved and removed, sensitive attribute paths changed, output changes and drift, and never prints values. Treat **any** delete, replace, forget, import, errored or incomplete plan as high risk.
@@ -82,7 +82,7 @@ echo "exit=$?"   # 0 = no drift, 1 = error, 2 = drift detected
 The script refuses `-lock=false`, `-target`, `-replace`, `-destroy`, `-refresh=false` and `-auto-approve`, keeps the state lock, and deletes its temporary plan. Detecting drift is read-only; never use `terraform refresh` (= `apply -refresh-only -auto-approve`).
 
 - **0:** no drift. Record the time and workspace.
-- **2:** for each drifted address find the cause (incident fix, console change, another tool, provider default), then propose one of: (a) change the config to match reality, then run a plan review; (b) revert reality with a normal plan review and apply; (c) accept reality into state with `terraform -chdir=<root-module-dir> plan -refresh-only -out="$P"`, reviewed like any plan, then applied through Apply the approved plan (it writes state).
+- **2:** for each drifted address find the cause (incident fix, console change, another tool, provider default), then propose one of: (a) change the config to match reality, then run a plan review; (b) revert reality with a normal plan review and apply; (c) accept reality into state with `terraform -chdir=<root-module-dir> plan -refresh-only -out="$P"`, reviewed like any plan, then applied through Apply the approved plan (it writes state). The script prints these options. Never propose (c) when the drift list shows `delete` (the provider reports the object as gone; hashicorp/local also does this when a file's content changed): accepting it removes the resource from state, so Terraform stops tracking it. The script says "(c) NOT OFFERED" in that case; use (b) to recreate it or (a) to remove it from the config on purpose.
 - **1:** report the diagnostics (credentials, lock held, provider error). Don't retry with `-lock=false`.
 
 ## Rolling back

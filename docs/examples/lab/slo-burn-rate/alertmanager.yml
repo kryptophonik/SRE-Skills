@@ -1,0 +1,14 @@
+# Lab Alertmanager for docs/examples/05-slo-burn-rate-alerting.md. Null receiver: nothing is sent anywhere.
+route:
+  receiver: lab-null
+  group_by: [alertname, slo]
+  group_wait: 5s
+  routes:
+    - matchers: [severity="page"]
+      receiver: lab-null
+inhibit_rules:
+  - source_matchers: [severity="page"]
+    target_matchers: [severity="ticket"]
+    equal: [slo]
+receivers:
+  - name: lab-null

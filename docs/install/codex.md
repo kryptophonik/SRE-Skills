@@ -9,25 +9,25 @@ Codex reads repo skills from `.agents/skills` in each directory from the working
 Every copy command below runs from the folder that contains your clone, so clone once:
 
 ```bash
-git clone https://github.com/kryptophonik/claude-sre.git
+git clone https://github.com/kryptophonik/SRE-Skills.git
 ```
 
-Then `cd` to the folder that holds `claude-sre/`. Replace `<your-repo>` with the path to the repository you want the skills in.
+Then `cd` to the folder that holds `SRE-Skills/`. Replace `<your-repo>` with the path to the repository you want the skills in.
 
 ## Whole pack, project
 
 ```bash
 mkdir -p <your-repo>/.agents/skills
-cp -r claude-sre/skills/sre-* <your-repo>/.agents/skills/
-cat claude-sre/AGENTS.md >> <your-repo>/AGENTS.md    # appends; never overwrites your AGENTS.md (run once)
+cp -r SRE-Skills/skills/sre-* <your-repo>/.agents/skills/
+cat SRE-Skills/AGENTS.md >> <your-repo>/AGENTS.md    # appends; never overwrites your AGENTS.md (run once)
 ```
 
 ## Personal
 
 ```bash
 mkdir -p ~/.agents/skills ~/.codex
-cp -r claude-sre/skills/sre-* ~/.agents/skills/
-cat claude-sre/AGENTS.md >> ~/.codex/AGENTS.md       # run once
+cp -r SRE-Skills/skills/sre-* ~/.agents/skills/
+cat SRE-Skills/AGENTS.md >> ~/.codex/AGENTS.md       # run once
 ```
 
 ## Single skill
@@ -36,21 +36,21 @@ Copy `sre-safety-gates` with the skill:
 
 ```bash
 mkdir -p <your-repo>/.agents/skills
-cp -r claude-sre/skills/sre-safety-gates claude-sre/skills/<skill> <your-repo>/.agents/skills/
+cp -r SRE-Skills/skills/sre-safety-gates SRE-Skills/skills/<skill> <your-repo>/.agents/skills/
 ```
 
 Or use `gh skill install`, which installs only the skill you name, so run it for `sre-safety-gates` too:
 
 ```bash
-gh skill install kryptophonik/claude-sre sre-safety-gates --agent codex
-gh skill install kryptophonik/claude-sre <skill> --agent codex
+gh skill install kryptophonik/SRE-Skills sre-safety-gates --agent codex
+gh skill install kryptophonik/SRE-Skills <skill> --agent codex
 ```
 
 Some skills need another skill's scripts: `sre-oncall-audit` and `sre-oncall-handoff` need `sre-pagerduty-opsgenie`, `sre-slo-burn-rate-rules` needs `sre-prometheus-grafana`, and `sre-k8s-safe-remediation` needs `sre-k8s-triage`. The full list is under "Install profiles" in [SKILLS.md](../../SKILLS.md).
 
 ## Verify
 
-`ls <your-repo>/.agents/skills | grep '^sre-'` lists the skills, and `grep -c 'Safety gates' <your-repo>/AGENTS.md` prints at least 1. Then start a new session and send a test prompt such as "pods in namespace payments are crashlooping since the last deploy". It should load `sre-k8s-triage`, and its first reply should contain only read-only commands.
+`ls <your-repo>/.agents/skills | grep '^sre-'` lists the skills, and `grep -c 'Safety gates' <your-repo>/AGENTS.md` prints at least 1. Then start a new session and send a test prompt such as "pods in namespace payments on kube context <ctx> are crashlooping since the last deploy" (use a real context name). It should load `sre-k8s-triage`, and its first reply should contain only read-only commands.
 
 ## How the gates stay attached
 

@@ -42,8 +42,8 @@ kubectl --context <ctx> -n <ns> describe pod <pod>
 
 | Status / reason | Check | Common causes |
 |---|---|---|
-| `CrashLoopBackOff` | `kubectl --context <ctx> -n <ns> logs <pod> -c <container> --previous --tail=200` | app error at start, bad config/secret, failing dependency, wrong command |
-| `OOMKilled` (in `describe` Last State) | limits in `describe`; restart/OOM metrics (`top` shows current usage only, peak is gone) | memory limit too low, leak; capture heap before restart |
+| `CrashLoopBackOff` (STATUS shows `Error` between back-offs) | `kubectl --context <ctx> -n <ns> logs <pod> -c <container> --previous --tail=200`; if `--previous` fails, drop it and read the current logs | app error at start, bad config/secret, failing dependency, wrong command |
+| `OOMKilled` (in `describe` Last State) | limits and Last State in `describe` (logs `--previous` often fails here; see below); restart/OOM metrics (`top` shows current usage only, peak is gone) | memory limit too low, leak; capture heap before restart |
 | `Pending` | `describe` Events: `FailedScheduling` | insufficient CPU/memory, node selector/affinity/taints, unbound PVC, quota |
 | `ImagePullBackOff` / `ErrImagePull` | `describe` Events | wrong tag, registry auth (imagePullSecret), rate limit, private registry network |
 | `CreateContainerConfigError` | `describe` | missing ConfigMap/Secret key (check key names, not values) |
@@ -51,7 +51,7 @@ kubectl --context <ctx> -n <ns> describe pod <pod>
 | `Terminating` stuck | `kubectl --context <ctx> -n <ns> get pod <pod> -o jsonpath='{.metadata.finalizers}'` | finalizers, node unreachable (do not patch finalizers without SRE approval) |
 | `Evicted` | `kubectl --context <ctx> -n <ns> get pods --field-selector=status.phase=Failed` then filter `.status.reason=Evicted` with jsonpath/grep | node disk/memory pressure |
 
-`--previous` errors if the container never restarted; that is harmless. `kubectl top` needs metrics-server.
+`--previous` errors if the container never restarted. In a fast crash or OOM loop it can also fail with "unable to retrieve container logs" (seen on kind v1.35 with containerd): the previous container is already gone. Both are harmless. Drop `--previous` and read the current logs (they hold the latest crashed run until the next restart), retry `--previous` right after RESTARTS goes up, or read the snapshot's `pods/<pod>.prev.log`. For OOMKilled, `describe` Last State (reason `OOMKilled`, exit code 137) is the evidence; the logs rarely are. `kubectl top` needs metrics-server.
 
 ## Nodes
 
@@ -151,6 +151,8 @@ Otherwise, report the verdict (kind, ready/desired, PDB allowed disruptions, HPA
 bash scripts/k8s-preflight.sh --context <ctx> -n <ns>        # auth can-i matrix; exits 1 if the identity can read Secrets, exec, port-forward or write
 bash scripts/k8s-triage-snapshot.sh --context <ctx> -n <ns>  # bounded, read-only evidence bundle; Secrets never read
 ```
+
+Both exit 3 and print "cannot reach the API server" when the cluster is unreachable. That means nothing was checked, not that the checks passed. Exit 2 is a usage error, and exit 1 means a missing context (or, for the preflight, an identity that can do more than read).
 
 - [references/command-cheatsheet.md](references/command-cheatsheet.md) · [references/destructive-commands.md](references/destructive-commands.md)
 - Opt-in hardening: [references/rbac-readonly.yaml](references/rbac-readonly.yaml), [references/kubernetes-mcp-server.toml](references/kubernetes-mcp-server.toml), [references/claude-settings-k8s-deny.json](references/claude-settings-k8s-deny.json). The deny list also blocks `cordon` and other fixes, so Claude cannot execute an approved fix by design; a human runs it.

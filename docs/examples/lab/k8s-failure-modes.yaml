@@ -1,0 +1,66 @@
+# Lab workloads for docs/examples/04-k8s-failure-modes.md: four deliberate failures in namespace shop.
+apiVersion: apps/v1
+kind: Deployment
+metadata: {name: report-gen, namespace: shop}
+spec:
+  replicas: 1
+  selector: {matchLabels: {app: report-gen}}
+  template:
+    metadata: {labels: {app: report-gen}}
+    spec:
+      containers:
+      - name: worker
+        image: busybox:1.36
+        imagePullPolicy: IfNotPresent
+        command: ["sh","-c","echo building report; head -c 200m /dev/zero | tail > /dev/null; sleep 3600"]
+        resources: {requests: {memory: 32Mi}, limits: {memory: 32Mi}}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata: {name: ml-batch, namespace: shop}
+spec:
+  replicas: 1
+  selector: {matchLabels: {app: ml-batch}}
+  template:
+    metadata: {labels: {app: ml-batch}}
+    spec:
+      containers:
+      - name: trainer
+        image: busybox:1.36
+        imagePullPolicy: IfNotPresent
+        command: ["sleep","3600"]
+        resources: {requests: {cpu: "64", memory: 1Gi}}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata: {name: gpu-api, namespace: shop}
+spec:
+  replicas: 1
+  selector: {matchLabels: {app: gpu-api}}
+  template:
+    metadata: {labels: {app: gpu-api}}
+    spec:
+      nodeSelector: {node.kubernetes.io/instance-type: g5.xlarge}
+      containers:
+      - {name: api, image: nginx:1.27, imagePullPolicy: IfNotPresent}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata: {name: storefront, namespace: shop}
+spec:
+  replicas: 2
+  selector: {matchLabels: {app: storefront}}
+  template:
+    metadata: {labels: {app: storefront}}
+    spec:
+      containers:
+      - name: web
+        image: nginx:1.27
+        imagePullPolicy: IfNotPresent
+        ports: [{containerPort: 80}]
+        readinessProbe: {httpGet: {path: /healthz, port: 80}, periodSeconds: 5, failureThreshold: 2}
+---
+apiVersion: v1
+kind: Service
+metadata: {name: storefront, namespace: shop}
+spec: {selector: {app: storefront}, ports: [{port: 80}]}

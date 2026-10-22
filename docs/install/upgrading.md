@@ -16,9 +16,9 @@ rm -r ~/.claude/skills/sre-architect ~/.claude/skills/sre-tools-catalog
 3. Pull the new release and copy the skills again, as on your tool's install page:
 
 ```bash
-git -C claude-sre pull
+git -C SRE-Skills pull
 mkdir -p ~/.claude/skills
-cp -r claude-sre/.claude/skills/sre-* ~/.claude/skills/
+cp -r SRE-Skills/.claude/skills/sre-* ~/.claude/skills/
 ```
 
 4. Replace any `/sre-architect` or `/sre-tools-catalog` in your docs or aliases with `/sre-engineer`.

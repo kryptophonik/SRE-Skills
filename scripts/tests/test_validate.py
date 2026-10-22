@@ -84,7 +84,13 @@ try:
   out = subprocess.run([sys.executable, 'scripts/validate.py'], cwd=r, capture_output=True, text=True).stdout
   if 'plugin form' not in out: print('MISSED un-namespaced manual command'); fails += 1
   os.remove(os.path.join(d, 'zz-fixture.md'))
-  extra = len(INSTALL_BAD) + 2
+  for rel, size, why in (('.claude/skills/sre-engineer/zz.png', 10, 'images belong only'), ('docs/examples/images/zz.png', 200_000, 'image too large')):
+    os.makedirs(os.path.dirname(os.path.join(r, rel)), exist_ok=True)
+    open(os.path.join(r, rel), 'wb').write(b'\0' * size)
+    out = subprocess.run([sys.executable, 'scripts/validate.py'], cwd=r, capture_output=True, text=True).stdout
+    if why not in out: print('MISSED image check', rel); fails += 1
+    os.remove(os.path.join(r, rel))
+  extra = len(INSTALL_BAD) + 4
   print(f'{len(BAD) + len(GOOD) + 2 + extra - fails} ok, {fails} failed'); sys.exit(1 if fails else 0)
 finally:
   shutil.rmtree(tmp)

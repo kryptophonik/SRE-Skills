@@ -59,7 +59,7 @@ amtool silence expire <silence-id> --alertmanager.url="$AM_URL"
 
 ## Multiwindow burn-rate rules (99.9% SLO)
 
-Genuine config example (passes `promtool check rules` and a unit test). Recording rules follow `level:metric:operations` naming, aggregate `sum by (job)`, and select `job="<svc>"` (here `example-svc`). Thresholds are `N * (1 - SLO)`; for 99.9%, `1 - 0.999 = 0.001`.
+Generate the rules with `scripts/gen-burn-rate-rules.py` rather than writing them by hand. The excerpt below is from its output, [`references/slo-burn-rate.rules.yml`](references/slo-burn-rate.rules.yml), which passes `promtool check rules --lint=all` and the unit tests in `references/slo-burn-rate.test.yml`. The recording rules are named `slo:sli_error:ratio_rate<window>` (`level:metric:operations`), aggregate `sum by (job)`, and carry an `slo` label. The alerts are `SLOErrorBudgetBurnFast` (page) and `SLOErrorBudgetBurnSlow` (ticket). Thresholds are `N * (1 - SLO)`; for 99.9%, `1 - 0.999 = 0.001`.
 
 | Tier | Burn | Long / short window | Severity |
 |---|---|---|---|
@@ -68,49 +68,41 @@ Genuine config example (passes `promtool check rules` and a unit test). Recordin
 | 3 | 3x | 1d / 2h | ticket |
 | 4 | 1x | 3d / 6h | ticket |
 
-The short window already confirms the burn is ongoing; `for:` is only a noise filter (`for: 0m` is valid).
+```bash
+python3 scripts/gen-burn-rate-rules.py --slo-name example-availability --objective 0.999 \
+  --errors 'http_requests_total{job="example-svc",code=~"5.."}' --total 'http_requests_total{job="example-svc"}' \
+  --out slo-example-availability.rules.yml
+```
 
 ```yaml
-groups:
-  - name: slo-example-svc
-    rules:
-      - record: job:slo_errors_per_request:ratio_rate5m
-        expr: sum by (job) (rate(http_requests_total{job="example-svc",code=~"5.."}[5m])) / sum by (job) (rate(http_requests_total{job="example-svc"}[5m]))
-      - record: job:slo_errors_per_request:ratio_rate30m
-        expr: sum by (job) (rate(http_requests_total{job="example-svc",code=~"5.."}[30m])) / sum by (job) (rate(http_requests_total{job="example-svc"}[30m]))
-      - record: job:slo_errors_per_request:ratio_rate1h
-        expr: sum by (job) (rate(http_requests_total{job="example-svc",code=~"5.."}[1h])) / sum by (job) (rate(http_requests_total{job="example-svc"}[1h]))
-      - record: job:slo_errors_per_request:ratio_rate2h
-        expr: sum by (job) (rate(http_requests_total{job="example-svc",code=~"5.."}[2h])) / sum by (job) (rate(http_requests_total{job="example-svc"}[2h]))
-      - record: job:slo_errors_per_request:ratio_rate6h
-        expr: sum by (job) (rate(http_requests_total{job="example-svc",code=~"5.."}[6h])) / sum by (job) (rate(http_requests_total{job="example-svc"}[6h]))
-      - record: job:slo_errors_per_request:ratio_rate1d
-        expr: sum by (job) (rate(http_requests_total{job="example-svc",code=~"5.."}[1d])) / sum by (job) (rate(http_requests_total{job="example-svc"}[1d]))
-      - record: job:slo_errors_per_request:ratio_rate3d
-        expr: sum by (job) (rate(http_requests_total{job="example-svc",code=~"5.."}[3d])) / sum by (job) (rate(http_requests_total{job="example-svc"}[3d]))
-      - alert: SvcErrorBudgetBurn
+      - record: slo:sli_error:ratio_rate5m      # also 30m, 1h, 2h, 6h, 1d, 3d
         expr: |
-          (job:slo_errors_per_request:ratio_rate1h > (14.4 * 0.001) and job:slo_errors_per_request:ratio_rate5m > (14.4 * 0.001))
+          sum by (job) (rate(http_requests_total{job="example-svc",code=~"5.."}[5m]))
+          /
+          sum by (job) (rate(http_requests_total{job="example-svc"}[5m]))
+        labels:
+          slo: "example-availability"
+      - alert: SLOErrorBudgetBurnFast          # SLOErrorBudgetBurnSlow uses 1d/2h at 3x and 3d/6h at 1x
+        expr: |
+          (
+            slo:sli_error:ratio_rate1h{slo="example-availability"} > (14.4 * 0.001)
+          and
+            slo:sli_error:ratio_rate5m{slo="example-availability"} > (14.4 * 0.001)
+          )
           or
-          (job:slo_errors_per_request:ratio_rate6h > (6 * 0.001) and job:slo_errors_per_request:ratio_rate30m > (6 * 0.001))
-        for: 2m
+          (
+            slo:sli_error:ratio_rate6h{slo="example-availability"} > (6 * 0.001)
+          and
+            slo:sli_error:ratio_rate30m{slo="example-availability"} > (6 * 0.001)
+          )
         labels:
           severity: page
-        annotations:
-          summary: "{{ $labels.job }} burning error budget fast"
-          runbook_url: "https://runbooks.example.com/slo-burn"
-      - alert: SvcErrorBudgetBurnSlow
-        expr: |
-          (job:slo_errors_per_request:ratio_rate1d > (3 * 0.001) and job:slo_errors_per_request:ratio_rate2h > (3 * 0.001))
-          or
-          (job:slo_errors_per_request:ratio_rate3d > (1 * 0.001) and job:slo_errors_per_request:ratio_rate6h > (1 * 0.001))
-        for: 1h
-        labels:
-          severity: ticket
-        annotations:
-          summary: "{{ $labels.job }} burning error budget slowly"
-          runbook_url: "https://runbooks.example.com/slo-burn"
+          slo: "example-availability"
 ```
+
+The generated alerts have no `for:`, because the short window already confirms the burn is ongoing. Pass `--for 2m` only if you want a noise filter.
+
+To check the current burn rate when an alert fires, query the same names: `slo:sli_error:ratio_rate5m{slo="<slo>"} / (1 - <objective>)`.
 
 Deploy through Git, not by hand; never `/-/reload` from this skill.
 
