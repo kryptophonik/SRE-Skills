@@ -30,7 +30,9 @@ Never restore over a live resource. Always restore to a **new, isolated** target
 3. **Plan the drill:** restore type (single table/file, full DB, cluster, region failover), target, validation queries, timebox, rollback/cleanup.
 4. **Get approval.**
 5. **Run:** start timer; restore to isolated target.
-6. **Validate:** row counts / checksums vs. source, app smoke test, newest record timestamp (gives real RPO).
+6. **Validate:** row counts / checksums vs. source, app smoke test, and the recovery point (for RPO).
+   - Take the recovery point from the backup itself, not from the data: `pg_dump` uses one snapshot taken when it starts (`pg_restore -l` prints "Archive created at", which can show in a different time zone); a physical backup has `START TIME` and `START WAL LOCATION` in its `backup_label`; a point-in-time restore has the target you gave it, and on the restored server `pg_last_xact_replay_timestamp()` / `pg_last_wal_replay_lsn()` show what was actually replayed; RDS has `SnapshotCreateTime` or `--restore-time`. Compare that point (time, or LSN against `pg_current_wal_lsn()` on the source) with when the failure would have happened. That gap is the achieved RPO.
+   - The newest `updated_at`/`created_at` in the restore is only a lower bound on the recovery point: updates that don't set the column, and quiet periods, make it older than the backup (lab: 20 minutes older). Use it only as a cross-check, and only with a column every write maintains (for example set by a trigger). Rows written after the recovery point must be absent; checking a few known ones proves it.
 7. **Record** achieved RTO/RPO vs. target; gaps become tickets.
 8. **Clean up** restored resources (after approval) to avoid cost and data exposure.
 

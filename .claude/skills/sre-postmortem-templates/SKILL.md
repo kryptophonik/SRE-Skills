@@ -91,4 +91,4 @@ Sources: [PagerDuty/Opsgenie incident ID], [dashboards], [deploy history], [data
 ## Output
 
 - Blameless postmortem draft (unpublished until approved) with a UTC timeline that cites its sources, time to detect / acknowledge / mitigate, and open questions
-- Every action item has an owner, due date, and ticket
+- Every action item has an owner, due date, and ticket before the postmortem is published. In a draft, write `[TBD]` for any that don't exist yet (tickets often don't), and list each `[TBD]` under open questions; publishing waits until none are left.
