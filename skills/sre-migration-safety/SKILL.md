@@ -35,7 +35,7 @@ Test in non-production first. The operator approves every change, and this skill
    python3 scripts/migration-lint.py --engine mysql --format json migration.sql
    ```
 
-   Exit code 2 means at least one blocker, 1 means warnings only, 0 means nothing found.
+   Exit code 2 means at least one blocker, 1 means warnings only, 0 means nothing found (or info only). Exit 3 means the checker couldn't run: bad arguments, or a file it can't read. Paths are relative to the current folder, so give an absolute path if you `cd` into the skill folder first. Treat 3 as a failed review, never as a pass.
 2. For each finding, check it against the table sizes and traffic from the inputs. Downgrade a finding only when the table is small or idle, and say so.
 3. Read the static checker's blind spots in [references/rules.md](references/rules.md) and review the SQL by hand for them: triggers, partitioned tables, enum changes, and anything the migration tool wraps in its own transaction.
 4. Write the review in the format under **Output**: one entry per risky statement with the rewritten, safe SQL.

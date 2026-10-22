@@ -43,4 +43,27 @@ for sql, want in [("ALTER TABLE t ALTER COLUMN name TYPE varchar(50);", 'warn'),
                   ("ALTER TABLE t ALTER COLUMN name TYPE character varying(80);", 'warn'), ("ALTER TABLE t ALTER COLUMN id TYPE bigint;", 'blocker'),
                   ("ALTER TABLE t ALTER COLUMN n TYPE text USING n::text;", 'blocker')]:
     check(f'type severity {want}: {sql}', type_sev(sql) == {want})
+
+# Safe NOT NULL pattern in one file: validated CHECK covers SET NOT NULL; dropping that helper CHECK is not destructive.
+NN = ("SET lock_timeout = '5s';\nALTER TABLE orders ADD CONSTRAINT orders_status_nn CHECK (status IS NOT NULL) NOT VALID;\n"
+      "ALTER TABLE orders VALIDATE CONSTRAINT orders_status_nn;\nALTER TABLE orders ALTER COLUMN status SET NOT NULL;\n"
+      "ALTER TABLE orders DROP CONSTRAINT orders_status_nn;\n")
+check('validated CHECK covers SET NOT NULL', rules(NN, 'pg') == ['PG-SET-NOTNULL-COVERED'] and sevs(NN, 'pg') == {'info'})
+check('NOT VALID without VALIDATE still warns', 'PG-SET-NOTNULL' in rules(NN.replace("ALTER TABLE orders VALIDATE CONSTRAINT orders_status_nn;\n", ''), 'pg'))
+check('CHECK on another column does not cover', 'PG-SET-NOTNULL' in rules(NN.replace('COLUMN status SET', 'COLUMN region SET'), 'pg'))
+check('CHECK on another table does not cover', 'PG-SET-NOTNULL' in rules(NN.replace('TABLE orders ALTER COLUMN', 'TABLE users ALTER COLUMN'), 'pg'))
+check('CHECK added without NOT VALID covers (but is itself a blocker)', 'PG-SET-NOTNULL-COVERED' in rules(NN.replace(' NOT VALID', ''), 'pg'))
+check('drop of unknown constraint is still PG-DROP', 'PG-DROP' in rules("SET lock_timeout='5s'; ALTER TABLE t DROP CONSTRAINT t_pkey;", 'pg'))
+check('drop of in-file CHECK plus a column is still PG-DROP', 'PG-DROP' in rules(NN + "ALTER TABLE orders DROP CONSTRAINT orders_status_nn, DROP COLUMN legacy;", 'pg'))
+check('quoted and schema-qualified names', rules(NN.replace('TABLE orders', 'TABLE public."orders"'), 'pg') == ['PG-SET-NOTNULL-COVERED'])
+
+# CLI: input errors exit 3, distinct from 1 (warnings) and 2 (blockers); no traceback.
+import subprocess
+LINT = os.path.join(HERE, '..', 'migration-lint.py')
+r = subprocess.run([sys.executable, LINT, '--engine', 'pg', os.path.join(HERE, 'no-such-file.sql')], capture_output=True, text=True)
+check('missing file exits 3 with a clear error', r.returncode == 3 and 'cannot read' in r.stderr and 'Traceback' not in r.stderr and r.stdout == '')
+r = subprocess.run([sys.executable, LINT, '--engine', 'bogus'], capture_output=True, text=True)
+check('bad arguments exit 3, not 2', r.returncode == 3)
+r = subprocess.run([sys.executable, LINT, '--engine', 'pg', os.path.join(HERE, 'fixtures', 'pg_bad.sql')], capture_output=True, text=True)
+check('blockers still exit 2', r.returncode == 2)
 print(f'{ok}/{ok + fail} passed'); sys.exit(1 if fail else 0)
