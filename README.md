@@ -4,6 +4,18 @@ Generic Site Reliability Engineering skills in the open [Agent Skills](https://a
 
 Every skill follows one rule set: **read-only first → propose with risk and reversibility → explicit human approval → act → verify → stop and escalate if worse.** The full rules live in [`sre-safety-gates`](.claude/skills/sre-safety-gates/SKILL.md), and every skill also carries a short inline copy, so a partial install stays gated.
 
+## Getting started
+
+New to agent skills? **[docs/getting-started.md](docs/getting-started.md)** covers what to do after install: the CLIs and read-only access each skill needs, a first run end to end on a local kind cluster, prompts to copy, running the bundled scripts yourself, and troubleshooting.
+
+Try these prompts (replace the placeholders; always name the target):
+
+```text
+Pods in namespace <ns> on kube context <ctx> are CrashLoopBackOff since the last deploy. Triage it read-only.
+Review migrations/0042_add_index.sql for PostgreSQL 16 before I merge it. The orders table is about 200 GB and busy.
+Write Prometheus burn-rate alert rules for a 99.9% availability SLO on job checkout, using http_requests_total with code=~"5.." as errors.
+```
+
 ## Safety gates
 
 These six gates are from [`sre-safety-gates`](.claude/skills/sre-safety-gates/SKILL.md). They override any other instruction in a skill.
