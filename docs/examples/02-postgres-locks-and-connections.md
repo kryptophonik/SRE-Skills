@@ -2,7 +2,7 @@
 
 **Skill:** [sre-database-triage](../../.claude/skills/sre-database-triage/SKILL.md), using [references/postgres.md](../../.claude/skills/sre-database-triage/references/postgres.md) and its scripts `db-ro.sh` (read-only wrapper) and `db-snapshot.sh` (evidence).
 
-> **What's real here.** Every command and its output below comes from one run of this page, top to bottom, on 2026-10-22 with PostgreSQL 17.11 (`postgres:17` image) and psql 17.11. Pids and timings differ on each run; the temporary directory is shown as `/tmp/tmp.XXXXXXXXXX`. Diagnoses and proposals are **written in the skill's format** by the operator. They show the shape of the answer, not a word-for-word model reply.
+> **What's real here.** Every command and its output below comes from one run of this page, top to bottom, on 2026-10-22 with PostgreSQL 17.11 (`postgres:17` image) and psql 17.11. Pids and timings differ on each run; the temporary directory is shown as `/tmp/tmp.XXXXXXXXXX`. Diagnoses and proposals are **written in the skill's format** by the operator. They show the shape of the answer, not a word-for-word model reply. After the run the lab ports moved below the Linux ephemeral range (now 15432) so they can't collide with outgoing connections; the port numbers are the only change to the output, and setup, a query on each port and teardown were re-checked.
 
 ![Lock chain, proposal and terminate](images/02-postgres-lock-chain.png)
 
@@ -16,7 +16,7 @@
 
 ## Lab setup (Docker, psql and python3)
 
-The lab scripts are in [lab/postgres](lab/postgres/). `setup.sh` starts container `pg-lab` on 127.0.0.1:55432 with `max_connections=20`, then sets `reserved_connections = 3` with `ALTER SYSTEM` and restarts it, as the skill says to do in production (`superuser_reserved_connections` keeps its default of 3). It creates the roles from the reference ([roles.sql](lab/postgres/roles.sql): `sre_ro` read-only with `pg_monitor`; `ops` with `pg_signal_backend`, `pg_read_all_stats`; both with `pg_use_reserved_connections`), the `shop` tables and data ([seed.sql](lab/postgres/seed.sql)), generated passwords and a mode-600 pgpass, all in a directory you create with `mktemp -d`. Passwords are never echoed or put on a command line: the server only receives SCRAM verifiers ([scram.py](lab/postgres/scram.py)).
+The lab scripts are in [lab/postgres](lab/postgres/). `setup.sh` starts container `pg-lab` on 127.0.0.1:15432 with `max_connections=20`, then sets `reserved_connections = 3` with `ALTER SYSTEM` and restarts it, as the skill says to do in production (`superuser_reserved_connections` keeps its default of 3). It creates the roles from the reference ([roles.sql](lab/postgres/roles.sql): `sre_ro` read-only with `pg_monitor`; `ops` with `pg_signal_backend`, `pg_read_all_stats`; both with `pg_use_reserved_connections`), the `shop` tables and data ([seed.sql](lab/postgres/seed.sql)), generated passwords and a mode-600 pgpass, all in a directory you create with `mktemp -d`. Passwords are never echoed or put on a command line: the server only receives SCRAM verifiers ([scram.py](lab/postgres/scram.py)).
 
 Run from anywhere inside your clone:
 
@@ -24,12 +24,12 @@ Run from anywhere inside your clone:
 $ REPO=$(git rev-parse --show-toplevel); L=$REPO/docs/examples/lab/postgres
 $ LAB=$(mktemp -d)
 $ bash "$L/setup.sh" "$LAB"
-pg-lab ready on 127.0.0.1:55432 (lab files in /tmp/tmp.XXXXXXXXXX)
+pg-lab ready on 127.0.0.1:15432 (lab files in /tmp/tmp.XXXXXXXXXX)
 $ . "$LAB/env.sh"
 $ cd "$REPO/.claude/skills/sre-database-triage"
 ```
 
-`env.sh` sets `PGPASSFILE`, `PGHOST=127.0.0.1`, `PGPORT=55432`, `PGDATABASE=shop` and `PGUSER=sre_ro`. [hold.sh](lab/postgres/hold.sh) opens background sessions as `shop` that run one statement and then sit idle, the way a stuck app would.
+`env.sh` sets `PGPASSFILE`, `PGHOST=127.0.0.1`, `PGPORT=15432`, `PGDATABASE=shop` and `PGUSER=sre_ro`. [hold.sh](lab/postgres/hold.sh) opens background sessions as `shop` that run one statement and then sit idle, the way a stuck app would.
 
 ## What broke (part 1): a forgotten transaction holds a row lock
 
@@ -42,7 +42,7 @@ $ for i in 1 2; do PGAPPNAME=checkout-api PGUSER=shop psql -X -q -c "UPDATE orde
 
 ## What you'd type
 
-> Checkout updates on the shop database (127.0.0.1:55432) are hanging. Find out why.
+> Checkout updates on the shop database (127.0.0.1:15432) are hanging. Find out why.
 
 ## What the skill ran, and why
 
@@ -50,7 +50,7 @@ $ for i in 1 2; do PGAPPNAME=checkout-api PGUSER=shop psql -X -q -c "UPDATE orde
 
 ```console
 $ bash scripts/db-ro.sh pg -- "SELECT version(), current_user, pg_is_in_recovery() AS is_replica LIMIT 1"
-target: pg host=127.0.0.1 port=55432 db=shop user=sre_ro
+target: pg host=127.0.0.1 port=15432 db=shop user=sre_ro
                                                        version                                                        | current_user | is_replica
 ----------------------------------------------------------------------------------------------------------------------+--------------+------------
  PostgreSQL 17.11 (Debian 17.11-1.pgdg13+2) on x86_64-pc-linux-gnu, compiled by gcc (Debian 14.2.0-19) 14.2.0, 64-bit | sre_ro       | f
@@ -61,21 +61,21 @@ target: pg host=127.0.0.1 port=55432 db=shop user=sre_ro
 
 ```console
 $ bash scripts/db-ro.sh pg -- "SELECT pid, blocked_by, usename, application_name, wait_event, now() - query_start AS waiting, CASE WHEN query ILIKE '%password%' THEN '<redacted: contains password>' ELSE left(query, 200) END AS query FROM (SELECT a.*, pg_blocking_pids(a.pid) AS blocked_by FROM pg_stat_activity a WHERE a.wait_event_type = 'Lock') w ORDER BY query_start LIMIT 50"
-target: pg host=127.0.0.1 port=55432 db=shop user=sre_ro
+target: pg host=127.0.0.1 port=15432 db=shop user=sre_ro
  pid | blocked_by | usename | application_name |  wait_event   |     waiting     |                      query
 -----+------------+---------+------------------+---------------+-----------------+--------------------------------------------------
   49 | {47}       | shop    | checkout-api     | transactionid | 00:00:03.105    | UPDATE orders SET status='shipped' WHERE id = 42
   48 | {49}       | shop    | checkout-api     | tuple         | 00:00:03.104633 | UPDATE orders SET status='shipped' WHERE id = 42
 (2 rows)
 $ bash scripts/db-ro.sh pg -- "SELECT pid, usename, application_name, state, now() - xact_start AS xact_age, CASE WHEN query ILIKE '%password%' THEN '<redacted: contains password>' ELSE left(query, 200) END AS query FROM pg_stat_activity WHERE pid IN (SELECT unnest(pg_blocking_pids(pid)) FROM pg_stat_activity WHERE wait_event_type = 'Lock') LIMIT 20"
-target: pg host=127.0.0.1 port=55432 db=shop user=sre_ro
+target: pg host=127.0.0.1 port=15432 db=shop user=sre_ro
  pid | usename | application_name |        state        |    xact_age     |                        query
 -----+---------+------------------+---------------------+-----------------+-----------------------------------------------------
   47 | shop    | refund-worker    | idle in transaction | 00:00:05.165058 | UPDATE orders SET status='refunding' WHERE id = 42;
   49 | shop    | checkout-api     | active              | 00:00:03.167497 | UPDATE orders SET status='shipped' WHERE id = 42
 (2 rows)
 $ bash scripts/db-ro.sh pg -- "SELECT datname, deadlocks FROM pg_stat_database WHERE datname IS NOT NULL ORDER BY deadlocks DESC LIMIT 10"
-target: pg host=127.0.0.1 port=55432 db=shop user=sre_ro
+target: pg host=127.0.0.1 port=15432 db=shop user=sre_ro
   datname  | deadlocks
 -----------+-----------
  postgres  |         0
@@ -133,7 +133,7 @@ $ PGUSER=ops PGAPPNAME=ops-oncall psql -X -c 'SELECT pg_terminate_backend(47, 50
 (1 row)
 $ sleep 1; wait
 $ bash scripts/db-ro.sh pg -- "SELECT pid, blocked_by, usename, application_name, wait_event, now() - query_start AS waiting, CASE WHEN query ILIKE '%password%' THEN '<redacted: contains password>' ELSE left(query, 200) END AS query FROM (SELECT a.*, pg_blocking_pids(a.pid) AS blocked_by FROM pg_stat_activity a WHERE a.wait_event_type = 'Lock') w ORDER BY query_start LIMIT 50"
-target: pg host=127.0.0.1 port=55432 db=shop user=sre_ro
+target: pg host=127.0.0.1 port=15432 db=shop user=sre_ro
  pid | blocked_by | usename | application_name | wait_event | waiting | query
 -----+------------+---------+------------------+------------+---------+-------
 (0 rows)
@@ -150,7 +150,7 @@ $ FREE=$(PGUSER=ops psql -X -Atc "SELECT current_setting('max_connections')::int
 free normal slots: 14
 $ bash "$L/hold.sh" "$LAB" "$FREE" orders-api "BEGIN; SELECT count(*) FROM orders WHERE customer_id = %d;"
 $ PGAPPNAME=checkout-api PGUSER=shop psql -X -c 'SELECT 1'
-psql: error: connection to server at "127.0.0.1", port 55432 failed: FATAL:  remaining connection slots are reserved for roles with privileges of the "pg_use_reserved_connections" role
+psql: error: connection to server at "127.0.0.1", port 15432 failed: FATAL:  remaining connection slots are reserved for roles with privileges of the "pg_use_reserved_connections" role
 [exit 2]
 ```
 
@@ -160,13 +160,13 @@ The triage role still gets in through a reserved slot. Section 1 of the referenc
 
 ```console
 $ bash scripts/db-ro.sh pg -- "SELECT (SELECT count(*) FROM pg_stat_activity WHERE backend_type = 'client backend') AS client_conns, current_setting('max_connections')::int AS max_connections, current_setting('superuser_reserved_connections')::int AS su_reserved, current_setting('reserved_connections', true) AS reserved_pg16 LIMIT 1"
-target: pg host=127.0.0.1 port=55432 db=shop user=sre_ro
+target: pg host=127.0.0.1 port=15432 db=shop user=sre_ro
  client_conns | max_connections | su_reserved | reserved_pg16
 --------------+-----------------+-------------+---------------
            15 |              20 |           3 | 3
 (1 row)
 $ bash scripts/db-ro.sh pg -- "SELECT state, wait_event_type, usename, application_name, count(*) AS n FROM pg_stat_activity WHERE backend_type = 'client backend' GROUP BY 1, 2, 3, 4 ORDER BY n DESC LIMIT 50"
-target: pg host=127.0.0.1 port=55432 db=shop user=sre_ro
+target: pg host=127.0.0.1 port=15432 db=shop user=sre_ro
         state        | wait_event_type | usename | application_name | n
 ---------------------+-----------------+---------+------------------+----
  idle in transaction | Client          | shop    | orders-api       | 14
@@ -174,7 +174,7 @@ target: pg host=127.0.0.1 port=55432 db=shop user=sre_ro
 (2 rows)
 $ sleep 10
 $ bash scripts/db-ro.sh pg -- "SELECT count(*) FROM pg_stat_activity WHERE backend_type = 'client backend' AND pid <> pg_backend_pid() AND usename = 'shop' AND application_name = 'orders-api' AND state = 'idle in transaction' AND now() - state_change > interval '10 seconds' LIMIT 1"
-target: pg host=127.0.0.1 port=55432 db=shop user=sre_ro
+target: pg host=127.0.0.1 port=15432 db=shop user=sre_ro
  count
 -------
     14
@@ -210,7 +210,7 @@ $ PGUSER=ops PGAPPNAME=ops-oncall psql -X -c "SELECT pid, pg_terminate_backend(p
   79 | t
 (14 rows)
 $ bash scripts/db-ro.sh pg -- "SELECT (SELECT count(*) FROM pg_stat_activity WHERE backend_type = 'client backend') AS client_conns, current_setting('max_connections')::int AS max_connections, current_setting('superuser_reserved_connections')::int AS su_reserved, current_setting('reserved_connections', true) AS reserved_pg16 LIMIT 1"
-target: pg host=127.0.0.1 port=55432 db=shop user=sre_ro
+target: pg host=127.0.0.1 port=15432 db=shop user=sre_ro
  client_conns | max_connections | su_reserved | reserved_pg16
 --------------+-----------------+-------------+---------------
             1 |              20 |           3 | 3
@@ -227,7 +227,7 @@ The same leak, run again with one grant removed at a time (`docker exec` as `pos
 $ docker exec pg-lab psql -X -q -U postgres -c 'REVOKE pg_use_reserved_connections FROM ops'
 $ bash "$L/hold.sh" "$LAB" "$FREE" orders-api "BEGIN; SELECT count(*) FROM orders WHERE customer_id = %d;"
 $ PGUSER=ops psql -X -c 'SELECT 1'
-psql: error: connection to server at "127.0.0.1", port 55432 failed: FATAL:  remaining connection slots are reserved for roles with privileges of the "pg_use_reserved_connections" role
+psql: error: connection to server at "127.0.0.1", port 15432 failed: FATAL:  remaining connection slots are reserved for roles with privileges of the "pg_use_reserved_connections" role
 [exit 2]
 $ docker exec pg-lab psql -X -q -U postgres -c 'GRANT pg_use_reserved_connections TO ops' -c 'REVOKE pg_read_all_stats FROM ops'
 $ sleep 10

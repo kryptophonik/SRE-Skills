@@ -2,7 +2,7 @@
 
 **Skill:** [sre-database-triage](../../.claude/skills/sre-database-triage/SKILL.md), using [references/redis.md](../../.claude/skills/sre-database-triage/references/redis.md) and [references/mysql.md](../../.claude/skills/sre-database-triage/references/mysql.md).
 
-> **What's real here.** Every command and its output below comes from one run of this page, top to bottom, on 2026-10-22 with Redis 7.4.11 (`redis:7.4`, host redis-cli 8.0) and MySQL 8.4.13 (`mysql:8.4`, host MariaDB 11.8 client). The temporary directory is shown as `/tmp/tmp.XXXXXXXXXX` and client addresses as `<client-addr>`. Diagnoses and proposals are **written in the skill's format** by the operator. They show the shape of the answer, not a word-for-word model reply.
+> **What's real here.** Every command and its output below comes from one run of this page, top to bottom, on 2026-10-22 with Redis 7.4.11 (`redis:7.4`, host redis-cli 8.0) and MySQL 8.4.13 (`mysql:8.4`, host MariaDB 11.8 client). The temporary directory is shown as `/tmp/tmp.XXXXXXXXXX` and client addresses as `<client-addr>`. Diagnoses and proposals are **written in the skill's format** by the operator. They show the shape of the answer, not a word-for-word model reply. After the run the lab ports moved below the Linux ephemeral range (now 16379 and 13306) so they can't collide with outgoing connections; the port numbers are the only change to the output, and setup, a query on each port and teardown were re-checked.
 
 ![Redis OOM triage, proposal and verification](images/03-redis-oom.png)
 
@@ -17,8 +17,8 @@
 
 The lab scripts are in [lab/redis-mysql](lab/redis-mysql/). `setup.sh` generates every password into a directory you create with `mktemp -d` (mode 600, never echoed or put on a command line) and starts two containers:
 
-- `redis-lab` on 127.0.0.1:56379, from a generated config file: `maxmemory 4mb`, `noeviction`, an admin password, and the read-only user `sre-ro` with exactly the ACL from redis.md "Access" ([redis-acl.txt](lab/redis-mysql/redis-acl.txt)).
-- `mysql-lab` on 127.0.0.1:53306: `sre_ro` created as in mysql.md "Access" (`REQUIRE SSL`, `MAX_USER_CONNECTIONS 3`), an `operator` account with `CONNECTION_ADMIN` for the approved `KILL`, an `app` account and table `shop.orders` ([mysql.sql](lab/redis-mysql/mysql.sql)). Each account gets its own mode-600 option file.
+- `redis-lab` on 127.0.0.1:16379, from a generated config file: `maxmemory 4mb`, `noeviction`, an admin password, and the read-only user `sre-ro` with exactly the ACL from redis.md "Access" ([redis-acl.txt](lab/redis-mysql/redis-acl.txt)).
+- `mysql-lab` on 127.0.0.1:13306: `sre_ro` created as in mysql.md "Access" (`REQUIRE SSL`, `MAX_USER_CONNECTIONS 3`), an `operator` account with `CONNECTION_ADMIN` for the approved `KILL`, an `app` account and table `shop.orders` ([mysql.sql](lab/redis-mysql/mysql.sql)). Each account gets its own mode-600 option file.
 
 `env.sh` points `db-ro.sh` at both (`REDIS_HOST`, `REDIS_PORT`, `REDIS_USER`, `REDISCLI_AUTH` read from the password file, `MYSQL_DEFAULTS_FILE`) and defines `radmin`, an admin `redis-cli` that reads the admin password from its file into `REDISCLI_AUTH`, so it never appears on a command line or in `ps`.
 
@@ -28,7 +28,7 @@ Run from anywhere inside your clone:
 $ REPO=$(git rev-parse --show-toplevel); L=$REPO/docs/examples/lab/redis-mysql
 $ LAB=$(mktemp -d)
 $ bash "$L/setup.sh" "$LAB"
-redis-lab ready on 127.0.0.1:56379, mysql-lab ready on 127.0.0.1:53306 (lab files in /tmp/tmp.XXXXXXXXXX)
+redis-lab ready on 127.0.0.1:16379, mysql-lab ready on 127.0.0.1:13306 (lab files in /tmp/tmp.XXXXXXXXXX)
 $ . "$LAB/env.sh"
 $ cd "$REPO/.claude/skills/sre-database-triage"
 ```
@@ -53,7 +53,7 @@ $ for i in 1 2; do radmin EVAL "local s=0 for i=1,3000000 do s=s+i end return s"
 
 ## What you'd type
 
-> Redis at 127.0.0.1:56379 is rejecting writes with OOM errors and checkout is failing. Triage it.
+> Redis at 127.0.0.1:16379 is rejecting writes with OOM errors and checkout is failing. Triage it.
 
 ## What the skill ran, and why
 
@@ -61,32 +61,32 @@ $ for i in 1 2; do radmin EVAL "local s=0 for i=1,3000000 do s=s+i end return s"
 
 ```console
 $ bash scripts/db-ro.sh redis -- ROLE
-target: redis 127.0.0.1:56379 user=sre-ro tls=0
+target: redis 127.0.0.1:16379 user=sre-ro tls=0
 master
 0
 
 $ bash scripts/db-ro.sh redis -- INFO memory | grep -E '^(used_memory_human|maxmemory_human|maxmemory_policy|mem_fragmentation_ratio):'
-target: redis 127.0.0.1:56379 user=sre-ro tls=0
+target: redis 127.0.0.1:16379 user=sre-ro tls=0
 used_memory_human:4.06M
 maxmemory_human:4.00M
 maxmemory_policy:noeviction
 mem_fragmentation_ratio:3.36
 $ bash scripts/db-ro.sh redis -- INFO stats | grep -E '^evicted_keys:'
-target: redis 127.0.0.1:56379 user=sre-ro tls=0
+target: redis 127.0.0.1:16379 user=sre-ro tls=0
 evicted_keys:0
 $ bash scripts/db-ro.sh redis -- INFO errorstats
-target: redis 127.0.0.1:56379 user=sre-ro tls=0
+target: redis 127.0.0.1:16379 user=sre-ro tls=0
 # Errorstats
 errorstat_OOM:count=5096
 $ bash scripts/db-ro.sh redis -- INFO keyspace
-target: redis 127.0.0.1:56379 user=sre-ro tls=0
+target: redis 127.0.0.1:16379 user=sre-ro tls=0
 # Keyspace
 db0:keys=2905,expires=0,avg_ttl=0,subexpiry=0
 $ bash scripts/db-ro.sh redis -- MEMORY USAGE session:17
-target: redis 127.0.0.1:56379 user=sre-ro tls=0
+target: redis 127.0.0.1:16379 user=sre-ro tls=0
 1080
 $ bash scripts/db-ro.sh redis -- MEMORY DOCTOR
-target: redis 127.0.0.1:56379 user=sre-ro tls=0
+target: redis 127.0.0.1:16379 user=sre-ro tls=0
 Hi Sam, this instance is empty or is using very little memory, my issues detector can't be used in these conditions. Please, leave for your mission on Earth and fill it with some data. The new Sam and I will be back to our programming as soon as I finished rebooting.
 ```
 
@@ -96,7 +96,7 @@ Hi Sam, this instance is empty or is using very little memory, my issues detecto
 
 ```console
 $ bash scripts/db-ro.sh redis -- SLOWLOG GET 25
-target: redis 127.0.0.1:56379 user=sre-ro tls=0
+target: redis 127.0.0.1:16379 user=sre-ro tls=0
 1
 1792696779
 17430
@@ -114,7 +114,7 @@ local s=0 for i=1,3000000 do s=s+i end return s
 <client-addr>
 
 $ bash scripts/db-ro.sh redis -- LATENCY DOCTOR
-target: redis 127.0.0.1:56379 user=sre-ro tls=0
+target: redis 127.0.0.1:16379 user=sre-ro tls=0
 I'm sorry, Dave, I can't do that. Latency monitoring is disabled in this Redis instance. You may use "CONFIG SET latency-monitor-threshold <milliseconds>." in order to enable it. If we weren't in a deep space mission I'd suggest to take a look at https://redis.io/topics/latency-monitor.
 ```
 
@@ -127,7 +127,7 @@ REFUSED: Redis command 'CONFIG' is not on the read-only allowlist
 $ bash scripts/db-ro.sh redis -- MEMORY USAGE session:17 SAMPLES 0
 REFUSED: MEMORY USAGE <key> only (no SAMPLES: SAMPLES 0 walks every element)
 [exit 3]
-$ redis-cli -h 127.0.0.1 -p 56379 --user sre-ro --no-auth-warning GET session:1
+$ redis-cli -h 127.0.0.1 -p 16379 --user sre-ro --no-auth-warning GET session:1
 NOPERM User sre-ro has no permissions to run the 'get' command
 
 $ bash scripts/db-snapshot.sh redis "$LAB/redis-t0"
@@ -162,13 +162,13 @@ OK
 $ radmin SET cart:1 checkout-in-progress
 OK
 $ bash scripts/db-ro.sh redis -- INFO memory | grep -E '^(used_memory_human|maxmemory_human):'
-target: redis 127.0.0.1:56379 user=sre-ro tls=0
+target: redis 127.0.0.1:16379 user=sre-ro tls=0
 used_memory_human:4.28M
 maxmemory_human:16.00M
 $ radmin EVAL "local s=0 for i=1,30000000 do s=s+i end return s" 0
 450000015000000
 $ bash scripts/db-ro.sh redis -- LATENCY LATEST
-target: redis 127.0.0.1:56379 user=sre-ro tls=0
+target: redis 127.0.0.1:16379 user=sre-ro tls=0
 command
 1792696781
 166

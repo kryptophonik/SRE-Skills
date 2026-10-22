@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# setup.sh LAB_DIR: start the Postgres lab for docs/examples/02 (container pg-lab on 127.0.0.1:55432).
+# setup.sh LAB_DIR: start the Postgres lab for docs/examples/02 (container pg-lab on 127.0.0.1:15432).
 # Writes into LAB_DIR (create it with mktemp -d): generated passwords (*.pw), pgpass (mode 600)
 # and env.sh (connection settings, no secrets). Passwords are never echoed or put on a command line.
 # Needs: docker, python3, psql on the host. Undo with teardown.sh LAB_DIR.
@@ -8,7 +8,7 @@ here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 lab="${1:?usage: setup.sh LAB_DIR (create it with mktemp -d)}"
 [ -d "$lab" ] || { echo "no such directory: $lab" >&2; exit 2; }
 lab="$(cd "$lab" && pwd)"
-name=pg-lab port=55432
+name=pg-lab port=15432
 
 if docker container inspect "$name" >/dev/null 2>&1; then
   echo "container $name already exists: run teardown.sh first" >&2; exit 1
