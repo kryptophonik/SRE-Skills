@@ -175,6 +175,10 @@ expect_rc 0 "tf-readonly fmt (forced -check)" "$OUT/ro2.log" -- "$S/tf-readonly.
 expect_rc 0 "tf-readonly init (lockfile=readonly)" "$OUT/ro3.log" -- "$S/tf-readonly.sh" -C "$W" init
 expect_rc 0 "tf-readonly state list"          "$OUT/ro4.log" -- "$S/tf-readonly.sh" -C "$W" state list
 expect_rc 2 "tf-readonly plan -detailed-exitcode passes through" "$OUT/ro5.log" -- "$S/tf-readonly.sh" -C "$W" plan -detailed-exitcode -var-file=drift.tfvars
+grep -q "$(printf '\033')" "$OUT/ro5.log" && bad "tf-readonly plan output has ANSI colour codes" || ok "tf-readonly plan output has no ANSI colour codes"
+expect_rc 2 "tf-readonly accepts an explicit -no-color" "$OUT/ro6.log" -- "$S/tf-readonly.sh" -C "$W" plan -no-color -detailed-exitcode -var-file=drift.tfvars
+grep -q '(b) revert reality' "$OUT/drift2.log" && grep -q '(c) accept reality into state' "$OUT/drift2.log" \
+  && ok "drift-check offers change config / revert reality / accept" || bad "drift-check options missing"
 for c in "apply" "apply $W/noop.tfplan" "destroy" "refresh" "import terraform_data.x y" "state rm terraform_data.secret" \
          "state mv a b" "state push x" "state pull" "force-unlock 123" "taint terraform_data.secret" "output" "console" \
          "show -json $W/noop.tfplan" "plan -target=terraform_data.secret" "plan -replace=terraform_data.secret" "plan -destroy" \
@@ -219,6 +223,24 @@ expect_hook none "ls -la"
 echo "== secrets never printed by helpers"
 if grep -rl -e "$SECRET1" -e "$SECRET2" "$OUT" >/dev/null; then bad "a secret appeared in helper output: $(grep -rl -e "$SECRET1" -e "$SECRET2" "$OUT" | xargs -n1 basename | tr '\n' ' ')"
 else ok "no secret value in any captured helper output ($(ls "$OUT" | wc -l) logs)"; fi
+
+echo "== drift-check.sh: an object deleted outside Terraform (hashicorp/local; skipped offline)"
+W2="$(mktemp -d "${TMPDIR:-/tmp}/tf-gone-test.XXXXXX")"
+cat > "$W2/main.tf" <<'M'
+resource "local_file" "app_config" {
+  filename = "${path.module}/app.conf"
+  content  = "v1\n"
+}
+M
+if terraform -chdir="$W2" init -input=false -no-color >/dev/null 2>&1; then
+  terraform -chdir="$W2" apply -input=false -auto-approve -no-color >/dev/null   # harness setup only
+  rm -f "$W2/app.conf"                                                            # out-of-band delete
+  expect_rc 2 "drift-check: deleted object -> drift" "$OUT/drift-gone.log" -- "$S/drift-check.sh" -C "$W2"
+  grep -q '(c) NOT OFFERED' "$OUT/drift-gone.log" && grep -q -- '- local_file.app_config' "$OUT/drift-gone.log" \
+    && ! grep -q 'accept reality into state' "$OUT/drift-gone.log" \
+    && ok "drift-check withholds accept-into-state when it would drop a resource" || bad "drift-check offered accept for a deleted object"
+else echo "SKIP  hashicorp/local provider not installable (offline?)"; fi
+rm -rf -- "$W2"
 
 echo
 echo "RESULT: $pass passed, $fail failed"
