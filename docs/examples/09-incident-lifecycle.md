@@ -43,15 +43,15 @@ Revision 2 of `deployment/web` crash-looped (`FATAL: config file not found`). Th
 ```text
 Declare: deployment/web (kind-sre-demo/demo) rollout of v2 stuck; v2 pod crash-looping.
 Impact at declaration: UNKNOWN -> rule "When unsure, pick the higher severity; downgrade later" -> SEV-3.
-Roles: IC = Mike May (human). Ops lead = on-call (assistant runs read-only triage).
-Comms lead = Mike May (approves and sends; assistant drafts only). Scribe = assistant.
+Roles: IC = <on-call approver> (human). Ops lead = on-call (assistant runs read-only triage).
+Comms lead = <on-call approver> (approves and sends; assistant drafts only). Scribe = assistant.
 
 Decision log (UTC)
 | time       | decision                                              | approver |
-| ~17:49:15* | declare SEV-3, IC Mike May                            | Mike May |
-| 17:50:50*  | confirmed v1 2/2 Ready serving -> downgrade to SEV-4  | Mike May |
-| ~17:51:20  | approve `rollout undo deployment/web --to-revision=1` | Mike May |
-| ~17:51:36  | resolved, provisional (15-min stability window not observed) | Mike May |
+| ~17:49:15* | declare SEV-3, IC <approver>                          | <approver> |
+| 17:50:50*  | confirmed v1 2/2 Ready serving -> downgrade to SEV-4  | <approver> |
+| ~17:51:20  | approve `rollout undo deployment/web --to-revision=1` | <approver> |
+| ~17:51:36  | resolved, provisional (15-min stability window not observed) | <approver> |
 * notional: placed between real evidence points. The rollback approval is real (example 1).
 ```
 
@@ -82,7 +82,7 @@ The declaration message (SEV-3, impact `[TBD]`, next update 17:51 UTC) follows t
 
 ```text
 Channel: #inc-web-2026-10-22 (internal). Drafts: declaration, update, resolved.
->>> APPROVAL REQUIRED: IC/comms lead Mike May sends these. All three stay unsent until then. <<<
+>>> APPROVAL REQUIRED: the IC/comms lead (<on-call approver>) sends these. All three stay unsent until then. <<<
 ```
 
 The assistant never posts to Slack, a status page or email itself. The same rule covers the postmortem: it's a draft until someone approves publishing it.
@@ -91,7 +91,7 @@ The assistant never posts to Slack, a status page or email itself. The same rule
 
 ```markdown
 # Postmortem: web v2 rollout crash-loop on kind-sre-demo
-**Date:** 2026-10-22   **Severity:** SEV-4 (declared SEV-3, downgraded 17:50:50 UTC)   **IC:** Mike May
+**Date:** 2026-10-22   **Severity:** SEV-4 (declared SEV-3, downgraded 17:50:50 UTC)   **IC:** <on-call approver>
 
 ## 1. Summary
 Revision 2 changed the container entrypoint to a command that exits 1 when its config file is missing,
