@@ -64,6 +64,7 @@ bash scripts/db-ro.sh redis -- MEMORY USAGE <key>
 ```
 
 - `maxmemory_policy` and `maxmemory` are in `INFO memory`.
+- `MEMORY DOCTOR` declines to analyse an instance that is empty or uses very little memory (under 5 MB allocated, per `src/object.c`, it answers "Hi Sam, this instance is empty or is using very little memory, my issues detector can't be used in these conditions"; lab: Redis 7.4 with `maxmemory 4mb`). On small instances, read `INFO memory` (`used_memory`, `maxmemory`, `mem_fragmentation_ratio`) and `INFO errorstats` (`errorstat_OOM`) instead.
 - `used_memory` near `maxmemory` with `evicted_keys` rising: the cache is full and evicting (expected for `allkeys-*` policies, data loss for a store that should not evict). With `noeviction`, writes fail with OOM errors while reads still work.
 - `mem_fragmentation_ratio` mixes fragmentation with other process overhead; `allocator_frag_ratio` is the real external fragmentation number (redis.io `INFO`).
 - `INFO clients` `connected_clients` and big output buffers (`CLIENT LIST` `omem`) can eat memory too (section 3).

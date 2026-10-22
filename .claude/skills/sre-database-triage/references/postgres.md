@@ -53,7 +53,7 @@ GRANT pg_use_reserved_connections TO sre_ro;
 ```bash
 bash scripts/db-ro.sh pg -- "SELECT rolname FROM pg_roles WHERE pg_has_role('sre_ro', oid, 'member') AND rolname NOT IN ('sre_ro', 'pg_monitor', 'pg_read_all_settings', 'pg_read_all_stats', 'pg_stat_scan_tables', 'pg_use_reserved_connections') LIMIT 20"
 ```
-- Cancel/terminate rights (`pg_signal_backend`) belong to a separate operator role that a human uses after approval, not to the triage role. `pg_signal_backend` cannot signal superuser backends.
+- Cancel/terminate rights (`pg_signal_backend`) belong to a separate operator role that a human uses after approval, not to the triage role. `pg_signal_backend` cannot signal superuser backends. Give the operator role `pg_read_all_stats` (or `pg_monitor`) too: without it, `pg_stat_activity` shows NULL `state`, `backend_type` and `query` for other users' sessions, so a filtered terminate (section 1) silently matches **0 rows** while the leak goes on (lab: PostgreSQL 17). The single-pid form in section 2 works without it. Setup: `CREATE ROLE <ops> LOGIN; GRANT pg_signal_backend, pg_read_all_stats TO <ops>;` ([predefined roles](https://www.postgresql.org/docs/current/predefined-roles.html), [pg_stat_activity visibility](https://www.postgresql.org/docs/current/monitoring-stats.html#MONITORING-STATS-VIEWS)).
 - Secrets: `~/.pgpass` (`chmod 0600`, libpq ignores it otherwise) or `PGPASSFILE`, or `PGSERVICE` with `pg_service.conf`. Never `PGPASSWORD`, never a password in a conninfo string or on the command line.
 - Connect to the database itself, not through PgBouncer: during exhaustion the pooler is often the bottleneck, and PgBouncer only accepts the startup parameters it tracks: with the default config the wrapper's `options` make it fail at connect (`unsupported startup parameter in options: default_transaction_read_only`, lab with PgBouncer 1.24.1). Only if the pooler's `ignore_startup_parameters` includes `options` does the connection go through, and then the wrapper's guards are silently ignored: the role settings above are what still hold.
 - `EXPLAIN` needs `SELECT` on the tables involved, which this role does not have. Use a separate read-only account with `SELECT` on the app schema only (on PG14+ avoid the cluster-wide `pg_read_all_data`), or hand the statement to the DB owner.
@@ -75,7 +75,7 @@ Interpret:
 - Many `idle in transaction`: the app opens a transaction and waits on something else (an HTTP call, a lock). These sessions also hold locks and stop vacuum.
 - Mostly `active` with `wait_event_type = Lock`: go to section 2. Mostly `active` on `IO` or `LWLock`: saturation, go to section 6.
 
-Proposal: end idle-in-transaction sessions of one application. Run only after evidence capture (`bash scripts/db-snapshot.sh pg <outdir>`), a proposal naming the app, the row count from this preview, risk high, not reversible (each open transaction rolls back), and the app-side fix already in flight. Filter on both the database user and `application_name`: many drivers send a generic name (the PostgreSQL JDBC driver sends `PostgreSQL JDBC Driver`) unless the app sets one, so the name alone can match other services. There is no cancel step here: an idle-in-transaction session has no running statement to cancel. Preview (read-only):
+Proposal: end idle-in-transaction sessions of one application. Run only after evidence capture (`bash scripts/db-snapshot.sh pg <outdir>`), a proposal naming the app, the row count from this preview, risk high, not reversible (each open transaction rolls back), and the app-side fix already in flight. Filter on both the database user and `application_name`: many drivers send a generic name (the PostgreSQL JDBC driver sends `PostgreSQL JDBC Driver`) unless the app sets one, so the name alone can match other services. There is no cancel step here: an idle-in-transaction session has no running statement to cancel. The `5 minutes` idle threshold is a tunable, not a rule: a leak that is exhausting slots right now may be seconds old, so if the preview returns 0 while the reads above show many idle-in-transaction sessions for `<app>`, lower it (for example `30 seconds`) and use the same value in the terminate. Preview (read-only):
 
 ```bash
 bash scripts/db-ro.sh pg -- "SELECT count(*) FROM pg_stat_activity WHERE backend_type = 'client backend' AND pid <> pg_backend_pid() AND usename = '<app-db-user>' AND application_name = '<app>' AND state = 'idle in transaction' AND now() - state_change > interval '5 minutes' LIMIT 1"
@@ -85,7 +85,7 @@ PG14 and later (waits up to 5 s for each session to exit):
 
 **Gate: approval required.**
 ```sql
--- operator role with pg_signal_backend, NOT through scripts/db-ro.sh; the approval names <app> and the previewed count
+-- operator role with pg_signal_backend AND pg_read_all_stats (else 0 rows match), NOT through scripts/db-ro.sh; same threshold as the preview; the approval names <app> and the previewed count
 SELECT pid, pg_terminate_backend(pid, 5000) FROM pg_stat_activity WHERE backend_type = 'client backend' AND pid <> pg_backend_pid() AND usename = '<app-db-user>' AND application_name = '<app>' AND state = 'idle in transaction' AND now() - state_change > interval '5 minutes';
 ```
 
@@ -144,8 +144,8 @@ Verify: the blocked list empties; the waiting queries complete; error rate recov
 ## 3. Long-running queries and transactions
 
 ```bash
-bash scripts/db-ro.sh pg -- "SELECT pid, usename, application_name, client_addr, state, wait_event_type, wait_event, now() - xact_start AS xact_age, now() - query_start AS query_age, CASE WHEN query ILIKE '%password%' THEN '<redacted: contains password>' ELSE left(query, 200) END AS query FROM pg_stat_activity WHERE backend_type = 'client backend' AND xact_start IS NOT NULL ORDER BY xact_start LIMIT 20"
-bash scripts/db-ro.sh pg -- "SELECT pid, state, backend_xid, backend_xmin, greatest(age(backend_xid), age(backend_xmin)) AS horizon_age, now() - xact_start AS xact_age, CASE WHEN query ILIKE '%password%' THEN '<redacted: contains password>' ELSE left(query, 120) END AS query FROM pg_stat_activity WHERE backend_xid IS NOT NULL OR backend_xmin IS NOT NULL ORDER BY horizon_age DESC LIMIT 10"
+bash scripts/db-ro.sh pg -- "SELECT pid, usename, application_name, client_addr, state, wait_event_type, wait_event, now() - xact_start AS xact_age, now() - query_start AS query_age, CASE WHEN query ILIKE '%password%' THEN '<redacted: contains password>' ELSE left(query, 200) END AS query FROM pg_stat_activity WHERE backend_type = 'client backend' AND pid <> pg_backend_pid() AND xact_start IS NOT NULL ORDER BY xact_start LIMIT 20"
+bash scripts/db-ro.sh pg -- "SELECT pid, state, backend_xid, backend_xmin, greatest(age(backend_xid), age(backend_xmin)) AS horizon_age, now() - xact_start AS xact_age, CASE WHEN query ILIKE '%password%' THEN '<redacted: contains password>' ELSE left(query, 120) END AS query FROM pg_stat_activity WHERE pid <> pg_backend_pid() AND (backend_xid IS NOT NULL OR backend_xmin IS NOT NULL) ORDER BY horizon_age DESC LIMIT 10"
 ```
 
 - An old `backend_xid` or `backend_xmin` stops vacuum from removing dead rows anywhere in the cluster (bloat, section 5). A session idle in a transaction after a write has `backend_xid` set and `backend_xmin` empty, which is why both are checked. Replication slots and `hot_standby_feedback` replicas hold the horizon back too.
