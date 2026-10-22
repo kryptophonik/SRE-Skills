@@ -15,21 +15,22 @@
 
 ## Lab setup (no cloud)
 
-The module is [lab/terraform/main.tf](lab/terraform/main.tf) (v1). It uses only the local, random and built-in providers. Copy it out of the repo so state and plan files never land in Git:
+The module is [lab/terraform/main.tf](lab/terraform/main.tf) (v1). It uses only the local, random and built-in providers, so there's no cloud and no account, but `terraform init` does download the public `hashicorp/local` and `hashicorp/random` providers from registry.terraform.io (allow that, or use a provider mirror). Copy the module out of the repo so state and plan files never land in Git:
 
 ```console
-$ cp -r docs/examples/lab/terraform /tmp/tf-lab && terraform -chdir=/tmp/tf-lab init && terraform -chdir=/tmp/tf-lab apply
-$ cd .claude/skills/sre-terraform
+$ REPO=$(git rev-parse --show-toplevel)
+$ cp -r "$REPO/docs/examples/lab/terraform" /tmp/tf-lab && terraform -chdir=/tmp/tf-lab init && terraform -chdir=/tmp/tf-lab apply
+$ cd "$REPO/.claude/skills/sre-terraform"
 ```
 
 The `apply` above bootstraps v1. Type `yes` yourself: it's your lab.
 
 ## What broke (the change under review)
 
-v2 of the module, as a teammate would push it:
+v2 of the module, as a teammate would push it, is [lab/terraform-v2/main.tf](lab/terraform-v2/main.tf). Copy it over v1 in the lab dir:
 
 ```console
-$ diff -u main.v1.tf main.tf | grep -E '^[-+][^-+]'
+$ diff -u "$REPO/docs/examples/lab/terraform/main.tf" "$REPO/docs/examples/lab/terraform-v2/main.tf" | grep -E '^[-+][^-+#]'
 -  length = 2
 +  length = 3   # ops asked for longer names
 -  content         = "env=${var.env}\ncluster=${random_pet.cluster_name.id}\nreplicas=2\n"
@@ -37,6 +38,7 @@ $ diff -u main.v1.tf main.tf | grep -E '^[-+][^-+]'
 -resource "terraform_data" "legacy_queue" {
 -  input = "orders-v1"
 -}
+$ cp "$REPO/docs/examples/lab/terraform-v2/main.tf" /tmp/tf-lab/main.tf
 ```
 
 It looks harmless. It isn't: changing the pet length renames the cluster.
@@ -52,6 +54,11 @@ It looks harmless. It isn't: changing the pet length renames the cluster.
 **2. Read-only plan.** `tf-readonly.sh` runs only fmt, validate, init, plan and show, and adds `-no-color`. `fmt -check` exits 3 (needs formatting), the author fixes it, then:
 
 ```console
+$ bash scripts/tf-readonly.sh -C /tmp/tf-lab fmt -check
+main.tf
+[exit 3]
+$ terraform -chdir=/tmp/tf-lab fmt
+main.tf
 $ P=$(mktemp -d)/tfplan
 $ bash scripts/tf-readonly.sh -C /tmp/tf-lab plan -out="$P" | tail -4
 Plan: 2 to add, 0 to change, 3 to destroy.
@@ -78,13 +85,14 @@ RESULT: APPROVAL REQUIRED. Destructive, state-changing, or incomplete plan. Stop
 **3. The guard hook** (opt-in PreToolUse layer), fed the JSON Claude Code would send:
 
 ```console
-$ jq -nc --arg c 'terraform -chdir=/tmp/tf-lab apply' '{tool_name:"Bash",tool_input:{command:$c}}' | bash hooks/terraform-guard.sh | jq -c '.hookSpecificOutput | {permissionDecision, reason:(.permissionDecisionReason[0:110])}'
+$ guard() { jq -nc --arg c "$1" '{tool_name:"Bash",tool_input:{command:$c}}' | bash hooks/terraform-guard.sh | jq -c '.hookSpecificOutput | {permissionDecision, reason:(.permissionDecisionReason[0:110])}'; }
+$ guard 'terraform -chdir=/tmp/tf-lab apply'
 {"permissionDecision":"deny","reason":"terraform-guard: apply without a saved, reviewed plan file. Run 'terraform plan -out=tfplan', review it, then "}
-$ ... 'terraform -chdir=/tmp/tf-lab apply -auto-approve <plan>' ...
+$ guard 'terraform -chdir=/tmp/tf-lab apply -auto-approve <plan>'
 {"permissionDecision":"deny","reason":"terraform-guard: -auto-approve skips human review (https://developer.hashicorp.com/terraform/cli/commands/appl"}
-$ ... 'terraform -chdir=/tmp/tf-lab destroy' ...
+$ guard 'terraform -chdir=/tmp/tf-lab destroy'
 {"permissionDecision":"deny","reason":"terraform-guard: terraform destroy deletes every managed object. A human runs it, not the agent. "}
-$ ... 'cd /tmp/tf-lab && terraform apply <plan>' ...
+$ guard 'cd /tmp/tf-lab && terraform apply <plan>'
 {"permissionDecision":"ask","reason":"terraform-guard: Applying a saved plan runs without a Terraform prompt. Approve only if a human reviewed this "}
 $ bash scripts/tf-readonly.sh -C /tmp/tf-lab apply "$P"
 ERROR: refused: terraform apply <plan> is not read-only. This helper never runs apply. ...
