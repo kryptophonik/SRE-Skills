@@ -29,7 +29,7 @@ Verify:
 gemini extensions list    # shows sre with the version from CHANGELOG.md
 ```
 
-Then start a new session and send a test prompt such as "pods in namespace payments are crashlooping since the last deploy". It should load `sre-k8s-triage`, and its first reply should contain only read-only commands.
+Then start a new session and send a test prompt such as "pods in namespace payments on kube context <ctx> are crashlooping since the last deploy" (use a real context name). It should load `sre-k8s-triage`, and its first reply should contain only read-only commands.
 
 ## Project vs. personal
 

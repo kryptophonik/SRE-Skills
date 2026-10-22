@@ -50,7 +50,7 @@ Some skills need another skill's scripts: `sre-oncall-audit` and `sre-oncall-han
 
 ## Verify
 
-`ls <your-repo>/.claude/skills | grep '^sre-'` (or `~/.cursor/skills`) lists the skills, and `<your-repo>/.cursor/rules/sre-safety-gates.mdc` exists. Then start a new session and send a test prompt such as "pods in namespace payments are crashlooping since the last deploy". It should load `sre-k8s-triage`, and its first reply should contain only read-only commands.
+`ls <your-repo>/.claude/skills | grep '^sre-'` (or `~/.cursor/skills`) lists the skills, and `<your-repo>/.cursor/rules/sre-safety-gates.mdc` exists. Then start a new session and send a test prompt such as "pods in namespace payments on kube context <ctx> are crashlooping since the last deploy" (use a real context name). It should load `sre-k8s-triage`, and its first reply should contain only read-only commands.
 
 ## How the gates stay attached
 

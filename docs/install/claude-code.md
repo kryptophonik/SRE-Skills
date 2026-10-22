@@ -22,7 +22,7 @@ claude plugin list                  # sre@claude-sre, enabled, with the version 
 claude plugin details sre@claude-sre   # lists every sre-* skill
 ```
 
-Then start a new session and send a test prompt such as "pods in namespace payments are crashlooping since the last deploy". It should load `sre-k8s-triage`, and its first reply should contain only read-only commands.
+Then start a new session and send a test prompt such as "pods in namespace payments on kube context <ctx> are crashlooping since the last deploy" (use a real context name). It should load `sre-k8s-triage`, and its first reply should contain only read-only commands.
 
 ## Before you start
 

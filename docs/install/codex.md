@@ -50,7 +50,7 @@ Some skills need another skill's scripts: `sre-oncall-audit` and `sre-oncall-han
 
 ## Verify
 
-`ls <your-repo>/.agents/skills | grep '^sre-'` lists the skills, and `grep -c 'Safety gates' <your-repo>/AGENTS.md` prints at least 1. Then start a new session and send a test prompt such as "pods in namespace payments are crashlooping since the last deploy". It should load `sre-k8s-triage`, and its first reply should contain only read-only commands.
+`ls <your-repo>/.agents/skills | grep '^sre-'` lists the skills, and `grep -c 'Safety gates' <your-repo>/AGENTS.md` prints at least 1. Then start a new session and send a test prompt such as "pods in namespace payments on kube context <ctx> are crashlooping since the last deploy" (use a real context name). It should load `sre-k8s-triage`, and its first reply should contain only read-only commands.
 
 ## How the gates stay attached
 

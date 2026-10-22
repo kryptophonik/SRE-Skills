@@ -36,7 +36,7 @@ The assistant runs commands with the CLIs already on your machine and the access
 
 | Skills | Tools |
 |---|---|
-| `sre-k8s-triage`, `sre-k8s-safe-remediation` | `kubectl`, `helm` (for Helm releases) |
+| `sre-k8s-triage`, `sre-k8s-safe-remediation` | `kubectl` within one minor version of the cluster (the upgrade preflight flags anything wider), `helm` (for Helm releases) |
 | `sre-k8s-upgrade-autopilot` | `kubectl`, `jq` 1.6 or later, bash 3.2 or later; optional `kubent`, `pluto`; plus `aws`, `gcloud` or `az` for the provider steps |
 | `sre-aws` | `aws` |
 | `sre-azure` | `az` |
@@ -68,15 +68,26 @@ Try the pack first on a test cluster, a sandbox account or a staging database. A
 
 ## Your first run: a crash-looping pod on kind
 
-You need Docker, `kind` and `kubectl`. You create the broken workload yourself, so the assistant has something to find. These setup commands change your local lab cluster only.
+You need Docker, `kind` and `kubectl`. You create the broken workload yourself, so the assistant has something to find. These setup commands change your local lab cluster only, with one exception: `kind create cluster` adds the `kind-sre-lab` context to `~/.kube/config` **and makes it your current context**. To keep your kubeconfig untouched, add `--kubeconfig "$HOME/.kube/sre-lab"` and run `export KUBECONFIG="$HOME/.kube/sre-lab"` in the shell you use for the lab. Either way, every command below names `--context` explicitly.
 
 ```bash
-kind create cluster --name sre-lab                       # context: kind-sre-lab
+kind create cluster --name sre-lab                       # context: kind-sre-lab (also becomes current-context)
 kubectl --context kind-sre-lab create namespace demo
 kubectl --context kind-sre-lab -n demo create deployment crashy --image=busybox:1.36 --replicas=2 -- sh -c 'echo starting; exit 1'
 ```
 
-**Everything below is an illustrative example, not captured output.** Your assistant's wording will differ; the shape should not.
+If the pods show `ImagePullBackOff` or `ErrImagePull` instead, the kind node can't reach Docker Hub (common behind a proxy or VPN). Pull on the host and load the image into the node: `docker pull busybox:1.36 && kind load docker-image busybox:1.36 --name sre-lab`.
+
+What the pods look like a few seconds in (a real run on kind v1.35.0, trimmed). Between back-offs STATUS shows `Error`; at other moments it shows `CrashLoopBackOff`. Both mean the same thing here:
+
+```console
+$ kubectl --context kind-sre-lab -n demo get pods
+NAME                     READY   STATUS   RESTARTS      AGE
+crashy-f5cf58c4d-m8jhl   0/1     Error    2 (38s ago)   40s
+crashy-f5cf58c4d-tpkz4   0/1     Error    2 (38s ago)   40s
+```
+
+**The assistant conversation below is an illustrative example, not captured output.** Your assistant's wording will differ; the shape should not.
 
 **1. You type** (naming the context and namespace, never relying on the current context):
 
@@ -93,12 +104,21 @@ kubectl --context kind-sre-lab -n demo describe pod crashy-<hash>
 kubectl --context kind-sre-lab -n demo logs crashy-<hash> --previous --tail=50
 ```
 
+If `--previous` fails, the assistant drops it and reads the current logs. On kind v1.35 it failed every time in a real run, while the plain command showed the crash output:
+
+```console
+$ kubectl --context kind-sre-lab -n demo logs crashy-f5cf58c4d-m8jhl --previous --tail=50
+unable to retrieve container logs for containerd://c80ee3d20edc...
+$ kubectl --context kind-sre-lab -n demo logs crashy-f5cf58c4d-m8jhl --tail=50
+starting
+```
+
 It may also offer `bash scripts/k8s-triage-snapshot.sh --context kind-sre-lab -n demo` from the `sre-k8s-triage` folder, a bounded evidence bundle that never reads Secrets.
 
 **3. It reports what it found:**
 
 ```text
-Finding: deployment/crashy, 2/2 pods CrashLoopBackOff. Container exits with code 1 right after
+Finding: deployment/crashy, 2/2 pods crash-looping (Error / CrashLoopBackOff). Container exits with code 1 right after
 printing "starting". No OOMKilled, no image pull error, no probe failures. The command itself fails.
 ```
 
@@ -140,9 +160,9 @@ Replace the placeholders. Every prompt names its target, because the skills neve
 
 ## Running the bundled scripts yourself
 
-Several skills ship scripts you can run without an assistant. They're read-only, need an explicit target, and write their output outside the repo. Paths are relative to your clone (`SRE-Skills/`); after a copy install they're in the same place under your skills folder. Run each one from its skill folder, as shown.
+Several skills ship scripts you can run without an assistant. They're read-only and write their output outside the repo. Kubernetes, cloud and database scripts need an explicit target (context, profile, host). The PagerDuty and Opsgenie scripts are account-wide: the API key you export decides which account they read, so check which key is in your shell. Paths are relative to your clone (`SRE-Skills/`); after a copy install they're in the same place under your skills folder. Run each one from its skill folder, as shown. After the `cd`, a relative path to your own file no longer resolves, so give input files as absolute paths (or prefix them with `"$OLDPWD"/`, the folder you were in before the `cd`).
 
-**Kubernetes upgrade preflight** (`sre-k8s-upgrade-autopilot`). Exit 0 GO, 1 NO-GO, 2 refused, 3 unreachable.
+**Kubernetes upgrade preflight** (`sre-k8s-upgrade-autopilot`). Exit 0 GO or GO-WITH-WARNINGS (read the warnings), 1 NO-GO, 2 refused, 3 unreachable. The fixture run below replays recorded data with deliberate blockers, so expect a NO-GO verdict and exit 1.
 
 ```bash
 cd SRE-Skills/.claude/skills/sre-k8s-upgrade-autopilot
@@ -151,7 +171,7 @@ bash scripts/verify-step.sh --context <ctx> --expect-control-plane 1.33      # a
 bash scripts/upgrade-preflight.sh --context demo --target 1.32 --fixtures tests/fixtures/kind-1.31   # recorded data, no cluster
 ```
 
-**Kubernetes triage** (`sre-k8s-triage`). The preflight exits 1 if the identity can read Secrets, exec, port-forward or write, so an admin context (such as kind's default) fails it on purpose.
+**Kubernetes triage** (`sre-k8s-triage`). The preflight exits 1 if the identity can read Secrets, exec, port-forward or write, so an admin context (such as kind's default) fails it on purpose. Both scripts exit 3 with "cannot reach the API server" when the cluster is unreachable; that means nothing was checked.
 
 ```bash
 cd SRE-Skills/.claude/skills/sre-k8s-triage
@@ -159,12 +179,12 @@ bash scripts/k8s-preflight.sh --context <ctx> -n <ns>
 bash scripts/k8s-triage-snapshot.sh --context <ctx> -n <ns>
 ```
 
-**Migration lint** (`sre-migration-safety`). Never connects to a database. Exit 0 clean, 1 warnings, 2 blockers.
+**Migration lint** (`sre-migration-safety`). Never connects to a database. Exit 0 clean (or info only), 1 warnings, 2 blockers, 3 couldn't run (bad arguments or a file it can't read). It only knows about constraints in the files you give it; see the blind spots in its [rules reference](../.claude/skills/sre-migration-safety/references/rules.md).
 
 ```bash
 cd SRE-Skills/.claude/skills/sre-migration-safety
-python3 scripts/migration-lint.py --engine pg <path-to>/migration.sql
-python3 scripts/migration-lint.py --engine mysql --format json <path-to>/migrate.sql
+python3 scripts/migration-lint.py --engine pg /absolute/path/to/migration.sql
+python3 scripts/migration-lint.py --engine mysql --format json "$OLDPWD"/migrate.sql
 ```
 
 **Observability cost audit** (`sre-observability-cost-cutter`). Try it on the synthetic demo data first. A live run needs read-only `DD_API_KEY`, `DD_APP_KEY` and `DD_SITE` exported in your shell; see the skill's Inputs.
@@ -175,17 +195,21 @@ W="$(mktemp -d "${TMPDIR:-/tmp}/obcost-demo.XXXXXX")"
 python3 scripts/dd_cost_audit.py --input-dir demo --dollar-estimates --out "$W/demo-report.md"
 ```
 
-**SLO burn-rate rules** (`sre-slo-burn-rate-rules` uses the generator in `sre-prometheus-grafana`):
+The report is long (about 1,700 lines on the demo data). Start at the "Ranked savings plan" section.
+
+**SLO burn-rate rules** (`sre-slo-burn-rate-rules` uses the generator in `sre-prometheus-grafana`). The generator prints nothing on success; `promtool` confirms the file. Without `--runbook-url`, alerts carry a placeholder `runbooks.example.com` link.
 
 ```bash
 cd SRE-Skills/.claude/skills/sre-prometheus-grafana
+W="$(mktemp -d "${TMPDIR:-/tmp}/slo.XXXXXX")"
 python3 scripts/gen-burn-rate-rules.py --slo-name checkout-availability --objective 0.999 \
   --errors 'http_requests_total{job="checkout",code=~"5.."}' --total 'http_requests_total{job="checkout"}' \
-  --out /tmp/slo-checkout.rules.yml
-promtool check rules --lint=all --lint-fatal /tmp/slo-checkout.rules.yml
+  --runbook-url https://runbooks.example.internal/checkout-availability \
+  --out "$W/slo-checkout.rules.yml"
+promtool check rules --lint=all --lint-fatal "$W/slo-checkout.rules.yml"
 ```
 
-**PagerDuty and Opsgenie** (`sre-pagerduty-opsgenie`). Export `PD_API_KEY` or `OG_API_KEY` in your shell first; set `PD_REGION=eu` or `OG_REGION=eu` for EU accounts.
+**PagerDuty and Opsgenie** (`sre-pagerduty-opsgenie`). Export `PD_API_KEY` or `OG_API_KEY` in your shell first; set `PD_REGION=eu` or `OG_REGION=eu` for EU accounts. The key is the target: these scripts read the whole account it belongs to. They exit 2 with nothing on stdout when the key is missing or the API can't be reached, so an error never looks like "no incidents".
 
 ```bash
 cd SRE-Skills/.claude/skills/sre-pagerduty-opsgenie
@@ -194,7 +218,7 @@ bash scripts/pd_incidents.sh --since <ISO8601> --until <ISO8601>
 bash scripts/og_oncall.sh --schedule <schedule-name>
 ```
 
-Each script prints its usage with `--help`. The cloud, database, Datadog, Dynatrace and Terraform skills ship their own wrappers too; each skill's "Bundled scripts" section lists them.
+Each script prints its usage with `--help`. The cloud, database, Datadog, Dynatrace and Terraform skills ship their own wrappers too. Most list them under "Bundled scripts" in their `SKILL.md`; `sre-dynatrace` calls the section "Scripts and references", and `sre-terraform` shows its scripts inline in its steps.
 
 ## Safety: what it won't do without you
 
@@ -207,6 +231,9 @@ Each script prints its usage with `--help`. The cloud, database, Datadog, Dynatr
 
 - **The skill doesn't trigger.** Start a new session after installing. Check the skill is installed (`/skills` in Claude Code, `gemini skills list`, `grok inspect`, or `ls` on the skills folder; each guide's Verify section has the exact command). Use the words in the skill's description ("CrashLoopBackOff", "migration", "burn-rate"), or name the skill. Manual-only skills never trigger on their own; start them yourself.
 - **The assistant can't reach the cluster or account.** It uses your CLIs and credentials. Run the identity check yourself first: `kubectl config get-contexts <ctx>`, `aws sts get-caller-identity --profile <profile>`, `az account show`, `gcloud config list`. If the tool has no shell access, the skills print the commands for you to run and paste back.
-- **A script refuses with "--context is required" (or similar).** That's deliberate: every script needs an explicit target and never uses your current context, profile or project. Add the flag it names.
+- **A script refuses with "--context is required" (or similar).** That's deliberate: scripts that touch a cluster, cloud account or database need an explicit target and never use your current context, profile or project. Add the flag it names. (The PagerDuty and Opsgenie scripts take no target flag; the exported API key decides the account.)
+- **A script exits 3 with "cannot reach the API server".** The cluster is down, the context points at a deleted kind cluster, or your network blocks it. Nothing was checked; fix access and rerun.
+- **Pods show `ImagePullBackOff` on kind.** The node can't pull from the registry. Run `docker pull <img> && kind load docker-image <img> --name <cluster>`.
+- **`kubectl logs --previous` fails** with "unable to retrieve container logs" (seen on kind v1.35) or "previous terminated container not found". Drop `--previous` and read the current logs.
 - **The gates seem to be missing after a partial install.** Every skill carries a short inline gate block, so it stays gated. For the full rules in every session, install `sre-safety-gates` plus your tool's always-on file: `.cursor/rules/sre-safety-gates.mdc` (Cursor), `AGENTS.md` (Codex, Grok), `.github/copilot-instructions.md` (Copilot), `GEMINI.md` (Gemini extension). See "How the gates stay attached" in your tool's guide (listed in [INSTALL.md](../INSTALL.md)).
 - **A skill can't find another skill's script.** Some skills use another skill's scripts (for example `sre-oncall-handoff` uses `sre-pagerduty-opsgenie`). Install both; see "Install profiles" in [SKILLS.md](../SKILLS.md).

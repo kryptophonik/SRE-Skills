@@ -56,7 +56,7 @@ Some skills need another skill's scripts: `sre-oncall-audit` and `sre-oncall-han
 
 ## Verify
 
-Run `grok inspect` in the project. It should list the `sre-*` skills (or the `sre` plugin) and, for a project install, `AGENTS.md`. Then start a new session and send a test prompt such as "pods in namespace payments are crashlooping since the last deploy". It should load `sre-k8s-triage`, and its first reply should contain only read-only commands.
+Run `grok inspect` in the project. It should list the `sre-*` skills (or the `sre` plugin) and, for a project install, `AGENTS.md`. Then start a new session and send a test prompt such as "pods in namespace payments on kube context <ctx> are crashlooping since the last deploy" (use a real context name). It should load `sre-k8s-triage`, and its first reply should contain only read-only commands.
 
 ## How the gates stay attached
 
