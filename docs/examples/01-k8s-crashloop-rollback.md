@@ -112,8 +112,9 @@ FAIL  can-i get secrets                  => yes (want no)
 FAIL  can-i patch deployments            => yes (want no)
 ...
 [exit 1]
-$ bash scripts/k8s-triage-snapshot.sh --context kind-sre-demo -n demo
-done: /tmp/k8s-triage/kind-sre-demo_demo_<timestamp> (1 unhealthy pods captured, max 20)
+$ SNAP=$(mktemp -d)   # this run's snapshot dir, so cleanup removes only this one
+$ bash scripts/k8s-triage-snapshot.sh --context kind-sre-demo -n demo -o "$SNAP"
+done: /tmp/tmp.XXXXXXXXXX (1 unhealthy pods captured, max 20)
 ```
 
 ## The diagnosis (written in the skill's format)
@@ -196,7 +197,7 @@ Revision 1 comes back as revision 3. That's normal: a rollback creates a new rev
 
 ```console
 $ kind delete cluster --name sre-demo
-$ rm -rf /tmp/k8s-triage/kind-sre-demo_demo_*   # the snapshot holds raw logs
+$ rm -rf "$SNAP"   # this run's snapshot only; it holds raw logs
 $ rm -f "$KUBECONFIG"; unset KUBECONFIG
 ```
 

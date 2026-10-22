@@ -15,7 +15,7 @@
 
 ## Lab setup (OpenSSL only)
 
-[lab/expiry/mk-certs.sh](lab/expiry/mk-certs.sh) makes a private root CA, a 10-day intermediate, and six leaf certs: api (5 days), grafana (12), checkout (20), docs (90), legacy (expired 3 days ago) and vpn (200, issued by the intermediate). Run it in a temporary directory (`$LAB`, used again below), then serve each cert on a loopback port:
+[lab/expiry/mk-certs.sh](lab/expiry/mk-certs.sh) makes a private root CA, a 10-day intermediate, and six leaf certs: api (5 days), grafana (12), checkout (20), docs (90), legacy (expired 3 days ago) and vpn (200, issued by the intermediate). Run it in a temporary directory (`$LAB`, used again below), then serve each cert on a loopback port. Run from anywhere inside your clone:
 
 ```console
 $ REPO=$(git rev-parse --show-toplevel); LAB=$(mktemp -d)
