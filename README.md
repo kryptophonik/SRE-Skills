@@ -189,6 +189,9 @@ REQUIRE_PROMTOOL=1 python3 .claude/skills/sre-observability-cost-cutter/scripts/
 python3 .claude/skills/sre-migration-safety/scripts/tests/test_lint.py
 bash .claude/skills/sre-k8s-upgrade-autopilot/tests/run-tests.sh
 bash .claude/skills/sre-k8s-triage/scripts/tests/run_tests.sh
+bash .claude/skills/sre-expiry-audit/scripts/tests/run_tests.sh
+(cd .claude/skills/sre-database-triage && bash tests/run-tests.sh)
+(cd .claude/skills/sre-terraform && bash tests/run-tests.sh)   # terraform 1.16+ and jq
 ```
 
 
