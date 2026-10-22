@@ -8,6 +8,8 @@ Every skill follows one rule set: **read-only first → propose with risk and re
 
 New to agent skills? **[docs/getting-started.md](docs/getting-started.md)** covers what to do after install: the CLIs and read-only access each skill needs, a first run end to end on a local kind cluster, prompts to copy, running the bundled scripts yourself, and troubleshooting.
 
+**See it in action:** [docs/examples/](docs/examples/README.md) walks through eight lab incidents run end to end on Docker or kind, with real command output, the approval stop and the verified fix, plus the incident lifecycle from declaration to postmortem.
+
 Try these prompts (replace the placeholders; always name the target):
 
 ```text

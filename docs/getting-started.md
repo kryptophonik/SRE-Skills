@@ -142,6 +142,8 @@ Approval needed. Writes go through /sre-k8s-safe-remediation (plugin: /sre:sre-k
 
 Clean up the lab with `kind delete cluster --name sre-lab`.
 
+Want to see more before trying it yourself? [docs/examples/](examples/README.md) walks through eight lab incidents, each with real command output, the approval stop and the verified fix. They cover Kubernetes, Postgres, Redis, MySQL, Prometheus, Terraform, TLS expiry and a DR restore drill, plus the incident lifecycle from declaration to postmortem.
+
 ## Try these prompts
 
 Replace the placeholders. Every prompt names its target, because the skills never assume a default context, account or database.
