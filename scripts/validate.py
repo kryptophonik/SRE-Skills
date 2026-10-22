@@ -142,6 +142,16 @@ for p in glob.glob('.claude/skills/**/*.md', recursive=True) + ['SKILLS.md']:
       if f'`/{n}`' in line and f'/sre:{n}' not in line:
         errors.append(f'{p}:{i}: /{n} also needs the Claude plugin form /sre:{n}')
 
+# Images live only in docs/examples/images and stay small: the Claude plugin (source "./")
+# copies the whole repo, and skill folders are mirrored for every tool.
+IMG_DIR, IMG_MAX, IMG_TOTAL = 'docs/examples/images/', 100_000, 1_000_000
+imgs = [os.path.relpath(os.path.join(dp, f)) for dp, dn, fs in os.walk('.') if not dp.startswith('./.git')
+        for f in fs if f.lower().endswith(('.png', '.jpg', '.jpeg', '.gif', '.webp', '.svg'))]
+for p in imgs:
+  if not p.startswith(IMG_DIR): errors.append(f'{p}: images belong only under {IMG_DIR} (never in skill folders or mirrors)')
+  elif os.path.getsize(p) > IMG_MAX: errors.append(f'{p}: image too large ({os.path.getsize(p)} bytes > {IMG_MAX}); use a palette PNG')
+if sum(os.path.getsize(p) for p in imgs) > IMG_TOTAL: errors.append(f'images total over {IMG_TOTAL} bytes')
+
 if errors:
   print('\n'.join(errors)); raise SystemExit(f'{len(errors)} content error(s)')
 print('content checks ok')
