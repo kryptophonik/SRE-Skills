@@ -18,7 +18,7 @@ Full rules: [sre-safety-gates](../sre-safety-gates/SKILL.md). Read-only MCP setu
 
 1. Set the window (default: last shift, e.g. 12 h or 7 d for weekly rotations).
 2. Collect, read-only:
-   - Incidents and alerts: `sre-pagerduty-opsgenie`. Count pages with its capped paginated scripts (`bash ../sre-pagerduty-opsgenie/scripts/pd_incidents.sh --since … --until … --json | wc -l`; Opsgenie `bash ../sre-pagerduty-opsgenie/scripts/og_alerts.sh`). The default API page of 25 undercounts; a `MAX_PAGES` warning means the count is a lower bound.
+   - Incidents and alerts: `sre-pagerduty-opsgenie`. Count pages with its capped paginated scripts (`bash ../sre-pagerduty-opsgenie/scripts/pd_incidents.sh --since … --until … --json > "$W/pages.jsonl" && grep -c . "$W/pages.jsonl"`, with `W="$(mktemp -d)"`; Opsgenie `bash ../sre-pagerduty-opsgenie/scripts/og_alerts.sh`). The default API page of 25 undercounts; a `MAX_PAGES` warning means the count is a lower bound. **A non-zero exit means the data is unavailable, not zero.** The scripts exit 2 on a missing key, wrong region, unreachable API or HTTP error and print nothing on stdout. Write "pages: unavailable (<error>)" in the handoff, never 0, and never pipe the script straight into `wc -l` (that prints 0 on failure).
    - Open problems: `sre-dynatrace`; firing alerts: `sre-prometheus-grafana`, `sre-datadog`.
    - Deploys and changes: CI/CD history, `sre-change-safety` log, Terraform runs.
 3. Group alerts by service; flag noisy (fired 3+ times, no action) and missing-runbook alerts.

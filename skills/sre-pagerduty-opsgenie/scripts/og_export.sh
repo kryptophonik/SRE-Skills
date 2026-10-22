@@ -11,7 +11,7 @@ out=""
 while [ $# -gt 0 ]; do case "$1" in --out) out=$2; shift 2;; -h|--help) sed -n 2,7p "$0"; exit 0;; *) die "unknown arg $1";; esac; done
 [ -n "$out" ] || die "--out DIR required"
 umask 077; mkdir -p "$out"; chmod 700 "$out"
-base=$(og_base)
+base=$(og_base) || exit 2
 for p in teams schedules escalations heartbeats integrations; do
   og_paginate "/v2/$p" > "$out/$p.jsonl"; echo "$p: $(grep -c . "$out/$p.jsonl" || true)" >&2
 done

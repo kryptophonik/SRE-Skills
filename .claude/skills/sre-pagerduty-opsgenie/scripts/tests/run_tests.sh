@@ -35,6 +35,24 @@ og_export_ok() {
     [ "$(python3 -c 'import os,sys; print(format(os.stat(sys.argv[1]).st_mode & 0o777, "o"))' "$tmp/exp")" = 700 ]
 }
 t "og_export writes files" og_export_ok
+# fail closed: a missing key, an unreachable host or an HTTP error must exit 2 with empty stdout,
+# never an empty table, "total: 0" or an empty findings list (a false all-clear).
+fails_closed() {  # fails_closed <env-assignment> <script> [args...]
+  local envset=$1 out rc; shift
+  out=$(env $envset "$@" 2>/dev/null); rc=$?
+  [ "$rc" = 2 ] && [ -z "$out" ]
+}
+closed="http://127.0.0.1:1"
+for sc in "pd_oncall.sh" "pd_oncall.sh --json" "pd_incidents.sh" "pd_incidents.sh --json" "pd_audit_schedules.sh"; do
+  t "fails closed, no key: $sc" fails_closed "PD_API_KEY=" $s/$sc
+  t "fails closed, unreachable: $sc" fails_closed "PD_BASE_URL=$closed" $s/$sc
+done
+for sc in "og_alerts.sh" "og_alerts.sh --json" "og_oncall.sh" "og_oncall.sh --schedule Sched-OK"; do
+  t "fails closed, no key: $sc" fails_closed "OG_API_KEY=" $s/$sc
+  t "fails closed, unreachable: $sc" fails_closed "OG_BASE_URL=$closed" $s/$sc
+done
+t "fails closed, HTTP 404 mid-run: pd_incidents" fails_closed "PD_BASE_URL=http://127.0.0.1:$port/nope" $s/pd_incidents.sh
+t "pd_incidents prints no total on failure" bash -c "! PD_API_KEY= '$s/pd_incidents.sh' 2>&1 | grep -q 'total:'"
 # safety
 t "lib refuses POST" bash -c ". '$s/lib.sh'; ! (api_get POST pd http://127.0.0.1:$port/incidents) 2>/dev/null"
 t "lib refuses non-https base" bash -c "PD_BASE_URL=http://evil.example '$s/pd_oncall.sh' 2>&1 | grep -q refusing"

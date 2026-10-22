@@ -12,7 +12,7 @@ while [ $# -gt 0 ]; do case "$1" in
   --json) json=1; shift;;
   -h|--help) sed -n 2,5p "$0"; exit 0;;
   *) die "unknown arg $1";; esac; done
-data=$(pd_paginate /oncalls oncalls "$q")
+data=$(pd_paginate /oncalls oncalls "$q") || exit 2
 if [ "$json" = 1 ]; then echo "$data"; exit 0; fi
 echo "$data" | jq -r '[.escalation_policy.summary, ("L"+(.escalation_level|tostring)), .user.summary, (.schedule.summary // "-"), (.start // "always"), (.end // "-")] | @tsv' \
   | sort | (echo -e "POLICY\tLEVEL\tUSER\tSCHEDULE\tSTART\tEND"; cat)
