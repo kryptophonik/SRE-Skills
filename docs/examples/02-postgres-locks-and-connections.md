@@ -245,7 +245,7 @@ $ PGUSER=ops PGAPPNAME=ops-oncall psql -X -At -c "SELECT pid, pg_terminate_backe
 
 ## Cleanup
 
-`teardown.sh` stops the sessions from `hold.sh`, removes the container and deletes the lab directory with its passwords and snapshots:
+`teardown.sh` stops the sessions from `hold.sh`, removes the container with its anonymous data volume (`docker rm -f -v`) and deletes the lab directory with its passwords and snapshots:
 
 ```console
 $ cd "$REPO"; bash "$L/teardown.sh" "$LAB"

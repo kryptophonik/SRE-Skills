@@ -77,7 +77,7 @@ Restore type: full DB (logical) from shop-<ts>.dump to a NEW container pg-dr-drt
     label purpose=dr-drill; never touches pg-dr-src.
 Validation: row counts vs the manifest; md5 of all orders rows (id <= 50000) vs source; order 42;
   newest updated_at; app-style smoke query (top customer by spend).
-Cleanup: docker rm -f only if the name ends in -drtest AND label purpose=dr-drill (after approval).
+Cleanup: docker rm -f -v only if the name ends in -drtest AND label purpose=dr-drill (after approval).
 Risk: low (new isolated target). Reversible: yes (delete the drill container).
 >>> APPROVAL REQUIRED: restore to pg-dr-drtest <<<
 ```
@@ -148,14 +148,14 @@ The md5 matches, and the 25 missing rows are exactly the ones written after the 
 ## Cleanup (gated, with a guard)
 
 ```console
-$ n=pg-dr-drtest; [[ $n == *-drtest ]] && [[ $(docker inspect -f '{{index .Config.Labels "purpose"}}' $n) == dr-drill ]] && docker rm -f $n
+$ n=pg-dr-drtest; [[ $n == *-drtest ]] && [[ $(docker inspect -f '{{index .Config.Labels "purpose"}}' $n) == dr-drill ]] && docker rm -f -v $n
 pg-dr-drtest
 $ docker ps -a --format '{{.Names}}' | grep -c drtest; docker ps --format '{{.Names}} {{.Status}}' | grep pg-dr
 0
 pg-dr-src Up 5 seconds
 ```
 
-The source is untouched. When you're done, `teardown.sh` removes it and deletes the lab directory with the backups:
+The source is untouched. When you're done, `teardown.sh` removes it with its data volume and deletes the lab directory with the backups:
 
 ```console
 $ cd "$REPO" && bash "$L/teardown.sh" "$LAB"

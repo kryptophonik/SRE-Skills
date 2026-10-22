@@ -5,8 +5,8 @@ set -euo pipefail
 lab="${1:?usage: teardown.sh LAB_DIR}"
 n=pg-dr-drtest
 if [ "$(docker inspect -f '{{index .Config.Labels "purpose"}}' "$n" 2>/dev/null || true)" = dr-drill ]; then
-  docker rm -f "$n" >/dev/null
+  docker rm -f -v "$n" >/dev/null
 fi
-docker rm -f pg-dr-src >/dev/null 2>&1 || true
+docker rm -f -v pg-dr-src >/dev/null 2>&1 || true
 if [ -f "$lab/.dr-drill-lab" ]; then rm -rf "$lab"; fi
 echo "pg-dr-src removed"

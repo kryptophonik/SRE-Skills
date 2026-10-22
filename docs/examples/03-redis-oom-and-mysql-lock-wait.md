@@ -206,7 +206,7 @@ The lock-wait query now returns no rows (`db-ro.sh` prints nothing for an empty 
 
 ## Cleanup
 
-`teardown.sh` removes both containers and deletes the lab directory with its passwords, option files and snapshot:
+`teardown.sh` removes both containers with their anonymous data volumes (`docker rm -f -v`) and deletes the lab directory with its passwords, option files and snapshot:
 
 ```console
 $ kill $(jobs -p) 2>/dev/null; cd "$REPO"; bash "$L/teardown.sh" "$LAB"

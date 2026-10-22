@@ -138,7 +138,7 @@ SLOErrorBudgetBurnFast  2026-10-22 19:23:33 UTC  SLO checkout-availability error
 ## Cleanup
 
 ```console
-$ docker rm -f lab-prom lab-am && kill "$EXPORTER"
+$ docker rm -f -v lab-prom lab-am && kill "$EXPORTER"   # -v: both images declare a data VOLUME
 $ rm -rf "$OUT"
 ```
 
