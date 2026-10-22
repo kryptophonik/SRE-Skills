@@ -17,7 +17,7 @@
 #   1 = error
 #   2 = drift detected (see the list; nothing was changed). It then lists the options:
 #       (a) change config, (b) revert reality, (c) accept into state. (c) is not offered when
-#       a drifted object no longer exists, because accepting would drop it from state.
+#       the provider reports a drifted object as gone, because accepting would drop it from state.
 #
 # Writes nothing: it never applies, never runs `terraform refresh`, and never runs
 # `apply -refresh-only` (both write state). It keeps the normal state lock. The plan is
@@ -81,8 +81,9 @@ case "$rc" in
     info "  (b) revert reality: run a normal plan review and apply the approved saved plan, which puts"
     info "      the real objects back to what the config says;"
     if [[ -n $gone ]]; then
-      info "  (c) NOT OFFERED: these drifted objects no longer exist, and accepting the drift into state"
-      info "      (apply -refresh-only) would remove them from state, so Terraform stops tracking them:"
+      info "  (c) NOT OFFERED: the provider reports these objects as gone (\"delete\" drift), so accepting"
+      info "      the drift into state (apply -refresh-only) would remove them from state and Terraform"
+      info "      would stop tracking them:"
       while IFS= read -r g; do info "        - $g"; done <<<"$gone"
       info "      Use (b) to recreate them, or (a) to remove them from the config on purpose."
     else
