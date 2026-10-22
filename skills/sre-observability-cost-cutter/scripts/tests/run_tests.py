@@ -2,7 +2,7 @@
 """End-to-end tests for the cost audit (offline and mock-live) and the monitor converter.
 
 Run from anywhere:  python3 scripts/tests/run_tests.py   (inside the skill folder)
-promtool: found via $PROMTOOL, PATH or /home/box/bin. Without it the promtool tests are
+promtool: found via $PROMTOOL or PATH. Without it the promtool tests are
 skipped, unless REQUIRE_PROMTOOL=1 makes them fail. shellcheck is optional the same way.
 Stdlib only; PyYAML is used when installed to parse the generated rules.
 """
@@ -91,8 +91,6 @@ conv = load(CONV, "monitors_to_prom")
 
 def tool(name, env):
     p = os.environ.get(env) or shutil.which(name)
-    if not p and os.path.exists(f"/home/box/bin/{name}"):
-        p = f"/home/box/bin/{name}"
     return p
 
 PROMTOOL = tool("promtool", "PROMTOOL")
