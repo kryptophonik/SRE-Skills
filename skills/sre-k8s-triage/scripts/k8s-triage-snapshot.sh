@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 # Read-only Kubernetes triage snapshot. Never reads Secrets, never mutates.
 # Usage: k8s-triage-snapshot.sh --context <ctx> -n <namespace> [-o <outdir>] [--tail N]
+# Exit: 0 snapshot written, 1 context missing or unsafe output dir, 2 usage,
+# 3 API server unreachable or pods unreadable (no snapshot; never reported as done).
 set -euo pipefail
 
 CTX="" NS="" OUT="" TAIL=200 RT="20s"
@@ -24,6 +26,10 @@ kctl() { kubectl --context "$CTX" -n "$NS" --request-timeout="$RT" "$@"; }
 # Context must exist in kubeconfig; never fall back to current-context.
 kubectl config get-contexts "$CTX" >/dev/null 2>&1 || { echo "context '$CTX' not in kubeconfig" >&2; exit 1; }
 
+# Refuse rather than write a snapshot full of connection errors.
+kubectl --context "$CTX" --request-timeout=10s get --raw /version >/dev/null 2>&1 \
+  || { echo "cannot reach the API server for context '$CTX'; no snapshot taken" >&2; exit 3; }
+
 TS="$(date +%Y%m%dT%H%M%S)"
 OUT="${OUT:-${TMPDIR:-/tmp}/k8s-triage/${CTX//[^A-Za-z0-9_.-]/_}_${NS}_${TS}}"
 case "$(cd "$(dirname "$OUT")" 2>/dev/null && pwd || echo /)" in
@@ -40,14 +46,17 @@ redact_describe() {
     {print}' | sed -E 's/((password|passwd|token|secret|apikey|api_key|authorization)[^:=]*[:=])[[:space:]]*[^[:space:]]+/\1 <redacted>/Ig'
 }
 
+FAILED=0
 section() { # name, command...; failure of one section never aborts the run
   local name="$1"; shift
-  if ! "$@" >"$OUT/$name.txt" 2>"$OUT/$name.err"; then echo "[warn] $name failed (see $name.err)" >&2; fi
+  if ! "$@" >"$OUT/$name.txt" 2>"$OUT/$name.err"; then echo "[warn] $name failed (see $name.err)" >&2; FAILED=$((FAILED+1)); fi
   [[ -s "$OUT/$name.err" ]] || rm -f "$OUT/$name.err"
 }
 
 { echo "requested_context=$CTX namespace=$NS ts=$TS"; echo "kubeconfig_current_context=$(kubectl config current-context 2>/dev/null || echo none)"; } >"$OUT/00-context.txt"
 section 01-pods        kctl get pods -o wide
+[[ -s "$OUT/01-pods.err" ]] && ! [[ -s "$OUT/01-pods.txt" ]] && grep -qv 'No resources found' "$OUT/01-pods.err" \
+  && { echo "cannot list pods in $NS (see $OUT/01-pods.err); snapshot incomplete" >&2; exit 3; }
 section 02-events-warn kctl events --types=Warning
 section 03-deploy      kctl get deploy,sts,ds,rs -o wide
 section 04-svc-eps     kctl get svc,endpointslices
@@ -78,4 +87,4 @@ for p in ${BAD[@]+"${BAD[@]}"}; do
 done
 
 echo "NOTE: logs are not redacted; treat $OUT as sensitive. Secrets were not read." >"$OUT/README.txt"
-echo "done: $OUT (${#BAD[@]} unhealthy pods captured, max 20)" >&2
+echo "done: $OUT (${#BAD[@]} unhealthy pods captured, max 20; $FAILED sections failed)" >&2

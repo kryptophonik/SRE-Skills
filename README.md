@@ -183,10 +183,12 @@ Needs Python 3.11 or newer (`validate.py` uses `tomllib`), PyYAML (`pip install 
 python3 scripts/build-targets.py --check
 python3 scripts/validate.py
 find .claude -name '*.sh' -exec bash -n {} \; && shellcheck -S warning $(find .claude -name '*.sh')
-.claude/skills/sre-pagerduty-opsgenie/scripts/tests/run_tests.sh
+bash .claude/skills/sre-pagerduty-opsgenie/scripts/tests/run_tests.sh
+bash .claude/skills/sre-prometheus-grafana/scripts/test-gen-burn-rate-rules.sh
 REQUIRE_PROMTOOL=1 python3 .claude/skills/sre-observability-cost-cutter/scripts/tests/run_tests.py
 python3 .claude/skills/sre-migration-safety/scripts/tests/test_lint.py
 bash .claude/skills/sre-k8s-upgrade-autopilot/tests/run-tests.sh
+bash .claude/skills/sre-k8s-triage/scripts/tests/run_tests.sh
 ```
 
 

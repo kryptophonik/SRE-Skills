@@ -35,6 +35,8 @@ jobs:
         run: python3 .claude/skills/sre-migration-safety/scripts/tests/test_lint.py
       - name: Kubernetes upgrade autopilot tests
         run: bash .claude/skills/sre-k8s-upgrade-autopilot/tests/run-tests.sh
+      - name: Kubernetes triage script tests
+        run: bash .claude/skills/sre-k8s-triage/scripts/tests/run_tests.sh
       - name: Install promtool
         run: |
           curl -sSfL https://github.com/prometheus/prometheus/releases/download/v3.5.0/prometheus-3.5.0.linux-amd64.tar.gz | tar xz -C /tmp
@@ -88,6 +90,8 @@ jobs:
         run: bash tests/run-tests.sh
       - name: Kubernetes upgrade autopilot tests on bash 3.2
         run: bash .claude/skills/sre-k8s-upgrade-autopilot/tests/run-tests.sh
+      - name: Kubernetes triage script tests on bash 3.2
+        run: bash .claude/skills/sre-k8s-triage/scripts/tests/run_tests.sh
       - name: Terraform tests on bash 3.2
         working-directory: .claude/skills/sre-terraform
         run: bash tests/run-tests.sh
