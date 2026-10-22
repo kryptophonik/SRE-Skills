@@ -3,14 +3,15 @@
 #   STATUS  DAYS_LEFT  NOT_AFTER(UTC)  TARGET  SUBJECT
 # STATUS is EXPIRED, CRIT (< --crit days), WARN (< --warn days) or OK.
 # Targets: host[:port], [ipv6]:port (connects with SNI for names; default port 443),
-# or --file cert.pem. By default only the leaf (or the first certificate in a file) is
+# or --file cert.pem [cert.pem...] (every argument after --file up to the next option is a
+# file, so list hosts before --file; --file may repeat). By default only the leaf (or the first certificate in a file) is
 # checked. --chain checks every certificate the server sends (or every one in the file);
 # extra certificates print as TARGET#2, TARGET#3 and so on.
 # Exit 0 when all OK, 1 when any WARN/CRIT/EXPIRED, 2 on usage or connection errors.
 # Needs openssl and python3. Works on macOS /bin/bash 3.2. Sends no data beyond a TLS handshake.
 set -uo pipefail
 warn=30; crit=7; files=""; hosts=""; timeout=10; chain=0
-usage() { echo "usage: $0 [--warn DAYS] [--crit DAYS] [--timeout SEC] [--chain] host[:port]|[ipv6]:port... | --file cert.pem..." >&2; exit 2; }
+usage() { echo "usage: $0 [--warn DAYS] [--crit DAYS] [--timeout SEC] [--chain] [host[:port]|[ipv6]:port...] [--file cert.pem [cert.pem...]]" >&2; exit 2; }
 num() { case "$2" in ''|*[!0-9]*) echo "$1 needs a whole number, got '$2'" >&2; usage ;; esac; }
 while [ $# -gt 0 ]; do
   case "$1" in
@@ -20,7 +21,8 @@ while [ $# -gt 0 ]; do
     --warn) num "$1" "$2"; warn=$2; shift 2 ;;
     --crit) num "$1" "$2"; crit=$2; shift 2 ;;
     --timeout) num "$1" "$2"; timeout=$2; shift 2 ;;
-    --file) files="$files $2"; shift 2 ;;
+    --file) shift
+      while [ $# -gt 0 ]; do case "$1" in -*) break ;; *) files="$files $1"; shift ;; esac; done ;;
     --chain) chain=1; shift ;;
     -h|--help) usage ;;
     -*) usage ;;
@@ -82,6 +84,7 @@ for h in $hosts; do
 try: print(subprocess.run(sys.argv[2:],stdin=subprocess.DEVNULL,capture_output=True,text=True,timeout=int(sys.argv[1])).stdout)
 except subprocess.TimeoutExpired: pass' "$timeout" "$@" 2>/dev/null) || pem=""
   printf '%s\n' "$pem" | grep -q 'BEGIN CERTIFICATE' || { echo "ERROR - - $h connect-failed"; rc=2; continue; }
-  printf '%s\n' "$pem" | report "$h"
+  # Not a pipeline: report must run in this shell so its exit code reaches rc.
+  report "$h" <<<"$pem"
 done
 exit $rc

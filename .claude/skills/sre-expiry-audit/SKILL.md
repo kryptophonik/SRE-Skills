@@ -47,7 +47,7 @@ Auto-renewing items (ACM `AMAZON_ISSUED` in use, cert-manager, Google-managed ce
    bash scripts/cert-expiry.sh --warn 30 --crit 7 --file <cert.pem>
    ```
 
-   Output: `STATUS DAYS_LEFT NOT_AFTER TARGET SUBJECT`; exit 0 all OK, 1 something inside a window, 2 usage or connection error. It checks the leaf only unless you add `--chain`, which also checks intermediates; see [references/tls.md](references/tls.md) for IPv6 (`[addr]:port`) and non-HTTPS ports.
+   Output: `STATUS DAYS_LEFT NOT_AFTER TARGET SUBJECT`; exit 0 all OK, 1 something inside a window, 2 usage or connection error (the worst result wins, for endpoints and files alike). `--file` takes one or more files; list hosts before it. It checks the leaf only unless you add `--chain`, which also checks intermediates; see [references/tls.md](references/tls.md) for IPv6 (`[addr]:port`) and non-HTTPS ports.
 
 3. Domains (bundled, RDAP):
 
@@ -83,7 +83,7 @@ This skill does not renew, rotate, re-import or change expiry dates. For each fi
 ## Bundled scripts and references
 
 ```bash
-bash scripts/cert-expiry.sh [--warn 30] [--crit 7] [--timeout 10] [--chain] host[:port]|[ipv6]:port... | --file cert.pem...
+bash scripts/cert-expiry.sh [--warn 30] [--crit 7] [--timeout 10] [--chain] [host[:port]|[ipv6]:port...] [--file cert.pem [cert.pem...]]
 bash scripts/domain-expiry.sh [--warn 30] [--crit 7] [--timeout 20] domain...
 bash scripts/tests/run_tests.sh   # offline tests
 ```

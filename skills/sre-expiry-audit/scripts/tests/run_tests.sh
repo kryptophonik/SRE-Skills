@@ -16,6 +16,9 @@ o=$(bash "$s/cert-expiry.sh" --file "$tmp/crit.pem"); case "$o" in CRIT*) ok "ce
 o=$(bash "$s/cert-expiry.sh" --warn 10 --file "$tmp/soon.pem"); case "$o" in OK*) ok "--warn threshold respected";; *) ko "--warn: $o";; esac
 bash "$s/cert-expiry.sh" >/dev/null 2>&1; [ $? = 2 ] && ok "no args is a usage error" || ko "usage exit"
 o=$(bash "$s/cert-expiry.sh" --file "$tmp/nope.pem"); case "$o" in ERROR*) ok "missing file reported";; *) ko "missing file: $o";; esac
+o=$(bash "$s/cert-expiry.sh" --file "$tmp/long.pem" "$tmp/crit.pem"); r=$?
+case "$o" in OK*long.pem*CRIT*crit.pem*) [ $r = 1 ] && ok "--file takes several files" || ko "multi-file exit $r";; *) ko "multi-file: $o";; esac
+o=$(bash "$s/cert-expiry.sh" --file "$tmp/long.pem" --file "$tmp/soon.pem"); case "$o" in OK*WARN*) ok "--file repeats";; *) ko "--file repeat: $o";; esac
 
 python3 - "$port" <<'PY' & pid=$!
 import http.server, json, sys, datetime as dt
@@ -62,7 +65,12 @@ openssl s_server -quiet -accept "127.0.0.1:$sport" -cert "$tmp/leaf.pem" -key "$
 for _ in $(seq 50); do (exec 3<>"/dev/tcp/127.0.0.1/$sport") 2>/dev/null && break; sleep 0.1; done
 if (exec 3<>"/dev/tcp/127.0.0.1/$sport") 2>/dev/null; then
   o=$(bash "$s/cert-expiry.sh" --timeout 5 "127.0.0.1:$sport"); r=$?; case "$o" in OK*"CN = localhost"*|OK*"CN=localhost"*) ok "host:port handshake";; *) ko "handshake: $r $o";; esac
-  o=$(bash "$s/cert-expiry.sh" --timeout 5 --chain "127.0.0.1:$sport"); case "$o" in *CRIT*"#2"*) ok "--chain over the wire";; *) ko "chain wire: $o";; esac
+  o=$(bash "$s/cert-expiry.sh" --timeout 5 --chain "127.0.0.1:$sport"); r=$?; case "$o" in *CRIT*"#2"*) ok "--chain over the wire";; *) ko "chain wire: $o";; esac
+  # Regression: endpoint results used to run in a pipeline subshell, so CRIT/EXPIRED exited 0.
+  [ $r = 1 ] && ok "endpoint CRIT exits 1" || ko "endpoint CRIT exit $r (want 1)"
+  bash "$s/cert-expiry.sh" --timeout 5 "127.0.0.1:$sport" >/dev/null; r=$?; [ $r = 0 ] && ok "endpoint OK exits 0" || ko "endpoint OK exit $r"
+  o=$(bash "$s/cert-expiry.sh" --timeout 5 "127.0.0.1:$sport" --file "$tmp/crit.pem"); r=$?
+  [ $r = 1 ] && ok "host plus file: worst exit wins" || ko "host plus file exit $r: $o"
 else echo "SKIP live handshake: openssl s_server did not start (LibreSSL lacks -cert_chain)"; fi
 o=$(bash "$s/domain-expiry.sh" missing.invalid); case "$o" in *http-404*) ok "RDAP status in reason";; *) ko "rdap status: $o";; esac
 echo "$pass passed, $fail failed"; [ $fail = 0 ]
