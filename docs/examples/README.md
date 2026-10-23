@@ -13,11 +13,12 @@ Each page walks through one lab incident from start to finish: the setup, what y
 | 7 | [TLS expiry audit](07-tls-expiry-audit.md) | sre-expiry-audit | Endpoints sorted into tiers, `--chain` finding an expiring intermediate, scriptable exit codes, a bug the lab caught | Read-only; renewals become separate approved changes |
 | 8 | [DR restore drill](08-dr-restore-drill.md) | sre-dr-backup-test | Isolated restore, counts and checksums against the source, RTO/RPO record | Restore and cleanup held for approval |
 | 9 | [Incident lifecycle on paper](09-incident-lifecycle.md) | sre-incident-command, sre-incident-communication, sre-postmortem-templates | Evidence timeline, decision log, update drafts, postmortem draft | Updates and postmortem stay unsent drafts |
+| 10 | [The same crash-loop, but it's the real AI session](10-live-k8s-crashloop.md) | sre-k8s-triage, sre-k8s-safe-remediation | A genuinely captured transcript (not written in the skill's format): real `Skill` tool invocation, the manual-only gate refusing a model-initiated chain into the remediation skill, real divergence from example 1's script | Rollback held for a typed "approved, run it" |
 
 ## How to read these pages
 
-- **Command output is real.** It comes from lab runs on 2026-10-22. Each page lists the tool versions, and marks trimmed output with `...`.
-- **Diagnoses, plans and drafts are "written in the skill's format".** They show the shape of the answer the skill asks for, not a word-for-word model reply.
+- **Command output is real.** It comes from lab runs on 2026-10-22 (example 10: 2026-10-23). Each page lists the tool versions, and marks trimmed output with `...`.
+- **Diagnoses, plans and drafts are "written in the skill's format"** in examples 1-9. They show the shape of the answer the skill asks for, not a word-for-word model reply. **Example 10 is the exception**: it's a genuine captured transcript from a real agent session, not reconstructed after the fact.
 - **Lab values are placeholders.** Passwords, hosts and IPs are shown as `<admin password>`, `<app-host>`, `<pod-ip>` and so on. Keep real secrets in files or environment variables, never in a prompt or a command line.
 - Lab files referenced by the pages are in [lab/](lab/). Screenshots are in [images/](images/) and are rendered from the same output shown on each page.
 
