@@ -1,6 +1,8 @@
 # SRE-Skills: SRE skill pack with approval gates
 
-Generic Site Reliability Engineering skills in the open [Agent Skills](https://agentskills.io/specification) format (`SKILL.md` folders). They cover incident command, read-only diagnosis, gated remediation, SLOs and burn-rate alerting, DR drills, capacity, cost, toil, and read-only adapters for Kubernetes, AWS, Azure, GCP, Terraform, Dynatrace, Prometheus/Grafana, Datadog and PagerDuty/Opsgenie.
+When something's on fire at 3am, an AI agent with shell access can genuinely speed up triage — but only if it can't make things worse. SRE-Skills is 37 skills, in the open [Agent Skills](https://agentskills.io/specification) format (`SKILL.md` folders), that turn a general-purpose coding agent (Claude Code, Cursor, Codex, Gemini CLI, Grok, Copilot) into something closer to a disciplined on-call engineer: it follows the same diagnosis order a senior SRE would, across Kubernetes, AWS, Azure, GCP, Terraform, Postgres/MySQL/Redis, Dynatrace, Prometheus/Grafana, Datadog and PagerDuty/Opsgenie — and it is structurally incapable of running a write, a prod change, or an external post without you typing "approved."
+
+That buys you three things an SRE actually cares about: **faster first response** (the agent does the read-only legwork — logs, events, locks, dependency graphs — while you keep context), **consistency** (the same decision tree every time, not whatever the on-call person remembers under pressure), and **safety you don't have to police** (two of the highest-blast-radius skills are gated at the tool level, not just by prompt, so the model can't talk its way around "ask first" even if it wanted to).
 
 Every skill follows one rule set: **read-only first → propose with risk and reversibility → explicit human approval → act → verify → stop and escalate if worse.** The full rules live in [`sre-safety-gates`](.claude/skills/sre-safety-gates/SKILL.md), and every skill also carries a short inline copy, so a partial install stays gated.
 
@@ -8,7 +10,7 @@ Every skill follows one rule set: **read-only first → propose with risk and re
 
 New to agent skills? **[docs/getting-started.md](docs/getting-started.md)** covers what to do after install: the CLIs and read-only access each skill needs, a first run end to end on a local kind cluster, prompts to copy, running the bundled scripts yourself, and troubleshooting.
 
-**See it in action:** [docs/examples/](docs/examples/README.md) walks through eight lab incidents run end to end on Docker or kind, with real command output, the approval stop and the verified fix, plus the incident lifecycle from declaration to postmortem.
+**See it in action:** [docs/examples/](docs/examples/README.md) walks through ten lab incidents run end to end on Docker or kind, with real command output, the approval stop and the verified fix, plus the incident lifecycle from declaration to postmortem — one of them a genuinely captured AI session, not a reconstructed transcript.
 
 Try these prompts (replace the placeholders; always name the target):
 
