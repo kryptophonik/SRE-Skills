@@ -80,8 +80,9 @@ kubectl --context <ctx> -n <ns> get endpointslices -l kubernetes.io/service-name
 kubectl --context <ctx> -n kube-system get pods -l k8s-app=kube-dns
 ```
 
-DNS test (WRITE: creates a temporary pod; needs approval in prod; PodSecurity/admission may block it):
+DNS test (WRITE: creates a temporary pod; PodSecurity/admission may block it):
 
+**Gate: approval required.**
 ```bash
 kubectl --context <ctx> -n <ns> run dnscheck -it --rm --restart=Never --image=registry.k8s.io/e2e-test-images/jessie-dnsutils:1.3 -- nslookup <svc>.<ns>.svc.cluster.local
 ```

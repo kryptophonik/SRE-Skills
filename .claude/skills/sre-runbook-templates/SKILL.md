@@ -21,7 +21,7 @@ Complete runbook template for alerts and incidents.
 1. Copy the template below.
 2. Fill every field. Mark unknowns `[TBD]`; never guess.
 3. Keep diagnosis steps read-only.
-4. Give every action a risk, reversibility, and rollback. Each action requires approval per `sre-remediation-actions` safety gates.
+4. Give every action a risk, reversibility, and rollback. Each action requires approval per `sre-safety-gates`, using the risk catalog in `sre-remediation-actions`.
 5. Set `Last reviewed` whenever you change the runbook.
 
 ## Template
@@ -54,7 +54,7 @@ Complete runbook template for alerts and incidents.
 - If dependency X is unhealthy -> escalate to owning team
 - If none match -> escalate; do not improvise prod changes
 
-## Actions (each requires approval per sre-remediation-actions safety gates)
+## Actions (each requires approval per sre-safety-gates, using the risk catalog in sre-remediation-actions)
 
 ### Action A: [e.g., roll back deployment]
 - **Command:** `[exact command]`

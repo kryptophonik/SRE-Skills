@@ -22,7 +22,7 @@ Full rules: [sre-safety-gates](../sre-safety-gates/SKILL.md). Read-only MCP setu
    - Open problems: `sre-dynatrace`; firing alerts: `sre-prometheus-grafana`, `sre-datadog`.
    - Deploys and changes: CI/CD history, `sre-change-safety` log, Terraform runs.
 3. Group alerts by service; flag noisy (fired 3+ times, no action) and missing-runbook alerts.
-4. List open risks: degraded SLOs, error budget burn, expiring certs, pending maintenance.
+4. List open risks: degraded SLOs, error budget burn, expiring certs (`sre-expiry-audit`, and `sre-emudhra-ca-check`/`sre-php2shell-check` if either incident is still open), pending maintenance.
 5. Draft the handoff note; mark unknowns [TBD].
 6. Present for review; post only after approval.
 

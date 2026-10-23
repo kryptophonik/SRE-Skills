@@ -75,7 +75,8 @@ classify() { # $1=source $2=kind, stdin=text to scan for "PHP X.Y.Z"
 
 if [ "$do_local" = 1 ]; then
   if command -v php >/dev/null; then
-    php -v 2>/dev/null | classify "local" "php -v"
+    # Not a pipeline: classify must run in this shell so its exit code reaches rc.
+    classify "local" "php -v" <<<"$(php -v 2>/dev/null)"
   else
     echo "UNKNOWN local - php-not-on-PATH"; [ 1 -gt $rc ] && rc=1
   fi

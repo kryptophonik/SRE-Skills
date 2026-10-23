@@ -70,8 +70,8 @@ Brief description of the service and its criticality.
 
 ## 5. Security & Compliance
 - [ ] Secret management (Vault/Secrets Manager)
-- [ ] TLS enabled for all traffic
-- [ ] Vulnerability scanning passed
+- [ ] TLS enabled for all traffic, certs not chained through a known-compromised CA (`sre-expiry-audit` for expiry, `sre-emudhra-ca-check` for the Oct 2026 eMudhra compromise)
+- [ ] Vulnerability scanning passed (check language/framework runtimes against open CVEs too, e.g. `sre-php2shell-check` for PHP)
 
 ## 6. Approval Sign-off
 - **SRE Lead:** ___________

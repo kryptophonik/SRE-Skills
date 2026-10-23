@@ -149,6 +149,8 @@ kubectl --context <ctx> -n <ns> top pod   # needs metrics-server
 - iotop for I/O
 - ss -s / ss -tan for connection stats (replaces deprecated netstat)
 - ss -tulpn for listening ports
+
+**Gate: approval required.**
 ```bash
 tcpdump -i <if> -c 1000 -w /tmp/cap.pcap '<narrow filter>'  # see Capture warnings
 ```
@@ -356,6 +358,7 @@ Caveats: `CONCURRENTLY` takes longer and waits for older transactions to finish 
   ```
 - perf:
 
+  **Gate: approval required.**
   ```bash
   perf record -F 99 -g -p <pid> -- sleep 30 && perf report  # short, sampled
   ```

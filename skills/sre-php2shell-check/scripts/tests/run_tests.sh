@@ -64,5 +64,14 @@ case "$o" in UNKNOWN*) [ $r = 1 ] && ok "no X-Powered-By header is UNKNOWN, not 
 o=$(bash "$s/php2shell-check.sh" --timeout 2 --url "http://127.0.0.1:1/x" 2>/dev/null); r=$?
 case "$o" in ERROR*) [ $r = 2 ] && ok "unreachable URL is an ERROR" || ko "unreachable exit $r";; *) ko "unreachable: $o";; esac
 
+# Regression: --local piped `php -v` into classify() directly, which runs classify in a
+# subshell, so a VULNERABLE finding still exited 0 -- the same bug class cert-expiry.sh's
+# history warns about ("any cron job or CI gate using the exit code would have stayed green").
+fakebin="$tmp/fakebin"; mkdir -p "$fakebin"
+printf '#!/bin/sh\necho "PHP 8.3.6 (cli) (built: Jan  1 2026 00:00:00) (NTS)"\n' > "$fakebin/php"
+chmod +x "$fakebin/php"
+o=$(PATH="$fakebin:$PATH" bash "$s/php2shell-check.sh" --local); r=$?
+case "$o" in VULNERABLE*) [ $r = 1 ] && ok "--local with a vulnerable php on PATH exits 1, not 0" || ko "--local vulnerable exit $r (should be 1)";; *) ko "--local vulnerable: $o";; esac
+
 echo "$pass passed, $fail failed"
 [ "$fail" = 0 ]
