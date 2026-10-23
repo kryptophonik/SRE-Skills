@@ -42,6 +42,7 @@ Every skill is prefixed `sre-` so it does not collide with or shadow other packs
 | Backup restore / DR drill | `sre-dr-backup-test` | auto |
 | Dependencies, blast radius | `sre-dependency-mapping` | auto |
 | What expires soon: TLS certs, domains, cloud certs and secrets | `sre-expiry-audit` | auto |
+| Check for the eMudhra intermediate CA compromise (Oct 2026) in your own certs | `sre-emudhra-ca-check` | auto |
 | Toil review | `sre-toil-review` | auto |
 | Cloud or observability cost | `sre-cloud-cost-review` | auto |
 | Observability spend reduction (Datadog audit, gated cuts, monitor→Prometheus) | `sre-observability-cost-cutter` | auto |
@@ -68,7 +69,7 @@ Every profile needs `sre-safety-gates` (each skill also carries an inline gate b
 | Profile | Skills | Requires |
 |---|---|---|
 | Core incident response | `sre-safety-gates`, `sre-incident-command`, `sre-engineer`, `sre-diagnostics`, `sre-database-triage`, `sre-remediation-actions`, `sre-incident-communication`, `sre-postmortem-templates`, `sre-oncall-handoff`, `sre-change-safety` | `sre-oncall-handoff` needs `sre-pagerduty-opsgenie` for its paging scripts |
-| Reliability program | `sre-slo-alerting`, `sre-production-readiness`, `sre-capacity-planning`, `sre-dr-backup-test`, `sre-dependency-mapping`, `sre-expiry-audit`, `sre-toil-review`, `sre-cloud-cost-review`, `sre-observability-cost-cutter`, `sre-chaos-engineering`, `sre-runbook-templates`, `sre-observability-query-cookbook`, `sre-migration-safety` | core |
+| Reliability program | `sre-slo-alerting`, `sre-production-readiness`, `sre-capacity-planning`, `sre-dr-backup-test`, `sre-dependency-mapping`, `sre-expiry-audit`, `sre-emudhra-ca-check`, `sre-toil-review`, `sre-cloud-cost-review`, `sre-observability-cost-cutter`, `sre-chaos-engineering`, `sre-runbook-templates`, `sre-observability-query-cookbook`, `sre-migration-safety` | core |
 | Kubernetes | `sre-k8s-triage`, `sre-k8s-safe-remediation`, `sre-k8s-upgrade-autopilot` | core; `sre-k8s-safe-remediation` needs `sre-k8s-triage` |
 | Per cloud | `sre-aws` / `sre-azure` / `sre-gcp` | core |
 | Per observability vendor | `sre-dynatrace` / `sre-prometheus-grafana` (+ `sre-slo-burn-rate-rules`) / `sre-datadog` | core; `sre-slo-burn-rate-rules` needs `sre-prometheus-grafana` |
