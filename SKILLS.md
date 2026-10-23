@@ -27,6 +27,8 @@ Every skill is prefixed `sre-` so it does not collide with or shadow other packs
 | Kubernetes write (rollback, restart, scale, delete pod, Helm rollback) | `sre-k8s-safe-remediation` | **manual only** (`/sre-k8s-safe-remediation`; Claude plugin: `/sre:sre-k8s-safe-remediation`; Codex: `$sre-k8s-safe-remediation`) |
 | Kubernetes minor-version upgrade (preflight, go/no-go, gated EKS/GKE/AKS) | `sre-k8s-upgrade-autopilot` | auto |
 | Database slow or failing (Postgres, MySQL/MariaDB, Redis) | `sre-database-triage` | auto |
+| Message queue backing up or dropping messages (Kafka, RabbitMQ, SQS/SNS) | `sre-message-queue-triage` | auto |
+| Service mesh suspected (Istio/Linkerd 503s, mTLS, retries/circuit breakers) | `sre-service-mesh-triage` | auto |
 | SQL schema migration review (Postgres, MySQL/MariaDB locks and rewrites) | `sre-migration-safety` | auto |
 | Investigation and profiling detail | `sre-diagnostics` | auto |
 | Incident update / status page / exec summary drafts | `sre-incident-communication` | auto |
@@ -69,7 +71,7 @@ Every profile needs `sre-safety-gates` (each skill also carries an inline gate b
 
 | Profile | Skills | Requires |
 |---|---|---|
-| Core incident response | `sre-safety-gates`, `sre-incident-command`, `sre-engineer`, `sre-diagnostics`, `sre-database-triage`, `sre-remediation-actions`, `sre-incident-communication`, `sre-postmortem-templates`, `sre-oncall-handoff`, `sre-change-safety` | `sre-oncall-handoff` needs `sre-pagerduty-opsgenie` for its paging scripts |
+| Core incident response | `sre-safety-gates`, `sre-incident-command`, `sre-engineer`, `sre-diagnostics`, `sre-database-triage`, `sre-message-queue-triage`, `sre-service-mesh-triage`, `sre-remediation-actions`, `sre-incident-communication`, `sre-postmortem-templates`, `sre-oncall-handoff`, `sre-change-safety` | `sre-oncall-handoff` needs `sre-pagerduty-opsgenie` for its paging scripts |
 | Reliability program | `sre-slo-alerting`, `sre-production-readiness`, `sre-capacity-planning`, `sre-dr-backup-test`, `sre-dependency-mapping`, `sre-expiry-audit`, `sre-emudhra-ca-check`, `sre-php2shell-check`, `sre-toil-review`, `sre-cloud-cost-review`, `sre-observability-cost-cutter`, `sre-chaos-engineering`, `sre-runbook-templates`, `sre-observability-query-cookbook`, `sre-migration-safety` | core |
 | Kubernetes | `sre-k8s-triage`, `sre-k8s-safe-remediation`, `sre-k8s-upgrade-autopilot` | core; `sre-k8s-safe-remediation` needs `sre-k8s-triage` |
 | Per cloud | `sre-aws` / `sre-azure` / `sre-gcp` | core |
