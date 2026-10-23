@@ -6,6 +6,8 @@ That buys you three things an SRE actually cares about: **faster first response*
 
 Every skill follows one rule set: **read-only first → propose with risk and reversibility → explicit human approval → act → verify → stop and escalate if worse.** The full rules live in [`sre-safety-gates`](.claude/skills/sre-safety-gates/SKILL.md), and every skill also carries a short inline copy, so a partial install stays gated.
 
+**New, for two live incidents (October 2026):** [`sre-emudhra-ca-check`](.claude/skills/sre-emudhra-ca-check/SKILL.md) finds any certificate in your inventory that chains through one of the 8 eMudhra intermediate CAs revoked for a private-key compromise — browser trust-store blocks don't cover your own service-to-service TLS or non-browser clients. [`sre-php2shell-check`](.claude/skills/sre-php2shell-check/SKILL.md) checks your PHP hosts and containers for **PHP2Shell** (CVE-2026-109618 / CVE-2026-109619), the critical unauthenticated RCE pair patched October 21 — and catches the distro-packaging trap where `php -v` can report the pre-patch version on an already-patched host. Both are read-only; a finding hands off to a gated fix.
+
 ## Getting started
 
 New to agent skills? **[docs/getting-started.md](docs/getting-started.md)** covers what to do after install: the CLIs and read-only access each skill needs, a first run end to end on a local kind cluster, prompts to copy, running the bundled scripts yourself, and troubleshooting.
